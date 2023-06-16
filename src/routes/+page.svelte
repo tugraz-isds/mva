@@ -1,2 +1,13 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script>
+  import Navbar from '../components/Navbar.svelte';
+</script>
+
+<style>
+  :global(body) {
+    font-family: 'Roboto', sans-serif;
+  }
+</style>
+
+<Navbar />
+
+<h1>MVA App</h1>
