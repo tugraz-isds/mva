@@ -3,25 +3,100 @@
 	<head>
 		<meta charset="utf-8" />
 		<!-- Material Icons -->
-		<link rel="stylesheet"
-		href="https://fonts.googleapis.com/icon?family=Material+Icons"
-		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 		<!-- Roboto -->
 		<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700"
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700"
 		/>
 		<!-- Roboto Mono -->
-		<link
-		rel="stylesheet"
-		href="https://fonts.googleapis.com/css?family=Roboto+Mono"
-		/>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono" />
+		<!-- SMUI -->
 		<link rel="stylesheet" href="/smui.css" />
+		<!-- Winbox -->
+		<link rel="preload" href="/winbox.bundle.min.js" as="script" />
+		<!-- Other -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
+		<style>
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
+
+		<script src="/winbox.bundle.min.js" async></script>
+		<script>
+			// Scatterplot Matrix WinBox Window
+			const splomExpand = document.querySelector('#splom-expand');
+			const splomExpandDiv = document.querySelector('.splom-container');
+			splomExpand &&
+				splomExpand.addEventListener('click', () => {
+					const testBox = new WinBox({
+						title: 'Parallel Coordinates View (Expanded)',
+						width: '400px',
+						height: '400px',
+						mount: splomExpandDiv
+					});
+				});
+
+			// Scatterplot WinBox Window
+			const scatterplotExpand = document.querySelector('#scatterplot-expand');
+			const scatterplotExpandDiv = document.querySelector('.scatterplot-container');
+			scatterplotExpand &&
+				scatterplotExpand.addEventListener('click', () => {
+					const testBox = new WinBox({
+						title: 'Parallel Coordinates View (Expanded)',
+						width: '400px',
+						height: '400px',
+						mount: scatterplotExpandDiv
+					});
+				});
+
+			// Similarity Map WinBox Window
+			const simmapExpand = document.querySelector('#simmap-expand');
+			const simmapExpandDiv = document.querySelector('.simmap-container');
+			simmapExpand &&
+				simmapExpand.addEventListener('click', () => {
+					const testBox = new WinBox({
+						title: 'Parallel Coordinates View (Expanded)',
+						width: '400px',
+						height: '400px',
+						mount: simmapExpandDiv
+					});
+				});
+
+			// Table WinBox Window
+			const tableExpand = document.querySelector('#table-expand');
+			const tableExpandDiv = document.querySelector('.table-container');
+			tableExpand &&
+				tableExpand.addEventListener('click', () => {
+					const testBox = new WinBox({
+						title: 'Parallel Coordinates View (Expanded)',
+						width: '400px',
+						height: '400px',
+						mount: tableExpandDiv
+					});
+				});
+
+			// Parallel Coordinates WinBox Window
+			const parcoordExpand = document.querySelector('#parcoord-expand');
+			const parcoordExpandDiv = document.querySelector('.parcoord-container');
+			parcoordExpand &&
+				parcoordExpand.addEventListener('click', () => {
+					const testBox = new WinBox({
+						title: 'Parallel Coordinates View (Expanded)',
+						width: '400px',
+						height: '400px',
+						mount: parcoordExpandDiv
+					});
+				});
+		</script>
 	</body>
 </html>
