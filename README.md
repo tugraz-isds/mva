@@ -1,6 +1,6 @@
 # MVA App
 
-Svelte project for MVA app, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+SvelteKit project for MVA app, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
 
 ## Developing
 
