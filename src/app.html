@@ -33,70 +33,35 @@
 
 		<script src="/winbox.bundle.min.js" async></script>
 		<script>
-			// Scatterplot Matrix WinBox Window
-			const splomExpand = document.querySelector('#splom-expand');
-			const splomExpandDiv = document.querySelector('.splom-container');
-			splomExpand &&
-				splomExpand.addEventListener('click', () => {
-					const testBox = new WinBox({
-						title: 'Parallel Coordinates View (Expanded)',
-						width: '400px',
-						height: '400px',
-						mount: splomExpandDiv
-					});
-				});
+			// Create winbox when expand button is clicked
+			function createWinBox(title, containerClass) {
+				const expandButton = document.querySelector(`#${containerClass}-expand`);
+				const container = document.querySelector(`.${containerClass}-container`);
 
-			// Scatterplot WinBox Window
-			const scatterplotExpand = document.querySelector('#scatterplot-expand');
-			const scatterplotExpandDiv = document.querySelector('.scatterplot-container');
-			scatterplotExpand &&
-				scatterplotExpand.addEventListener('click', () => {
-					const testBox = new WinBox({
-						title: 'Parallel Coordinates View (Expanded)',
-						width: '400px',
-						height: '400px',
-						mount: scatterplotExpandDiv
+				if (expandButton) {
+					expandButton.addEventListener('click', () => {
+						const winBox = new WinBox({
+							title: title,
+							width: '400px',
+							height: '400px',
+							html: container.innerHTML
+							// onfocus: () => {
+							// 	expandButton.style.display = 'none';
+							// 	console.log('opened');
+							// },
+							// onblur: () => {
+							// 	expandButton.style.display = 'block';
+							// }
+						});
 					});
-				});
-
-			// Similarity Map WinBox Window
-			const simmapExpand = document.querySelector('#simmap-expand');
-			const simmapExpandDiv = document.querySelector('.simmap-container');
-			simmapExpand &&
-				simmapExpand.addEventListener('click', () => {
-					const testBox = new WinBox({
-						title: 'Parallel Coordinates View (Expanded)',
-						width: '400px',
-						height: '400px',
-						mount: simmapExpandDiv
-					});
-				});
-
-			// Table WinBox Window
-			const tableExpand = document.querySelector('#table-expand');
-			const tableExpandDiv = document.querySelector('.table-container');
-			tableExpand &&
-				tableExpand.addEventListener('click', () => {
-					const testBox = new WinBox({
-						title: 'Parallel Coordinates View (Expanded)',
-						width: '400px',
-						height: '400px',
-						mount: tableExpandDiv
-					});
-				});
-
-			// Parallel Coordinates WinBox Window
-			const parcoordExpand = document.querySelector('#parcoord-expand');
-			const parcoordExpandDiv = document.querySelector('.parcoord-container');
-			parcoordExpand &&
-				parcoordExpand.addEventListener('click', () => {
-					const testBox = new WinBox({
-						title: 'Parallel Coordinates View (Expanded)',
-						width: '400px',
-						height: '400px',
-						mount: parcoordExpandDiv
-					});
-				});
+				}
+			}
+			// Call the function for each WinBox window
+			createWinBox('Scatterplot Matrix View (Expanded)', 'splom');
+			createWinBox('Scatterplot View (Expanded)', 'scatterplot');
+			createWinBox('Similarity Map View (Expanded)', 'simmap');
+			createWinBox('Table View (Expanded)', 'table');
+			createWinBox('Parallel Coordinates View (Expanded)', 'parcoord');
 		</script>
 	</body>
 </html>
