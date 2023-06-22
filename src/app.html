@@ -29,6 +29,23 @@
 			.wb-header {
 				background-color: #183152;
 			}
+
+			/* Global view styles */
+			.view-container {
+				width: 100%;
+				height: 100%;
+			}
+
+			.view-header {
+				padding-left: 0.5%;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.view-content {
+				padding: 0.5%;
+			}
 		</style>
 		%sveltekit.head%
 	</head>
@@ -39,22 +56,23 @@
 		<script>
 			// Create winbox when expand button is clicked
 			function createWinBox(title, containerClass) {
+				const expandButtonContainer = document.querySelector(`#${containerClass}-expand-container`);
 				const expandButton = document.querySelector(`#${containerClass}-expand`);
-				const container = document.querySelector(`.${containerClass}-container`);
 
 				if (expandButton) {
 					expandButton.addEventListener('click', () => {
-						expandButton.style.display = 'none';
+						const canvas = document.querySelector(`#${containerClass}-canvas`);
 						const winBox = new WinBox({
 							title: title,
 							width: `${screen.width * 0.8}px`,
 							height: `${screen.height * 0.8}px`,
-							html: container.innerHTML,
+							mount: canvas,
 							onfocus: () => {
-								console.log('opened');
+								expandButtonContainer.style.display = 'none';
 							},
-							onblur: () => {
-								expandButton.style.display = 'block';
+							onclose: () => {
+								expandButtonContainer.style.display = 'block';
+								console.log('closed');
 							}
 						});
 					});

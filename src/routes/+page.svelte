@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Navbar from '../components/Navbar.svelte';
-	import SplomView from '../components/SPLOMView.svelte';
-	import ScatterplotView from '../components/ScatterplotView.svelte';
-	import SimmapView from '../components/SimmapView.svelte';
-	import TableView from '../components/TableView.svelte';
-	import ParcoordView from '../components/ParcoordView.svelte';
+	import SplomView from '../components/splom/SPLOMView.svelte';
+	import ScatterplotView from '../components/scatterplot/ScatterplotView.svelte';
+	import SimmapView from '../components/simmap/SimmapView.svelte';
+	import TableView from '../components/table/TableView.svelte';
+	import ParcoordView from '../components/parcoord/ParcoordView.svelte';
 </script>
 
 <div class="app-container">
