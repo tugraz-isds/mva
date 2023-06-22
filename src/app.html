@@ -25,6 +25,10 @@
 				padding: 0;
 				height: 100%;
 			}
+
+			.wb-header {
+				background-color: #183152;
+			}
 		</style>
 		%sveltekit.head%
 	</head>
@@ -40,18 +44,18 @@
 
 				if (expandButton) {
 					expandButton.addEventListener('click', () => {
+						expandButton.style.display = 'none';
 						const winBox = new WinBox({
 							title: title,
-							width: '400px',
-							height: '400px',
-							html: container.innerHTML
-							// onfocus: () => {
-							// 	expandButton.style.display = 'none';
-							// 	console.log('opened');
-							// },
-							// onblur: () => {
-							// 	expandButton.style.display = 'block';
-							// }
+							width: `${screen.width * 0.8}px`,
+							height: `${screen.height * 0.8}px`,
+							html: container.innerHTML,
+							onfocus: () => {
+								console.log('opened');
+							},
+							onblur: () => {
+								expandButton.style.display = 'block';
+							}
 						});
 					});
 				}

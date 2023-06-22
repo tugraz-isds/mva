@@ -38,10 +38,12 @@
 	<a href="#">Help</a>
 </div>
 
-<style>
+<style lang="scss">
+	@import '../theme/smui-theme';
+
 	.navbar {
 		overflow: hidden;
-		background-color: #333;
+		background-color: $darkgray;
 		height: 100%;
 		display: flex;
 		align-items: center;
@@ -78,7 +80,7 @@
 
 	.navbar a:hover,
 	.dropdown:hover .dropbtn {
-		background-color: #40b3ff;
+		background-color: $blue4;
 	}
 
 	.dropdown-content {
@@ -100,7 +102,7 @@
 	}
 
 	.dropdown-content a:hover {
-		background-color: #ddd;
+		background-color: $blue1;
 	}
 
 	.dropdown:hover .dropdown-content {
