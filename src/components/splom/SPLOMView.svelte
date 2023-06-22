@@ -17,4 +17,12 @@
 			</IconButton>
 		</div>
 	</div>
+	<div class="view-content">
+		<img
+			id="splom-canvas"
+			style="width: 100%; height: 90%"
+			src="scatterplot_matrix.svg"
+			alt="Scatterplot Matrix"
+		/>
+	</div>
 </div>

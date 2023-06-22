@@ -22,4 +22,12 @@
 			</IconButton>
 		</div>
 	</div>
+	<div class="view-content">
+		<img
+			id="simmap-canvas"
+			style="width: 100%; height: 85%"
+			src="similarity_map.svg"
+			alt="Similarity Map"
+		/>
+	</div>
 </div>

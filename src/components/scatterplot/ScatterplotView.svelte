@@ -22,4 +22,12 @@
 			</IconButton>
 		</div>
 	</div>
+	<div class="view-content">
+		<img
+			id="scatterplot-canvas"
+			style="width: 100%; height: 85%"
+			src="scatterplot_iris_petal.svg"
+			alt="Scatterplot"
+		/>
+	</div>
 </div>
