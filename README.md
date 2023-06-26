@@ -59,3 +59,7 @@ npm run tauri build
 This command creates `src-tauri/target/release/mva.exe` executable.
 
 You can find more detailed information in the official [Tauri guide for building](https://tauri.app/v1/guides/building/).
+
+### Resources
+
+MVA native application is built with [Tauri](https://tauri.app/).
