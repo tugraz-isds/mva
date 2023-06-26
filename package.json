@@ -11,7 +11,8 @@
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
 		"prepare": "npm run smui-theme",
-		"smui-theme": "smui-theme compile static/smui.css -i src/theme"
+		"smui-theme": "smui-theme compile static/smui.css -i src/theme",
+		"tauri": "tauri"
 	},
 	"devDependencies": {
 		"@material/dom": "^14.0.0",
@@ -24,6 +25,7 @@
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-static": "^2.0.2",
 		"@sveltejs/kit": "^1.5.0",
+		"@tauri-apps/cli": "^1.4.0",
 		"@types/winbox": "^0.2.1",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
