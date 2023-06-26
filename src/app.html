@@ -26,6 +26,11 @@
 				height: 100%;
 			}
 
+			.winbox {
+				width: 80% !important;
+				height: 80% !important;
+			}
+
 			.wb-header {
 				background-color: #183152;
 			}
@@ -66,8 +71,6 @@
 						const canvas = document.querySelector(`#${containerClass}-canvas`);
 						const winBox = new WinBox({
 							title: title,
-							width: `${screen.width * 0.8}px`,
-							height: `${screen.height * 0.8}px`,
 							mount: canvas,
 							onfocus: () => {
 								expandButtonContainer.style.display = 'none';
