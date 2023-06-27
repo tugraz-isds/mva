@@ -5,6 +5,8 @@
 	import SimmapView from '../components/simmap/SimmapView.svelte';
 	import TableView from '../components/table/TableView.svelte';
 	import ParcoordView from '../components/parcoord/ParcoordView.svelte';
+
+	import { Button } from 'flowbite-svelte';
 </script>
 
 <div class="app-container">
@@ -12,6 +14,7 @@
 	<div class="navbar-container">
 		<Navbar />
 	</div>
+	<Button class="!bg-blue-500">Blue Button</Button>
 	<!-- Upper Row -->
 	<div class="upper-row-container">
 		<div class="splom-container"><SplomView /></div>
