@@ -1,20 +1,12 @@
 <script lang="ts">
-	import { mdiArrowExpand } from '@mdi/js';
-	import IconButton, { Icon } from '@smui/icon-button';
-	import { Svg } from '@smui/common';
-
-	let clicked = 0;
+	import { ArrowsPointingOut } from 'svelte-heros-v2';
 </script>
 
 <div class="view-container">
 	<div class="view-header">
 		<span>Scatterplot Matrix View</span>
 		<div id="splom-expand-container">
-			<IconButton id="splom-expand" class="material-icons" on:click={() => clicked++} size="button">
-				<Icon component={Svg} viewBox="0 0 24 24">
-					<path fill="currentColor" d={mdiArrowExpand} />
-				</Icon>
-			</IconButton>
+			<ArrowsPointingOut id="splom-expand" size="24" class="text-grey-900 cursor-pointer" />
 		</div>
 	</div>
 	<div class="view-content">

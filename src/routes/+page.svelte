@@ -5,16 +5,13 @@
 	import SimmapView from '../components/simmap/SimmapView.svelte';
 	import TableView from '../components/table/TableView.svelte';
 	import ParcoordView from '../components/parcoord/ParcoordView.svelte';
-
-	import { Button } from 'flowbite-svelte';
 </script>
 
 <div class="app-container">
 	<!-- Navbar -->
-	<div class="navbar-container">
+	<div class="navbar-container" style="height: 5%;">
 		<Navbar />
 	</div>
-	<Button class="!bg-blue-500">Blue Button</Button>
 	<!-- Upper Row -->
 	<div class="upper-row-container">
 		<div class="splom-container"><SplomView /></div>
@@ -38,10 +35,6 @@
 		height: 100%;
 		box-sizing: border-box;
 		overflow: hidden;
-	}
-
-	.navbar-container {
-		height: 5%;
 	}
 
 	.upper-row-container {
