@@ -8,7 +8,7 @@
 	export let views: View[];
 	export let handleSwap: Function;
 
-	views = views?.filter((view: View) => view.title !== title);
+	$: views = views?.filter((view: View) => view.title !== title);
 </script>
 
 <div class="w-full h-full p-1">

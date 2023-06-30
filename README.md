@@ -1,5 +1,7 @@
 # Multidimensional Visual Analyser (MVA)
 
+A demo of MVA web application is available at https://ozbej-mva.netlify.app/.
+
 ## Web Application
 
 ### Developing
