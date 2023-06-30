@@ -1,5 +1,6 @@
 <script lang="ts">
-	import View from './View';
+	import { onMount } from 'svelte';
+	import type { View } from './View';
 	import SplomView from '../splom/SPLOMView.svelte';
 	import ScatterplotView from '../scatterplot/ScatterplotView.svelte';
 	import SimmapView from '../simmap/SimmapView.svelte';
@@ -7,15 +8,43 @@
 	import ParcoordView from '../parcoord/ParcoordView.svelte';
 
 	// Initialize views
-	const views: View[] = [
-		new View(0, 33, 0, SplomView),
-		new View(1, 33, 1, ScatterplotView),
-		new View(2, 33, 2, SimmapView),
-		new View(3, 33, 3, TableView),
-		new View(4, 66.66, 4, ParcoordView)
+	let views: View[] = [
+		{
+			id: 0,
+			title: 'Scatterplot Matrix View',
+			width: 33,
+			order: 0,
+			component: SplomView
+		},
+		{
+			id: 1,
+			title: 'Scatterplot View',
+			width: 33,
+			order: 1,
+			component: ScatterplotView
+		},
+		{
+			id: 2,
+			title: 'Similarity Map View',
+			width: 33,
+			order: 2,
+			component: SimmapView
+		},
+		{
+			id: 3,
+			title: 'Table View',
+			width: 33,
+			order: 3,
+			component: TableView
+		},
+		{
+			id: 4,
+			title: 'Parallel Coordinates View',
+			width: 66.66,
+			order: 4,
+			component: ParcoordView
+		}
 	];
-
-	const orderedViews: View[] = views;
 
 	// Variables to handle dragging
 	let disableTextSelection: boolean = false;
@@ -27,7 +56,6 @@
 	let upperRowHeight: number = 40;
 	let lowerRowHeight: number = 55;
 
-	// Functions that handle dragging
 	const handleVerticalMouseDown = () => {
 		isDraggingVertical = true;
 		disableTextSelection = true;
@@ -35,8 +63,8 @@
 
 	const handleHorizontalMouseDown = (e: MouseEvent) => {
 		if (!(e.target instanceof Element)) return;
-		const match = e.target.id.match(/\d+$/);
-		activeHorizonalDivider = match ? parseInt(match[0]) : null;
+		const dividerId = e.target.id.match(/\d+$/);
+		activeHorizonalDivider = dividerId ? parseInt(dividerId[0]) : null;
 		isDraggingHorizontal = true;
 		disableTextSelection = true;
 	};
@@ -49,31 +77,41 @@
 	};
 
 	const handleResize = (e: MouseEvent) => {
+		// Handle vertical resize
 		if (isDraggingVertical) {
 			const windowHeight = window.innerHeight;
 			const dragY = e.clientY;
 			upperRowHeight = (dragY / windowHeight) * 100 - 5;
 			lowerRowHeight = ((windowHeight - dragY) / windowHeight) * 100 + 5;
-		} else if (isDraggingHorizontal && activeHorizonalDivider) {
+		}
+		// Handle horizontal resize based on divider id
+		else if (isDraggingHorizontal && activeHorizonalDivider) {
 			const windowWidth = window.innerWidth;
 			const dragX = e.clientX;
 			if (activeHorizonalDivider === 1) {
-				orderedViews[0].width = (dragX / windowWidth) * 100;
-				orderedViews[1].width = 100 - (orderedViews[0].width + orderedViews[2].width + 0.5);
-				console.log(
-					orderedViews[0].width,
-					orderedViews[1].width,
-					orderedViews[2].width,
-					orderedViews[0].width + orderedViews[1].width + orderedViews[2].width
-				);
+				views[0].width = (dragX / windowWidth) * 100;
+				views[1].width = 100 - (views[0].width + views[2].width + 0.5);
 			} else if (activeHorizonalDivider === 2) {
-				orderedViews[1].width = (dragX / windowWidth) * 100 - orderedViews[0].width;
-				orderedViews[2].width = 100 - (orderedViews[0].width + orderedViews[1].width + 0.5);
+				views[1].width = (dragX / windowWidth) * 100 - views[0].width;
+				views[2].width = 100 - (views[0].width + views[1].width + 0.5);
 			} else if (activeHorizonalDivider === 3) {
-				orderedViews[3].width = (dragX / windowWidth) * 100 - 0.25;
-				orderedViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
+				views[3].width = (dragX / windowWidth) * 100 - 0.25;
+				views[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
 			}
 		} else return;
+	};
+
+	const handleSwap = (title: string, e: Event) => {
+		// Find the indices of the two objects to swap
+		const index1 = views.findIndex((view: View) => view.title === title);
+		const index2 = views.findIndex(
+			(view: View) => view.title === (e.target as HTMLElement).textContent
+		);
+
+		if (index1 !== -1 && index2 !== -1) {
+			[views[index1], views[index2]] = [views[index2], views[index1]]; // Swap the objects in the array
+			[views[index1].width, views[index2].width] = [views[index2].width, views[index1].width]; // Swap widths
+		}
 	};
 </script>
 
@@ -85,11 +123,11 @@
 >
 	<!-- Upper Row -->
 	<div class="upper-row flex flex-row min-h-fit" style="height: {upperRowHeight}%;">
-		<div class="view-{orderedViews[0].id}" style="width: {orderedViews[0].width}%;">
-			<svelte:component this={orderedViews[0].component} />
+		<div class="view-{views[0].id}" style="width: {views[0].width}%;">
+			<svelte:component this={views[0].component} title={views[0].title} {views} {handleSwap} />
 		</div>
 
-		<!-- Draggable Horizontal Divider -->
+		<!-- Draggable Horizontal Divider 1 -->
 		<div
 			id="dragHandleHorizontal1"
 			style="width: 0.25%;"
@@ -97,11 +135,11 @@
 			on:mousedown={handleHorizontalMouseDown}
 		/>
 
-		<div class="view-{orderedViews[1].id}" style="width: {orderedViews[1].width}%;">
-			<svelte:component this={orderedViews[1].component} />
+		<div class="view-{views[1].id}" style="width: {views[1].width}%;">
+			<svelte:component this={views[1].component} title={views[1].title} {views} {handleSwap} />
 		</div>
 
-		<!-- Draggable Horizontal Divider -->
+		<!-- Draggable Horizontal Divider 2 -->
 		<div
 			id="dragHandleHorizontal2"
 			style="width: 0.25%;"
@@ -109,8 +147,8 @@
 			on:mousedown={handleHorizontalMouseDown}
 		/>
 
-		<div class="view-{orderedViews[2].id}" style="width: {orderedViews[2].width}%;">
-			<svelte:component this={orderedViews[2].component} />
+		<div class="view-{views[2].id}" style="width: {views[2].width}%;">
+			<svelte:component this={views[2].component} title={views[2].title} {views} {handleSwap} />
 		</div>
 	</div>
 
@@ -124,11 +162,11 @@
 
 	<!-- Lower Row -->
 	<div class="lower-row flex flex-row" style="height: {lowerRowHeight}%;">
-		<div class="view-{orderedViews[3].id}" style="width: {orderedViews[3].width}%;">
-			<svelte:component this={orderedViews[3].component} />
+		<div class="view-{views[3].id}" style="width: {views[3].width}%;">
+			<svelte:component this={views[3].component} title={views[3].title} {views} {handleSwap} />
 		</div>
 
-		<!-- Draggable Horizontal Divider -->
+		<!-- Draggable Horizontal Divider 3 -->
 		<div
 			id="dragHandleHorizontal3"
 			style="width: 0.25%;"
@@ -136,8 +174,8 @@
 			on:mousedown={handleHorizontalMouseDown}
 		/>
 
-		<div class="view-{orderedViews[4].id}" style="width: {orderedViews[4].width}%;">
-			<svelte:component this={orderedViews[4].component} />
+		<div class="view-{views[4].id}" style="width: {views[4].width}%;">
+			<svelte:component this={views[4].component} title={views[4].title} {views} {handleSwap} />
 		</div>
 	</div>
 </div>
