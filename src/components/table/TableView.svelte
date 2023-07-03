@@ -3,24 +3,29 @@
 	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 
+	export let id: string;
 	export let title: string;
 	export let views: View[];
 	export let handleSwap: Function;
 
 	$: views = views?.filter((view: View) => view.title !== title);
+
+	function openWinbox() {
+		window.dispatchEvent(new CustomEvent('openWinbox', { detail: { title: title, id: id } }));
+	}
 </script>
 
 <div class="w-full h-full p-1">
 	<div class="flex flex-row justify-between">
 		<span>{title}</span>
-		<div id="table-expand-container">
+		<div id="{id}-expand-container">
 			<div class="flex flex-row gap-1">
 				<ArrowsRightLeft
-					id="table-swap"
+					id="{id}-swap"
 					size="24"
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
 				/>
-				<Dropdown triggeredBy="#table-swap">
+				<Dropdown triggeredBy="#{id}-swap">
 					<div slot="header" class="py-1 px-2">
 						<span class="font-medium block text-sm text-gray-900">Swap view with</span>
 					</div>
@@ -32,9 +37,10 @@
 					{/each}
 				</Dropdown>
 				<ArrowsPointingOut
-					id="table-expand"
+					id="{id}-expand"
 					size="24"
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
+					on:click={openWinbox}
 				/>
 			</div>
 		</div>

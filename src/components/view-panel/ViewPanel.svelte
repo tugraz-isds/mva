@@ -10,38 +10,33 @@
 	// Initialize views
 	let views: View[] = [
 		{
-			id: 0,
+			id: 'splom',
 			title: 'Scatterplot Matrix View',
 			width: 33,
-			order: 0,
 			component: SplomView
 		},
 		{
-			id: 1,
+			id: 'scatterplot',
 			title: 'Scatterplot View',
 			width: 33,
-			order: 1,
 			component: ScatterplotView
 		},
 		{
-			id: 2,
+			id: 'simmap',
 			title: 'Similarity Map View',
 			width: 33,
-			order: 2,
 			component: SimmapView
 		},
 		{
-			id: 3,
+			id: 'table',
 			title: 'Table View',
 			width: 33,
-			order: 3,
 			component: TableView
 		},
 		{
-			id: 4,
+			id: 'parcoord',
 			title: 'Parallel Coordinates View',
 			width: 66.66,
-			order: 4,
 			component: ParcoordView
 		}
 	];
@@ -124,7 +119,13 @@
 	<!-- Upper Row -->
 	<div class="upper-row flex flex-row min-h-fit" style="height: {upperRowHeight}%;">
 		<div class="view-{views[0].id}" style="width: {views[0].width}%;">
-			<svelte:component this={views[0].component} title={views[0].title} {views} {handleSwap} />
+			<svelte:component
+				this={views[0].component}
+				id={views[0].id}
+				title={views[0].title}
+				{views}
+				{handleSwap}
+			/>
 		</div>
 
 		<!-- Draggable Horizontal Divider 1 -->
@@ -136,7 +137,13 @@
 		/>
 
 		<div class="view-{views[1].id}" style="width: {views[1].width}%;">
-			<svelte:component this={views[1].component} title={views[1].title} {views} {handleSwap} />
+			<svelte:component
+				this={views[1].component}
+				id={views[1].id}
+				title={views[1].title}
+				{views}
+				{handleSwap}
+			/>
 		</div>
 
 		<!-- Draggable Horizontal Divider 2 -->
@@ -148,7 +155,13 @@
 		/>
 
 		<div class="view-{views[2].id}" style="width: {views[2].width}%;">
-			<svelte:component this={views[2].component} title={views[2].title} {views} {handleSwap} />
+			<svelte:component
+				this={views[2].component}
+				id={views[2].id}
+				title={views[2].title}
+				{views}
+				{handleSwap}
+			/>
 		</div>
 	</div>
 
@@ -163,7 +176,13 @@
 	<!-- Lower Row -->
 	<div class="lower-row flex flex-row" style="height: {lowerRowHeight}%;">
 		<div class="view-{views[3].id}" style="width: {views[3].width}%;">
-			<svelte:component this={views[3].component} title={views[3].title} {views} {handleSwap} />
+			<svelte:component
+				this={views[3].component}
+				id={views[3].id}
+				title={views[3].title}
+				{views}
+				{handleSwap}
+			/>
 		</div>
 
 		<!-- Draggable Horizontal Divider 3 -->
@@ -175,7 +194,13 @@
 		/>
 
 		<div class="view-{views[4].id}" style="width: {views[4].width}%;">
-			<svelte:component this={views[4].component} title={views[4].title} {views} {handleSwap} />
+			<svelte:component
+				this={views[4].component}
+				id={views[4].id}
+				title={views[4].title}
+				{views}
+				{handleSwap}
+			/>
 		</div>
 	</div>
 </div>

@@ -39,33 +39,30 @@
 		<script src="/winbox.bundle.min.js" async></script>
 		<script>
 			// Create winbox when expand button is clicked
-			function createWinBox(title, containerClass) {
+			function createWinbox(title, containerClass) {
 				const expandButtonContainer = document.querySelector(`#${containerClass}-expand-container`);
 				const expandButton = document.querySelector(`#${containerClass}-expand`);
 
 				if (expandButton) {
-					expandButton.addEventListener('click', () => {
-						const canvas = document.querySelector(`#${containerClass}-canvas`);
-						const winBox = new WinBox({
-							title: title,
-							mount: canvas,
-							onfocus: () => {
-								expandButtonContainer.style.display = 'none';
-							},
-							onclose: () => {
-								expandButtonContainer.style.display = 'block';
-								console.log('closed');
-							}
-						});
+					const canvas = document.querySelector(`#${containerClass}-canvas`);
+					const winBox = new WinBox({
+						title: title,
+						mount: canvas,
+						onfocus: () => {
+							expandButtonContainer.style.display = 'none';
+						},
+						onclose: () => {
+							expandButtonContainer.style.display = 'block';
+						}
 					});
 				}
 			}
-			// Call the function for each WinBox window
-			createWinBox('Scatterplot Matrix View (Expanded)', 'splom');
-			createWinBox('Scatterplot View (Expanded)', 'scatterplot');
-			createWinBox('Similarity Map View (Expanded)', 'simmap');
-			createWinBox('Table View (Expanded)', 'table');
-			createWinBox('Parallel Coordinates View (Expanded)', 'parcoord');
+
+			// Open winbox when custom event is triggered (expand button clicked)
+			window.addEventListener('openWinbox', (event) => {
+				const { title, id } = event.detail;
+				createWinbox(`${title} (Expanded)`, id);
+			});
 		</script>
 	</body>
 </html>
