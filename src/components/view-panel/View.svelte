@@ -2,12 +2,12 @@
 	import type { View } from '../view-panel/View';
 	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
-	import ParcoordComponent from './ParcoordComponent.svelte';
 
 	export let id: string;
 	export let title: string;
 	export let views: View[];
 	export let handleSwap: Function;
+	export let component: any;
 
 	$: views = views?.filter((view: View) => view.title !== title);
 
@@ -46,5 +46,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="view-content overflow-hidden" style="height: 90%;"><ParcoordComponent /></div>
+	<div class="view-content overflow-hidden" style="height: 90%;">
+		<svelte:component this={component} />
+	</div>
 </div>

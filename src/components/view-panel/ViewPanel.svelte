@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { View } from './View';
-	import SplomView from '../splom/SPLOMView.svelte';
-	import ScatterplotView from '../scatterplot/ScatterplotView.svelte';
-	import SimmapView from '../simmap/SimmapView.svelte';
-	import TableView from '../table/TableView.svelte';
-	import ParcoordView from '../parcoord/ParcoordView.svelte';
+	import ViewComponent from './View.svelte';
+	import SplomComponent from '../splom/SPLOMComponent.svelte';
+	import ScatterplotComponent from '../scatterplot/ScatterplotComponent.svelte';
+	import SimmapComponent from '../simmap/SimmapComponent.svelte';
+	import TableComponent from '../table/TableComponent.svelte';
+	import ParcoordComponent from '../parcoord/ParcoordComponent.svelte';
 
 	// Initialize views
 	let views: View[] = [
@@ -13,31 +13,31 @@
 			id: 'splom',
 			title: 'Scatterplot Matrix View',
 			width: 33,
-			component: SplomView
+			component: SplomComponent
 		},
 		{
 			id: 'scatterplot',
 			title: 'Scatterplot View',
 			width: 33,
-			component: ScatterplotView
+			component: ScatterplotComponent
 		},
 		{
 			id: 'simmap',
 			title: 'Similarity Map View',
 			width: 33,
-			component: SimmapView
+			component: SimmapComponent
 		},
 		{
 			id: 'table',
 			title: 'Table View',
 			width: 33,
-			component: TableView
+			component: TableComponent
 		},
 		{
 			id: 'parcoord',
 			title: 'Parallel Coordinates View',
 			width: 66.66,
-			component: ParcoordView
+			component: ParcoordComponent
 		}
 	];
 
@@ -119,12 +119,12 @@
 	<!-- Upper Row -->
 	<div class="upper-row flex flex-row min-h-fit" style="height: {upperRowHeight}%;">
 		<div class="view-{views[0].id}" style="width: {views[0].width}%;">
-			<svelte:component
-				this={views[0].component}
+			<ViewComponent
 				id={views[0].id}
 				title={views[0].title}
 				{views}
 				{handleSwap}
+				component={views[0].component}
 			/>
 		</div>
 
@@ -137,12 +137,12 @@
 		/>
 
 		<div class="view-{views[1].id}" style="width: {views[1].width}%;">
-			<svelte:component
-				this={views[1].component}
+			<ViewComponent
 				id={views[1].id}
 				title={views[1].title}
 				{views}
 				{handleSwap}
+				component={views[1].component}
 			/>
 		</div>
 
@@ -155,12 +155,12 @@
 		/>
 
 		<div class="view-{views[2].id}" style="width: {views[2].width}%;">
-			<svelte:component
-				this={views[2].component}
+			<ViewComponent
 				id={views[2].id}
 				title={views[2].title}
 				{views}
 				{handleSwap}
+				component={views[2].component}
 			/>
 		</div>
 	</div>
@@ -176,12 +176,12 @@
 	<!-- Lower Row -->
 	<div class="lower-row flex flex-row" style="height: {lowerRowHeight}%;">
 		<div class="view-{views[3].id}" style="width: {views[3].width}%;">
-			<svelte:component
-				this={views[3].component}
+			<ViewComponent
 				id={views[3].id}
 				title={views[3].title}
 				{views}
 				{handleSwap}
+				component={views[3].component}
 			/>
 		</div>
 
@@ -194,12 +194,19 @@
 		/>
 
 		<div class="view-{views[4].id}" style="width: {views[4].width}%;">
-			<svelte:component
+			<!-- <svelte:component
 				this={views[4].component}
 				id={views[4].id}
 				title={views[4].title}
 				{views}
 				{handleSwap}
+			/> -->
+			<ViewComponent
+				id={views[4].id}
+				title={views[4].title}
+				{views}
+				{handleSwap}
+				component={views[4].component}
 			/>
 		</div>
 	</div>
