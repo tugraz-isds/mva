@@ -12,8 +12,6 @@ Once you've cloned the project and installed dependencies with `npm install` , s
 npm run dev
 ```
 
-The project uses [Svelte Material UI (SMUI)](https://sveltematerialui.com/) components. If you add additional SMUI components, make sure to build them with `npm run prepare` before starting the development server.
-
 ### Building
 
 To create a production version of your app:
