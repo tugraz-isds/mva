@@ -11,31 +11,31 @@
 	let views: View[] = [
 		{
 			id: 'splom',
-			title: 'Scatterplot Matrix View',
+			title: 'Scatterplot Matrix',
 			width: 33,
 			component: SplomComponent
 		},
 		{
 			id: 'scatterplot',
-			title: 'Scatterplot View',
+			title: 'Scatterplot',
 			width: 33,
 			component: ScatterplotComponent
 		},
 		{
 			id: 'simmap',
-			title: 'Similarity Map View',
+			title: 'Similarity Map',
 			width: 33,
 			component: SimmapComponent
 		},
 		{
 			id: 'table',
-			title: 'Table View',
+			title: 'Table',
 			width: 33,
 			component: TableComponent
 		},
 		{
 			id: 'parcoord',
-			title: 'Parallel Coordinates View',
+			title: 'Parallel Coordinates',
 			width: 66.66,
 			component: ParcoordComponent
 		}
