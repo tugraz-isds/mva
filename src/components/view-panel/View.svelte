@@ -8,6 +8,8 @@
 	export let views: View[];
 	export let handleSwap: Function;
 	export let component: any;
+	export let width: number;
+	export let height: number;
 
 	$: views = views?.filter((view: View) => view.title !== title);
 
@@ -17,7 +19,7 @@
 </script>
 
 <div class="w-full h-full p-1">
-	<div class="flex flex-row justify-between">
+	<div class="flex flex-row justify-between" style="height: 5%;">
 		<span>{title}</span>
 		<div id="{id}-expand-container">
 			<div class="flex flex-row gap-1">
@@ -46,7 +48,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="view-content overflow-hidden" style="height: 90%;">
-		<svelte:component this={component} />
+	<div class="view-content overflow-hidden" style="height: 95%;">
+		<svelte:component this={component} {width} height={height * 0.95} />
 	</div>
 </div>

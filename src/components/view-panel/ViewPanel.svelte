@@ -6,6 +6,7 @@
 	import SimmapComponent from '../simmap/SimmapComponent.svelte';
 	import TableComponent from '../table/TableComponent.svelte';
 	import ParcoordComponent from '../parcoord/ParcoordComponent.svelte';
+	import { browser } from '$app/environment';
 
 	// Initialize views
 	let views: View[] = [
@@ -13,30 +14,35 @@
 			id: 'splom',
 			title: 'Scatterplot Matrix',
 			width: 33,
+			height: 40,
 			component: SplomComponent
 		},
 		{
 			id: 'scatterplot',
 			title: 'Scatterplot',
 			width: 33,
+			height: 40,
 			component: ScatterplotComponent
 		},
 		{
 			id: 'simmap',
 			title: 'Similarity Map',
 			width: 33,
+			height: 40,
 			component: SimmapComponent
 		},
 		{
 			id: 'table',
 			title: 'Table',
 			width: 33,
+			height: 55,
 			component: TableComponent
 		},
 		{
 			id: 'parcoord',
 			title: 'Parallel Coordinates',
 			width: 66.66,
+			height: 55,
 			component: ParcoordComponent
 		}
 	];
@@ -46,10 +52,6 @@
 	let isDraggingVertical: boolean = false;
 	let isDraggingHorizontal: boolean = false;
 	let activeHorizonalDivider: number | null = null;
-
-	// Upper and lower row height (percentages)
-	let upperRowHeight: number = 40;
-	let lowerRowHeight: number = 55;
 
 	const handleVerticalMouseDown = () => {
 		isDraggingVertical = true;
@@ -76,8 +78,8 @@
 		if (isDraggingVertical) {
 			const windowHeight = window.innerHeight;
 			const dragY = e.clientY;
-			upperRowHeight = (dragY / windowHeight) * 100 - 5;
-			lowerRowHeight = ((windowHeight - dragY) / windowHeight) * 100 + 5;
+			views[0].height = views[1].height = views[2].height = (dragY / windowHeight) * 100 - 5;
+			views[3].height = views[4].height = ((windowHeight - dragY) / windowHeight) * 100 + 5;
 		}
 		// Handle horizontal resize based on divider id
 		else if (isDraggingHorizontal && activeHorizonalDivider) {
@@ -108,6 +110,14 @@
 			[views[index1].width, views[index2].width] = [views[index2].width, views[index1].width]; // Swap widths
 		}
 	};
+
+	const getWidth = (widthPercentage: number) => {
+		return browser ? (widthPercentage / 100) * window.innerWidth : widthPercentage;
+	};
+
+	const getHeight = (heightPercentage: number) => {
+		return browser ? (heightPercentage / 100) * window.innerHeight : heightPercentage;
+	};
 </script>
 
 <div
@@ -117,7 +127,7 @@
 	on:mouseup={handleMouseUp}
 >
 	<!-- Upper Row -->
-	<div class="upper-row flex flex-row min-h-fit" style="height: {upperRowHeight}%;">
+	<div class="upper-row flex flex-row min-h-fit" style="height: {views[0].height}%;">
 		<div class="view-{views[0].id}" style="width: {views[0].width}%;">
 			<ViewComponent
 				id={views[0].id}
@@ -125,6 +135,8 @@
 				{views}
 				{handleSwap}
 				component={views[0].component}
+				width={views[0].width}
+				height={views[0].height}
 			/>
 		</div>
 
@@ -143,6 +155,8 @@
 				{views}
 				{handleSwap}
 				component={views[1].component}
+				width={views[1].width}
+				height={views[0].height}
 			/>
 		</div>
 
@@ -161,6 +175,8 @@
 				{views}
 				{handleSwap}
 				component={views[2].component}
+				width={views[2].width}
+				height={views[0].height}
 			/>
 		</div>
 	</div>
@@ -174,7 +190,7 @@
 	/>
 
 	<!-- Lower Row -->
-	<div class="lower-row flex flex-row" style="height: {lowerRowHeight}%;">
+	<div class="lower-row flex flex-row" style="height: {views[3].height}%;">
 		<div class="view-{views[3].id}" style="width: {views[3].width}%;">
 			<ViewComponent
 				id={views[3].id}
@@ -182,6 +198,8 @@
 				{views}
 				{handleSwap}
 				component={views[3].component}
+				width={views[3].width}
+				height={views[3].height}
 			/>
 		</div>
 
@@ -194,19 +212,14 @@
 		/>
 
 		<div class="view-{views[4].id}" style="width: {views[4].width}%;">
-			<!-- <svelte:component
-				this={views[4].component}
-				id={views[4].id}
-				title={views[4].title}
-				{views}
-				{handleSwap}
-			/> -->
 			<ViewComponent
 				id={views[4].id}
 				title={views[4].title}
 				{views}
 				{handleSwap}
 				component={views[4].component}
+				width={getWidth(views[4].width)}
+				height={getHeight(views[4].height)}
 			/>
 		</div>
 	</div>
