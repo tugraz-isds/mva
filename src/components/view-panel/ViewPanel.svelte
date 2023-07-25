@@ -2,7 +2,6 @@
 	import { views as initialViews } from './Views';
 	import type { View } from './View';
 	import ViewComponent from './View.svelte';
-	import { browser } from '$app/environment';
 	import HorizontalDivider from './HorizontalDivider.svelte';
 	import VerticalDivider from './VerticalDivider.svelte';
 
