@@ -1,51 +1,13 @@
 <script lang="ts">
+	import { views as initialViews } from './Views';
 	import type { View } from './View';
 	import ViewComponent from './View.svelte';
-	import SplomComponent from '../splom/SPLOMComponent.svelte';
-	import ScatterplotComponent from '../scatterplot/ScatterplotComponent.svelte';
-	import SimmapComponent from '../simmap/SimmapComponent.svelte';
-	import TableComponent from '../table/TableComponent.svelte';
-	import ParcoordComponent from '../parcoord/ParcoordComponent.svelte';
 	import { browser } from '$app/environment';
+	import HorizontalDivider from './HorizontalDivider.svelte';
+	import VerticalDivider from './VerticalDivider.svelte';
 
 	// Initialize views
-	let views: View[] = [
-		{
-			id: 'splom',
-			title: 'Scatterplot Matrix',
-			width: 33,
-			height: 40,
-			component: SplomComponent
-		},
-		{
-			id: 'scatterplot',
-			title: 'Scatterplot',
-			width: 33,
-			height: 40,
-			component: ScatterplotComponent
-		},
-		{
-			id: 'simmap',
-			title: 'Similarity Map',
-			width: 33,
-			height: 40,
-			component: SimmapComponent
-		},
-		{
-			id: 'table',
-			title: 'Table',
-			width: 33,
-			height: 55,
-			component: TableComponent
-		},
-		{
-			id: 'parcoord',
-			title: 'Parallel Coordinates',
-			width: 66.66,
-			height: 55,
-			component: ParcoordComponent
-		}
-	];
+	let views: View[] = initialViews;
 
 	// Variables to handle dragging
 	let disableTextSelection: boolean = false;
@@ -110,14 +72,6 @@
 			[views[index1].width, views[index2].width] = [views[index2].width, views[index1].width]; // Swap widths
 		}
 	};
-
-	const getWidth = (widthPercentage: number) => {
-		return browser ? (widthPercentage / 100) * window.innerWidth : widthPercentage;
-	};
-
-	const getHeight = (heightPercentage: number) => {
-		return browser ? (heightPercentage / 100) * window.innerHeight : heightPercentage;
-	};
 </script>
 
 <div
@@ -129,98 +83,35 @@
 	<!-- Upper Row -->
 	<div class="upper-row flex flex-row min-h-fit" style="height: {views[0].height}%;">
 		<div class="view-{views[0].id}" style="width: {views[0].width}%;">
-			<ViewComponent
-				id={views[0].id}
-				title={views[0].title}
-				{views}
-				{handleSwap}
-				component={views[0].component}
-				width={views[0].width}
-				height={views[0].height}
-			/>
+			<ViewComponent {views} {handleSwap} currView={views[0]} />
 		</div>
 
-		<!-- Draggable Horizontal Divider 1 -->
-		<div
-			id="dragHandleHorizontal1"
-			style="width: 0.25%;"
-			class="h-full bg-gray-400 cursor-col-resize"
-			on:mousedown={handleHorizontalMouseDown}
-		/>
+		<HorizontalDivider id={1} {handleHorizontalMouseDown} />
 
 		<div class="view-{views[1].id}" style="width: {views[1].width}%;">
-			<ViewComponent
-				id={views[1].id}
-				title={views[1].title}
-				{views}
-				{handleSwap}
-				component={views[1].component}
-				width={views[1].width}
-				height={views[0].height}
-			/>
+			<ViewComponent {views} {handleSwap} currView={views[1]} />
 		</div>
 
-		<!-- Draggable Horizontal Divider 2 -->
-		<div
-			id="dragHandleHorizontal2"
-			style="width: 0.25%;"
-			class="h-full bg-gray-400 cursor-col-resize"
-			on:mousedown={handleHorizontalMouseDown}
-		/>
+		<HorizontalDivider id={2} {handleHorizontalMouseDown} />
 
 		<div class="view-{views[2].id}" style="width: {views[2].width}%;">
-			<ViewComponent
-				id={views[2].id}
-				title={views[2].title}
-				{views}
-				{handleSwap}
-				component={views[2].component}
-				width={views[2].width}
-				height={views[0].height}
-			/>
+			<ViewComponent {views} {handleSwap} currView={views[2]} />
 		</div>
 	</div>
 
 	<!-- Draggable Vertical Divider -->
-	<div
-		id="dragHandleVertical"
-		style="height: 0.5%;"
-		class="bg-gray-400 cursor-row-resize"
-		on:mousedown={handleVerticalMouseDown}
-	/>
+	<VerticalDivider {handleVerticalMouseDown} />
 
 	<!-- Lower Row -->
 	<div class="lower-row flex flex-row" style="height: {views[3].height}%;">
 		<div class="view-{views[3].id}" style="width: {views[3].width}%;">
-			<ViewComponent
-				id={views[3].id}
-				title={views[3].title}
-				{views}
-				{handleSwap}
-				component={views[3].component}
-				width={views[3].width}
-				height={views[3].height}
-			/>
+			<ViewComponent {views} {handleSwap} currView={views[3]} />
 		</div>
 
-		<!-- Draggable Horizontal Divider 3 -->
-		<div
-			id="dragHandleHorizontal3"
-			style="width: 0.25%;"
-			class="h-full bg-gray-400 cursor-col-resize"
-			on:mousedown={handleHorizontalMouseDown}
-		/>
+		<HorizontalDivider id={3} {handleHorizontalMouseDown} />
 
 		<div class="view-{views[4].id}" style="width: {views[4].width}%;">
-			<ViewComponent
-				id={views[4].id}
-				title={views[4].title}
-				{views}
-				{handleSwap}
-				component={views[4].component}
-				width={getWidth(views[4].width)}
-				height={getHeight(views[4].height)}
-			/>
+			<ViewComponent {views} {handleSwap} currView={views[4]} />
 		</div>
 	</div>
 </div>

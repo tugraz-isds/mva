@@ -1,8 +1,3 @@
-<script lang="ts">
-	export let width: number;
-	export let height: number;
-</script>
-
 <div class="w-full flex items-center justify-center">
 	<table id="table-canvas" style="border: 1px solid black;">
 		<tr>

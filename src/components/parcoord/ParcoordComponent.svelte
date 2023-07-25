@@ -6,8 +6,8 @@
 	import type { DSVRowArray, NumberValue } from 'd3';
 	console.log('Is WebGL supported: ', PIXI.utils.isWebGLSupported());
 
-	export let width: number;
-	export let height: number;
+	let width: number;
+	let height: number;
 	let _width: number, _height: number;
 
 	$: {
@@ -130,7 +130,12 @@
 	});
 </script>
 
-<div id="parcoord-canvas" style="width: 100%; height: 100%; position: relative;">
+<div
+	id="parcoord-canvas"
+	style="width: 100%; height: 100%; position: relative;"
+	bind:clientWidth={width}
+	bind:clientHeight={height}
+>
 	<div
 		bind:this={container}
 		style="width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
