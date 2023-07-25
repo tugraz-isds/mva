@@ -1,9 +1,17 @@
 <script lang="ts">
 	import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
+	import ImportDatasetModal from './ImportDatasetModal.svelte';
+
+	let isImportDatasetModalOpen: boolean = false;
+
+	function toggleModal() {
+		isImportDatasetModalOpen = false;
+		isImportDatasetModalOpen = true;
+	}
 </script>
 
 <div style="height: 4.5%;">
-	<Navbar let:hidden let:toggle class="bg-sky-900 h-full p-0 flex-row" navDivClass="h-full">
+	<Navbar let:hidden class="bg-sky-900 h-full p-0 flex-row" navDivClass="h-full">
 		<NavUl
 			{hidden}
 			ulClass="h-full flex flex-row p-0 m-0 md:space-x-8 md:mt-0 md:text-sm md:font-medium items-center"
@@ -19,7 +27,7 @@
 				<span class="text-white hover:text-blue-200">Help</span>
 			</NavLi>
 			<Dropdown triggeredBy="#nav-file" class="w-44 z-20">
-				<DropdownItem>Item 1</DropdownItem>
+				<DropdownItem on:click={toggleModal}>Import Dataset</DropdownItem>
 				<DropdownItem>Item 2</DropdownItem>
 				<DropdownItem>Item 3</DropdownItem>
 			</Dropdown>
@@ -31,3 +39,5 @@
 		</NavUl>
 	</Navbar>
 </div>
+
+<ImportDatasetModal isOpen={isImportDatasetModalOpen} />
