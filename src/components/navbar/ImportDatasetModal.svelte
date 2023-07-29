@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
-	import { csvParse, autoType } from 'd3';
+	import { csvParse, autoType, type DSVParsedArray } from 'd3';
+	import { datasetStore } from '../../stores/dataset';
+
 	export let isOpen: boolean;
 
-	let files: FileList; // List of uploaded files
+	let files: FileList | undefined; // List of uploaded files
 	let validUpload: boolean = true; // If false show error message
-	let separator: string = ',';
+	let separator: string = ','; // Default separator
 
 	let fileuploadprops = {
 		id: 'upload-input',
@@ -17,14 +19,16 @@
 		isOpen = false;
 	}
 
+	// Imports CSV files, parses and stores data into Svelte store
 	async function importDataset() {
 		if (files && files.length > 0) {
 			const file = files[0];
 			let text = await file.text();
+			files = undefined;
 			if (separator !== ',') text = text.replace(new RegExp(separator, 'g'), ',');
-			const dataset = csvParse(text, autoType);
+			const dataset: DSVParsedArray<any> = csvParse(text, autoType);
 
-			console.log(dataset);
+			datasetStore.set(dataset);
 
 			validUpload = true;
 			closeModal();

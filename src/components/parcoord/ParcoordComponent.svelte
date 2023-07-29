@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { onMount, afterUpdate } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import * as PIXI from 'pixi.js';
 	import { SmoothGraphics } from '@pixi/graphics-smooth';
 	import { select, scaleLinear, scalePoint, extent, axisLeft, csv } from 'd3';
-	import type { DSVRowArray, NumberValue } from 'd3';
+	import type { DSVParsedArray, NumberValue } from 'd3';
+	import { datasetStore } from '../../stores/dataset';
+
 	console.log('Is WebGL supported: ', PIXI.utils.isWebGLSupported());
 
 	let width: number;
 	let height: number;
 	let _width: number, _height: number;
+
+	let dataset: DSVParsedArray<any>;
 
 	$: {
 		_width = width - margin.left - margin.right;
@@ -16,7 +20,6 @@
 	}
 
 	// Data
-	let data: DSVRowArray<string>;
 	let dimensions: string[];
 	let y: { [key: string]: any };
 	let x: any;
@@ -77,7 +80,8 @@
 		}
 	};
 
-	const drawAxes = async () => {
+	//const drawAxes = async () => {
+	const drawAxes = () => {
 		// Append the SVG object to the container div
 		svg = select(container)
 			.append('svg')
@@ -86,20 +90,13 @@
 			.append('g')
 			.attr('transform', `translate(${margin.left},${margin.top})`);
 
-		// Load the CSV data
-		data = await csv(
-			'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/iris.csv'
-		);
-
 		// Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
-		dimensions = Object.keys(data[0]).filter(function (d) {
-			return d != 'Species';
-		});
+		dimensions = Object.keys(dataset[0]);
 
 		// For each dimension, build a linear scale and store them in the y object
 		y = {};
 		for (const name of dimensions) {
-			const values = data.map((d) => +(d[name] ?? NaN)).filter((value) => !isNaN(value));
+			const values = dataset.map((d) => +(d[name] ?? NaN)).filter((value) => !isNaN(value));
 			y[name] = scaleLinear<NumberValue>()
 				.domain(extent(values) as [NumberValue, NumberValue])
 				.range([_height, 0]);
@@ -124,9 +121,16 @@
 			.style('fill', 'black');
 	};
 
-	onMount(async () => {
-		await drawAxes();
-		drawLines(data);
+	const unsubscribe = datasetStore.subscribe((value: any) => {
+		dataset = value;
+		if (dataset?.length > 0) {
+			drawAxes();
+			drawLines(dataset);
+		}
+	});
+
+	onDestroy(() => {
+		unsubscribe();
 	});
 </script>
 
@@ -140,4 +144,7 @@
 		bind:this={container}
 		style="width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 	/>
+	{#if dataset && dataset.length === 0}
+		<span>No data available.</span>
+	{/if}
 </div>

@@ -14,6 +14,7 @@
 	let isDraggingHorizontal: boolean = false;
 	let activeHorizonalDivider: number | null = null;
 
+	/* --- HANDLE RESIZING --- */
 	const handleVerticalMouseDown = () => {
 		isDraggingVertical = true;
 		disableTextSelection = true;
@@ -59,6 +60,7 @@
 		} else return;
 	};
 
+	/* --- HANDLE SWAP --- */
 	const handleSwap = (title: string, e: Event) => {
 		// Find the indices of the two objects to swap
 		const index1 = views.findIndex((view: View) => view.title === title);
@@ -75,7 +77,7 @@
 
 <div
 	style="user-select: {disableTextSelection ? 'none' : 'auto'};"
-	class="h-full overflow-hidden"
+	class="h-full"
 	on:mousemove={handleResize}
 	on:mouseup={handleMouseUp}
 >

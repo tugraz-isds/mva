@@ -53,6 +53,11 @@
 						},
 						onclose: () => {
 							expandButtonContainer.style.display = 'block';
+							window.dispatchEvent(
+								new CustomEvent('closeWinbox', {
+									detail: { id: containerClass }
+								})
+							);
 						}
 					});
 				}

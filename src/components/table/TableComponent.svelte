@@ -1,29 +1,43 @@
-<div class="w-full flex items-center justify-center">
-	<table id="table-canvas" style="border: 1px solid black;">
-		<tr>
-			<th>Test col 1</th>
-			<th>Test col 2</th>
-			<th>Test col 3</th>
-		</tr>
-		<tr>
-			<td>3.2</td>
-			<td>4.1</td>
-			<td>8.1</td>
-		</tr>
-		<tr>
-			<td>3.2</td>
-			<td>4.1</td>
-			<td>8.1</td>
-		</tr>
-		<tr>
-			<td>3.2</td>
-			<td>4.1</td>
-			<td>8.1</td>
-		</tr>
-		<tr>
-			<td>3.2</td>
-			<td>4.1</td>
-			<td>8.1</td>
-		</tr>
-	</table>
+<script lang="ts">
+	import { onDestroy } from 'svelte';
+	import type { DSVParsedArray } from 'd3';
+	import { datasetStore } from '../../stores/dataset';
+
+	let dataset: DSVParsedArray<any>;
+	const unsubscribe = datasetStore.subscribe((value: any) => {
+		dataset = value;
+	});
+
+	onDestroy(() => {
+		unsubscribe();
+	});
+</script>
+
+<div class="w-full h-full overflow-scroll" style="overflow: scroll !important;">
+	{#if dataset && dataset.length > 0}
+		<table id="table-canvas" class="w-full">
+			<tr>
+				{#each Object.keys(dataset[0]) as key}
+					<th>{key}</th>
+				{/each}
+			</tr>
+			{#each dataset as row}
+				<tr>
+					{#each Object.keys(row) as key}
+						<td>{row[key]}</td>
+					{/each}
+				</tr>
+			{/each}
+		</table>
+	{:else}
+		<span>No data available.</span>
+	{/if}
 </div>
+
+<style>
+	table,
+	th,
+	td {
+		border: 1px solid black;
+	}
+</style>
