@@ -6,9 +6,10 @@ A demo of MVA web application is available at https://ozbej-mva.netlify.app/.
 
 ### Developing
 
-Once you've cloned the project and installed dependencies with `npm install` , start a development server:
+Install dependencies and start a development server:
 
 ```bash
+npm install
 npm run dev
 ```
 
