@@ -1,6 +1,6 @@
 # Multidimensional Visual Analyser (MVA)
 
-A demo of MVA web application is available at https://ozbej-mva.netlify.app/.
+MVA web application is deployed at https://visualanalyser.app/.
 
 ## Web Application
 
@@ -41,9 +41,10 @@ MVA web application is built with SvelteKit using [`create-svelte`](https://gith
 
 > Before continuing, make sure you have completed the [prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites/) to have a working development environment.
 
-Once you've installed all dependencies with `npm install` and all Tauri prerequisites, start a development server:
+Once you've installed all Tauri prerequisites, install dependencies and start a development server:
 
 ```bash
+npm install
 npm run tauri dev
 ```
 
