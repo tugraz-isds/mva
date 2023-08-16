@@ -31,7 +31,7 @@
 <VerticalDivider {handleVerticalMouseDown} />
 
 <!-- Lower Row -->
-<div class="lower-row flex flex-row" style="height: {views[2].height}%;">
+<div class="lower-row flex flex-row" style="height: {views[3].height}%;">
 	<div class="view-{views[2].id}" style="width: {views[2].width}%;">
 		<ViewComponent otherViews={views} {handleSwap} currView={views[2]} />
 	</div>

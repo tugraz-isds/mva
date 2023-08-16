@@ -5,6 +5,7 @@
 	import type { View } from './View';
 
 	export let views: View[];
+	export let handleSwap: Function;
 </script>
 
 <!-- Lower Row -->

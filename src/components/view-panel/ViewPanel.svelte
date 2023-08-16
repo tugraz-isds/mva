@@ -141,7 +141,7 @@
 	{:else if activeViews.length === 2}
 		<Layout_2 views={activeViews} {handleSwap} {handleHorizontalMouseDown} />
 	{:else if activeViews.length === 1}
-		<Layout_1 views={activeViews} />
+		<Layout_1 views={activeViews} {handleSwap} />
 	{/if}
 </div>
 
