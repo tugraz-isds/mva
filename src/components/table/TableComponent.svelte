@@ -39,5 +39,6 @@
 	th,
 	td {
 		border: 1px solid black;
+		font-size: 0.9em;
 	}
 </style>
