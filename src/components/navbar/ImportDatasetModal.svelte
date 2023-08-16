@@ -29,6 +29,7 @@
 			const dataset: DSVParsedArray<any> = csvParse(text, autoType);
 
 			datasetStore.set(dataset);
+			localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
 
 			validUpload = true;
 			closeModal();
