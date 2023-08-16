@@ -1,19 +1,27 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import type { View } from '../view-panel/View';
 	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
+	import { activeViewsStore } from '../../stores/views';
 
-	export let views: View[];
+	export let otherViews: View[];
 	export let handleSwap: Function;
 	export let currView: View;
 
+	// Get active views from store
+	let activeViews: View[];
+	const unsubscribeActive = activeViewsStore.subscribe((value: any) => {
+		activeViews = value;
+	});
+
 	let showView: boolean = true;
 
-	$: views = views?.filter((view: View) => view.title !== currView.title);
+	$: otherViews = otherViews?.filter((view: View) => view.title !== currView.title);
 
 	function openWinbox() {
 		showView = false;
+		activeViewsStore.set(activeViews.filter((view: View) => view.title !== currView.title));
 		window.dispatchEvent(
 			new CustomEvent('openWinbox', { detail: { title: currView.title, id: currView.id } })
 		);
@@ -21,8 +29,15 @@
 
 	onMount(() => {
 		window.addEventListener('closeWinbox', (event: any) => {
-			if (currView.id === event.detail.id) showView = true;
+			if (currView.id === event.detail.id) {
+				showView = true;
+				activeViewsStore.set([...activeViews, currView]);
+			}
 		});
+	});
+
+	onDestroy(() => {
+		unsubscribeActive();
 	});
 </script>
 
@@ -40,7 +55,7 @@
 					<div slot="header" class="py-1 px-2">
 						<span class="font-medium block text-sm text-gray-900">Swap view with</span>
 					</div>
-					{#each views as view (view.id)}
+					{#each otherViews as view (view.id)}
 						<DropdownItem
 							on:click={(e) => handleSwap(currView.title, e)}
 							defaultClass="py-1 px-2 text-sm hover:bg-gray-100">{view.title}</DropdownItem
