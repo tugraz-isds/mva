@@ -52,11 +52,11 @@
 					activeViews[2].height =
 						(dragY / windowHeight) * 100 - 5;
 				activeViews[3].height = activeViews[4].height =
-					((windowHeight - dragY) / windowHeight) * 100 + 5;
+					((windowHeight - dragY) / windowHeight) * 100 + 4.5;
 			} else if (activeViews.length === 3 || activeViews.length === 4) {
 				activeViews[0].height = activeViews[1].height = (dragY / windowHeight) * 100 - 5;
 				activeViews[2].height = activeViews[3].height =
-					((windowHeight - dragY) / windowHeight) * 100 + 5;
+					((windowHeight - dragY) / windowHeight) * 100 + 4.5;
 			}
 		}
 		// Handle horizontal resize based on divider id
@@ -112,8 +112,7 @@
 </script>
 
 <div
-	style="user-select: {disableTextSelection ? 'none' : 'auto'};"
-	class="h-full"
+	style="user-select: {disableTextSelection ? 'none' : 'auto'}; height: 95.5%"
 	on:mousemove={handleResize}
 	on:mouseup={handleMouseUp}
 >

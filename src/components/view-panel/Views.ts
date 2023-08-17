@@ -31,14 +31,14 @@ export let views: View[] = [
 		id: 'table',
 		title: 'Table',
 		width: 33,
-		height: 55,
+		height: 59.5,
 		component: TableComponent
 	},
 	{
 		id: 'parcoord',
 		title: 'Parallel Coordinates',
 		width: 66.66,
-		height: 55,
+		height: 59.5,
 		component: ParcoordComponent
 	}
 ];
