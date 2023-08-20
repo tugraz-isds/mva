@@ -1,0 +1,162 @@
+<script lang="ts">
+	import { scaleLinear, axisLeft, select, extent, drag } from 'd3';
+	import type { DSVParsedArray } from 'd3';
+
+	export let width: number = 0;
+	export let height: number = 0;
+	export let dataset: DSVParsedArray<any>;
+
+	const margin = { top: 30, right: 50, bottom: 10, left: 50 };
+	let xScales: any[] = []; // Scales for all of the X-axes
+	let yScales: any = {}; // Scales for all of the Y-axes
+
+	let initialDimensions: string[]; // Initial order of dimensions
+	let dimensions: string[]; // Dimensions used for swapping
+	let axisGroups: any[] = []; // Array of SVG elements for axis groups
+	let axisTitles: any[] = []; // Array of SVG elements for axis titles
+
+	// Update yScales when dataset changes
+	$: {
+		if (dataset) {
+			initialDimensions = Object.keys(dataset[0]);
+			dimensions = initialDimensions;
+			yScales = initialDimensions.reduce((acc: any, dim: string) => {
+				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
+				acc[dim] = scaleLinear()
+					.domain(dimExtent)
+					.range([height - margin.top - margin.bottom, 0]);
+				return acc;
+			}, {});
+		}
+	}
+
+	// Update xScale when dimensions change
+	$: {
+		if (width > 0 && initialDimensions) {
+			xScales = initialDimensions.map((_, i) =>
+				scaleLinear()
+					.domain([0, initialDimensions.length - 1])
+					.range([
+						margin.left,
+						width < 100 * initialDimensions.length
+							? initialDimensions.length * 100 - margin.right
+							: width - margin.right
+					])(i)
+			);
+			clearSVG();
+			renderAxes();
+		}
+	}
+
+	// Remove all axes elements and drag handlers
+	function clearSVG() {
+		axisGroups = [];
+		axisTitles = [];
+
+		const svg = select('#parcoord-canvas-axes');
+		svg.selectAll('.y-axis').remove();
+		svg.selectAll('.axis-title').remove();
+	}
+
+	// Draw axes elements
+	function renderAxes() {
+		if (!dimensions || !xScales || !yScales) return;
+
+		const svg = select('#parcoord-canvas-axes');
+
+		// Create SVG elements of axes and axes titles
+		dimensions.forEach((dim: string, i: number) => {
+			const axis = axisLeft(yScales[dim]).ticks(0);
+			axisGroups.push(
+				svg
+					.append('g')
+					.attr('class', 'y-axis')
+					.attr('transform', `translate(${xScales[i]}, ${margin.top})`)
+					.call(axis)
+			);
+
+			axisTitles.push(
+				svg
+					.append('text')
+					.attr('class', 'axis-title cursor-grab')
+					.attr('transform', `translate(${xScales[i]}, ${margin.top - 10})`)
+					.style('text-anchor', 'middle')
+					.style('font-size', '10px')
+					.text(dim)
+			);
+		});
+
+		handleDragging();
+	}
+
+	// Handle dragging and swapping of axes
+	function handleDragging() {
+		let draggingIndex = -1; // Index of currently dragged axis
+
+		dimensions.forEach((dim: string) => {
+			// Add drag behavior to the axis title
+			const dragBehavior = drag<SVGTextElement, unknown, any>()
+				.subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 10 })) // Set initial position
+				.on('start', (event) => {
+					draggingIndex = dimensions.indexOf(dim);
+					event.subject.x = xScales[dimensions.indexOf(dim)];
+					axisTitles[dimensions.indexOf(dim)].attr('class', 'axis-title cursor-grabbing');
+					console.log('Started dragging axis', draggingIndex);
+				})
+				.on('drag', (event) => {
+					const newX = event.x;
+
+					// Move dragged axis
+					axisGroups[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
+					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 10})`);
+
+					// Set new index for swapping if needed
+					let newIndex = draggingIndex;
+					if (newX < xScales[draggingIndex - 1]) newIndex--;
+					else if (newX > xScales[draggingIndex + 1]) newIndex++;
+
+					// Handle swapping axes
+					if (newIndex !== draggingIndex) {
+						axisGroups[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex]}, ${margin.top})`
+						);
+						axisTitles[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex]}, ${margin.top - 10})`
+						);
+						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
+						axisGroups = reorderArray(axisGroups, draggingIndex, newIndex);
+						axisTitles = reorderArray(axisTitles, draggingIndex, newIndex);
+						draggingIndex = newIndex;
+					}
+				})
+				.on('end', () => {
+					axisGroups[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex]}, ${margin.top})`
+					);
+					axisTitles[draggingIndex]
+						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 10})`)
+						.attr('class', 'axis-title cursor-grab');
+					draggingIndex = -1;
+				});
+
+			axisTitles[dimensions.indexOf(dim)].call(dragBehavior);
+		});
+	}
+
+	// Helper function to reorder an array
+	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
+		const result = [...arr];
+		const [removed] = result.splice(fromIndex, 1);
+		result.splice(toIndex, 0, removed);
+		return result;
+	}
+</script>
+
+<svg
+	id="parcoord-canvas-axes"
+	width={width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width}
+	{height}
+/>
