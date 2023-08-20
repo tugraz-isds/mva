@@ -3,7 +3,7 @@
 	import ViewPanel from '../components/view-panel/ViewPanel.svelte';
 </script>
 
-<div class="w-full h-full overflow-hidden">
+<div class="w-full h-full">
 	<Navbar />
 	<ViewPanel />
 </div>

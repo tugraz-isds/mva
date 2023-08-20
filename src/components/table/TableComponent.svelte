@@ -13,7 +13,7 @@
 	});
 </script>
 
-<div class="w-full h-full overflow-scroll" style="overflow: scroll !important;">
+<div class="w-full h-full overflow-scroll-x" style="overflow-x: scroll !important;">
 	{#if dataset && dataset.length > 0}
 		<table id="table-canvas" class="w-full">
 			<tr>

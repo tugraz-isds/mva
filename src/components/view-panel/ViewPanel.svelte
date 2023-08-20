@@ -59,7 +59,7 @@
 					((windowHeight - dragY) / windowHeight) * 100 + 4.5;
 			}
 		}
-		// Handle horizontal resize based on divider id
+		// Handle horizontal resize based on divider id and number of active views
 		else if (isDraggingHorizontal && activeHorizonalDivider) {
 			const windowWidth = window.innerWidth;
 			const dragX = e.clientX;
