@@ -5,12 +5,13 @@
 	export let width: number = 0;
 	export let height: number = 0;
 	export let dataset: DSVParsedArray<any>;
+	export let initialDimensions: string[] = []; // Initial order of dimensions
+	export let margin: any;
+	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 
-	const margin = { top: 30, right: 50, bottom: 10, left: 50 };
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
 
-	let initialDimensions: string[]; // Initial order of dimensions
 	let dimensions: string[]; // Dimensions used for swapping
 	let axisGroups: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
@@ -18,7 +19,6 @@
 	// Update yScales when dataset changes
 	$: {
 		if (dataset) {
-			initialDimensions = Object.keys(dataset[0]);
 			dimensions = initialDimensions;
 			yScales = initialDimensions.reduce((acc: any, dim: string) => {
 				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
@@ -101,7 +101,6 @@
 					draggingIndex = dimensions.indexOf(dim);
 					event.subject.x = xScales[dimensions.indexOf(dim)];
 					axisTitles[dimensions.indexOf(dim)].attr('class', 'axis-title cursor-grabbing');
-					console.log('Started dragging axis', draggingIndex);
 				})
 				.on('drag', (event) => {
 					const newX = event.x;
@@ -117,6 +116,7 @@
 
 					// Handle swapping axes
 					if (newIndex !== draggingIndex) {
+						handleAxesSwapped(draggingIndex, newIndex);
 						axisGroups[newIndex].attr(
 							'transform',
 							`translate(${xScales[draggingIndex]}, ${margin.top})`
@@ -159,4 +159,5 @@
 	id="parcoord-canvas-axes"
 	width={width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width}
 	{height}
+	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
