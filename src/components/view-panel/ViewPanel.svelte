@@ -76,13 +76,13 @@
 				activeViews[2].width = 100 - (activeViews[0].width + activeViews[1].width + 0.5);
 			} else if (activeHorizonalDivider === 3) {
 				if (activeViews.length === 5) {
-					activeViews[3].width = (dragX / windowWidth) * 100 - 0.25;
+					activeViews[3].width = (dragX / windowWidth) * 100 - 0.5;
 					activeViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
 				} else if (activeViews.length === 4) {
-					activeViews[2].width = (dragX / windowWidth) * 100 - 0.25;
+					activeViews[2].width = (dragX / windowWidth) * 100 - 0.5;
 					activeViews[3].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
 				} else if (activeViews.length === 2) {
-					activeViews[0].width = (dragX / windowWidth) * 100 - 0.25;
+					activeViews[0].width = (dragX / windowWidth) * 100 - 0.5;
 					activeViews[1].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
 				}
 			}

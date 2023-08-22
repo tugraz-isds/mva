@@ -1,52 +1,18 @@
 <script lang="ts">
-	import { scaleLinear, axisLeft, select, extent, drag } from 'd3';
-	import type { DSVParsedArray } from 'd3';
+	import { afterUpdate, onMount } from 'svelte';
+	import { axisLeft, select, drag } from 'd3';
 
 	export let width: number = 0;
 	export let height: number = 0;
-	export let dataset: DSVParsedArray<any>;
 	export let initialDimensions: string[] = []; // Initial order of dimensions
 	export let margin: any;
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
-
-	let xScales: any[] = []; // Scales for all of the X-axes
-	let yScales: any = {}; // Scales for all of the Y-axes
+	export let xScales: any[]; // Scales for all of the X-axes
+	export let yScales: any; // Scales for all of the Y-axes
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axisGroups: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
-
-	// Update yScales when dataset changes
-	$: {
-		if (dataset) {
-			dimensions = initialDimensions;
-			yScales = initialDimensions.reduce((acc: any, dim: string) => {
-				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-				acc[dim] = scaleLinear()
-					.domain(dimExtent)
-					.range([height - margin.top - margin.bottom, 0]);
-				return acc;
-			}, {});
-		}
-	}
-
-	// Update xScale when dimensions change
-	$: {
-		if (width > 0 && initialDimensions) {
-			xScales = initialDimensions.map((_, i) =>
-				scaleLinear()
-					.domain([0, initialDimensions.length - 1])
-					.range([
-						margin.left,
-						width < 100 * initialDimensions.length
-							? initialDimensions.length * 100 - margin.right
-							: width - margin.right
-					])(i)
-			);
-			clearSVG();
-			renderAxes();
-		}
-	}
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -60,7 +26,7 @@
 
 	// Draw axes elements
 	function renderAxes() {
-		if (!dimensions || !xScales || !yScales) return;
+		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
 		const svg = select('#parcoord-canvas-axes');
 
@@ -153,6 +119,16 @@
 		result.splice(toIndex, 0, removed);
 		return result;
 	}
+
+	onMount(() => {
+		dimensions = initialDimensions;
+	});
+
+	afterUpdate(() => {
+		dimensions = initialDimensions;
+		clearSVG();
+		renderAxes();
+	});
 </script>
 
 <svg

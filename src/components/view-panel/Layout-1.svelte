@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type { MouseEventHandler } from 'svelte/elements';
 	import ViewComponent from './View.svelte';
-	import HorizontalDivider from './HorizontalDivider.svelte';
 	import type { View } from './View';
 
 	export let views: View[];
