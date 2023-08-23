@@ -59,7 +59,6 @@
 
 	// Handle swapped axis from Axes component
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
-		console.log(linesComponent.swapPoints);
 		linesComponent.swapPoints(fromIndex, toIndex);
 	}
 
