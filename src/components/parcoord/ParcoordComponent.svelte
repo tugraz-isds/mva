@@ -16,13 +16,14 @@
 
 	let linesComponent: Lines; // Svelte Lines component
 
-	const margin = { top: 30, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
+	const margin = { top: 35, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	let dataset: DSVParsedArray<any>;
 	const unsubscribe = datasetStore.subscribe((value: any) => {
 		dataset = value;
 		if (dataset?.length > 0) {
 			initialDimensions = Object.keys(dataset[0]);
+			initialDimensions = filterDimensions(initialDimensions);
 			dimensions = initialDimensions;
 		}
 	});
@@ -35,7 +36,8 @@
 				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
 				acc[dim] = scaleLinear()
 					.domain(dimExtent)
-					.range([height - margin.top - margin.bottom, 0]);
+					.range([height - margin.top - margin.bottom, 0])
+					.nice();
 				return acc;
 			}, {});
 		}
@@ -57,13 +59,35 @@
 		}
 	}
 
+	function filterDimensions(dimensions: string[]) {
+		const newDimensions: string[] = [];
+		dimensions.forEach((dim: string) => {
+			if (isNumber(dataset[0][dim])) newDimensions.push(dim);
+		});
+		return newDimensions;
+	}
+
+	function isNumber(item: any) {
+		if (typeof item === 'number') return true;
+		if (typeof item === 'string') return !isNaN(+item);
+		return false;
+	}
+
 	// Handle swapped axis from Axes component
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
 		linesComponent.swapPoints(fromIndex, toIndex);
 	}
 
+	// Handle axis filtering
 	function handleFiltering(axisIndex: number, filterStart: number, filterEnd: number) {
 		linesComponent.applyFilters(axisIndex, filterStart, filterEnd);
+	}
+
+	// Handle inverting axes
+	function handleInvertAxis(axisIndex: number) {
+		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
+			yScales[dimensions[axisIndex]].domain().reverse()
+		);
 	}
 
 	onDestroy(() => {
@@ -88,6 +112,7 @@
 			{margin}
 			{handleAxesSwapped}
 			{handleFiltering}
+			{handleInvertAxis}
 			{xScales}
 			{yScales}
 		/>

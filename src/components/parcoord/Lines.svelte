@@ -42,20 +42,31 @@
 
 	// Function to iterate all data, call drawLine, and add to canvas
 	function drawLines() {
-		dataset.forEach((d: any, i: number) => {
-			drawLine(d, i);
+		dataset.forEach((dataRow: any, idx: number) => {
+			lineData.push(dataRow); // Store the data for each line as array
+			lineShow.push(true);
+
+			const line = new SmoothGraphics();
+			line.lineStyle(2, 0xffffff, 0.75);
+			line.tint = lineShow[idx] ? 0x4169e1 : 0x808080;
+			drawLine(line, dataRow);
+			lineGraphicsData.push(line); // Store the data for each line as PIXI.Graphics object
+			app.stage.addChild(line); // Add the line to the stage
+
+			line.eventMode = 'static'; // Add event listeners for hover interactions
+			line.on('mouseover', () => {
+				const lineHover = new SmoothGraphics();
+				lineHover.lineStyle(3, 0xee4b2b, 1);
+				drawLine(lineHover, dataRow);
+				app.stage.addChildAt(lineHover, app.stage.children.length - 1);
+			});
+			line.on('mouseout', () => {
+				app.stage.removeChildAt(app.stage.children.length - 2);
+			});
 		});
 	}
 
-	// Function to draw a single line
-	function drawLine(dataRow: any, idx: number) {
-		lineData.push(dataRow); // Store the data for each line as array
-		lineShow.push(true);
-
-		// Draw line with Pixi
-		const line = new SmoothGraphics();
-		line.lineStyle(2, 0xffffff, 0.75);
-		line.tint = lineShow[idx] ? 0x4169e1 : 0x808080;
+	function drawLine(line: SmoothGraphics, dataRow: any) {
 		line.moveTo(xScales[0], yScales[dimensions[0]](dataRow[dimensions[0] as any]) + margin.top);
 		for (let i = 1; i < xScales.length; i++) {
 			const dim = dimensions[i];
@@ -66,18 +77,6 @@
 					: margin.top
 			);
 		}
-
-		line.eventMode = 'static'; // Add event listeners for hover interactions
-		line.on('mouseover', () => {
-			line.tint = 0xee4b2b;
-			app.stage.addChildAt(line, app.stage.children.length - 1);
-		});
-		line.on('mouseout', () => {
-			line.tint = lineShow[idx] ? 0x4169e1 : 0x808080;
-		});
-
-		lineGraphicsData.push(line); // Store the data for each line as PIXI.Graphics object
-		app.stage.addChild(line); // Add the line to the stage
 	}
 
 	// Apply filters and change line color if needed

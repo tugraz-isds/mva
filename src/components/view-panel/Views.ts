@@ -10,35 +10,35 @@ export let views: View[] = [
 		id: 'splom',
 		title: 'Scatterplot Matrix',
 		width: 33,
-		height: 40,
+		height: 55,
 		component: SplomComponent
 	},
 	{
 		id: 'scatterplot',
 		title: 'Scatterplot',
 		width: 33,
-		height: 40,
+		height: 55,
 		component: ScatterplotComponent
 	},
 	{
 		id: 'simmap',
 		title: 'Similarity Map',
 		width: 33,
-		height: 40,
+		height: 55,
 		component: SimmapComponent
 	},
 	{
 		id: 'table',
 		title: 'Table',
 		width: 33,
-		height: 59.5,
+		height: 44.5,
 		component: TableComponent
 	},
 	{
 		id: 'parcoord',
 		title: 'Parallel Coordinates',
 		width: 66.66,
-		height: 59.5,
+		height: 44.5,
 		component: ParcoordComponent
 	}
 ];

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
-	import { axisLeft, select, drag } from 'd3';
+	import { axisLeft, select, drag, symbol, symbolTriangle } from 'd3';
 
 	export let width: number = 0;
 	export let height: number = 0;
@@ -8,6 +8,7 @@
 	export let margin: any;
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleFiltering: Function; // Callback function when filter is applied
+	export let handleInvertAxis: Function; // Callback function when filter is applied
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
@@ -16,6 +17,7 @@
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
 	let axisFilterBackgrounds: any[] = []; // Array of SVG elements for axis filter backgrounds
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
+	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -23,6 +25,7 @@
 		axisTitles = [];
 		axisFilterBackgrounds = [];
 		axisFilterRectangles = [];
+		axisInvertIcons = [];
 
 		const svg = select('#parcoord-canvas-axes');
 		svg.selectAll('.y-axis').remove();
@@ -39,7 +42,7 @@
 
 		// Create SVG elements of axes and axes titles
 		dimensions.forEach((dim: string, i: number) => {
-			const axis = axisLeft(yScales[dim]).ticks(0);
+			const axis = axisLeft(yScales[dim]).ticks(5);
 
 			// Create axis lines SVG
 			axisLines.push(
@@ -80,10 +83,21 @@
 				svg
 					.append('text')
 					.attr('class', 'axis-title cursor-grab')
-					.attr('transform', `translate(${xScales[i]}, ${margin.top - 10})`)
+					.attr('transform', `translate(${xScales[i]}, ${margin.top - 20})`)
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
 					.text(dim)
+			);
+
+			// Create axis invert icons SVG
+			const triangle = symbol().type(symbolTriangle).size(25);
+			axisInvertIcons.push(
+				svg
+					.append('path')
+					.attr('class', 'axis-invert cursor-pointer')
+					.attr('transform', `translate(${xScales[i]}, ${margin.top - 10}) rotate(180)`)
+					.attr('d', triangle)
+					.on('click', () => handleInvertAxis(i))
 			);
 		});
 
