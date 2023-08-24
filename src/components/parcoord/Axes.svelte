@@ -7,6 +7,7 @@
 	export let initialDimensions: string[] = []; // Initial order of dimensions
 	export let margin: any;
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
+	export let handleFiltering: Function; // Callback function when filter is applied
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
@@ -87,7 +88,7 @@
 		});
 
 		handleAxesDragging();
-		handleFiltering();
+		handleFilterDragging();
 	}
 
 	// Handle dragging and swapping of axes
@@ -170,7 +171,7 @@
 		});
 	}
 
-	function handleFiltering() {
+	function handleFilterDragging() {
 		dimensions.forEach((dim: string) => {
 			let currentAxis = -1;
 			let filterStart = 0; // Starting position of filter
@@ -185,13 +186,19 @@
 					if (currentAxis === -1) return;
 					const minY = margin.top; // Minimum y position
 					const maxY = height - margin.bottom; // Maximum y position
-					let newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 					const deltaY = newY - filterStart;
 					const filterHeight = Math.abs(deltaY);
 
 					axisFilterRectangles[currentAxis]
 						.attr('y', deltaY > 0 ? filterStart : newY)
 						.attr('height', filterHeight); // Update or create the filter rectangle
+
+					handleFiltering(
+						currentAxis,
+						(deltaY > 0 ? filterStart : newY) - margin.top - 1,
+						(deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
+					);
 				})
 				.on('end', () => {
 					currentAxis = -1;

@@ -62,6 +62,10 @@
 		linesComponent.swapPoints(fromIndex, toIndex);
 	}
 
+	function handleFiltering(axisIndex: number, filterStart: number, filterEnd: number) {
+		linesComponent.applyFilters(axisIndex, filterStart, filterEnd);
+	}
+
 	onDestroy(() => {
 		unsubscribe();
 	});
@@ -83,6 +87,7 @@
 			initialDimensions={dimensions}
 			{margin}
 			{handleAxesSwapped}
+			{handleFiltering}
 			{xScales}
 			{yScales}
 		/>
