@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import * as PIXI from 'pixi.js';
 	import { SmoothGraphics } from '@pixi/graphics-smooth';
 	import { patchGraphicsSmooth } from './patchGraphicsSmooth';
@@ -55,7 +55,7 @@
 		// Draw line with Pixi
 		const line = new SmoothGraphics();
 		line.lineStyle(2, 0xffffff, 0.75);
-		line.tint = 0x4169e1;
+		line.tint = lineShow[idx] ? 0x4169e1 : 0x808080;
 		line.moveTo(xScales[0], yScales[dimensions[0]](dataRow[dimensions[0] as any]) + margin.top);
 		for (let i = 1; i < xScales.length; i++) {
 			const dim = dimensions[i];
@@ -81,13 +81,8 @@
 	}
 
 	// Apply filters and change line color if needed
-	export const applyFilters = (
-		axisIndex: number | null = null,
-		filterStart: number | null = null,
-		filterEnd: number | null = null
-	) => {
-		if (!(axisIndex && filterStart && filterEnd))
-			axesFilters[axisIndex as number] = { start: filterStart as number, end: filterEnd as number };
+	export const applyFilters = (axisIndex: number, filterStart: number, filterEnd: number) => {
+		axesFilters[axisIndex] = { start: filterStart, end: filterEnd };
 
 		lineData.forEach((line: any, i: number) => {
 			lineShow[i] = true;
@@ -111,7 +106,6 @@
 		axesFilters = reorderArray(axesFilters, fromIndex, toIndex);
 		app.stage.removeChildren();
 		drawLines(); // Redraw lines using updated data
-		applyFilters(); // Reapply filters
 	};
 
 	// Helper function to reorder an array
@@ -131,7 +125,6 @@
 
 	afterUpdate(() => {
 		if (app) {
-			console.log('here');
 			app.stage.removeChildren();
 			app.renderer.resize(
 				width < 100 * initialDimensions.length

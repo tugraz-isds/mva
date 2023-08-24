@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import type { View } from '../view-panel/View';
 	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
+	import type { View } from '../view-panel/View';
 
 	export let otherViews: View[];
 	export let handleSwap: Function;
