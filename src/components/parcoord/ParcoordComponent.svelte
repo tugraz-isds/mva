@@ -9,7 +9,7 @@
 	let width: number = 0;
 	let height: number = 0;
 	let dimensions: string[] = []; // Dataset dimensions
-	let initialDimensions: string[] = []; // Dataset initial dimensions
+	let dimensionsInitial: string[] = []; // Dataset initial dimensions
 
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
@@ -22,17 +22,16 @@
 	const unsubscribe = datasetStore.subscribe((value: any) => {
 		dataset = value;
 		if (dataset?.length > 0) {
-			initialDimensions = Object.keys(dataset[0]);
-			initialDimensions = filterDimensions(initialDimensions);
-			dimensions = initialDimensions;
+			dimensions = Object.keys(dataset[0]);
+			dimensions = filterDimensions(dimensions);
+			dimensionsInitial = dimensions;
 		}
 	});
 
 	// Update yScales when dataset changes
 	$: {
-		if (dataset) {
-			dimensions = initialDimensions;
-			yScales = initialDimensions.reduce((acc: any, dim: string) => {
+		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
+			yScales = dimensions.reduce((acc: any, dim: string) => {
 				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
 				acc[dim] = scaleLinear()
 					.domain(dimExtent)
@@ -45,14 +44,14 @@
 
 	// Update xScale when dimensions change
 	$: {
-		if (width > 0 && initialDimensions) {
-			xScales = initialDimensions.map((_, i) =>
+		if (width > 0 && dimensions) {
+			xScales = dimensions.map((_, i) =>
 				scaleLinear()
-					.domain([0, initialDimensions.length - 1])
+					.domain([0, dimensions.length - 1])
 					.range([
 						margin.left,
-						width < 100 * initialDimensions.length
-							? initialDimensions.length * 100 - margin.right
+						width < 100 * dimensions.length
+							? dimensions.length * 100 - margin.right
 							: width - margin.right
 					])(i)
 			);
@@ -76,6 +75,7 @@
 	// Handle swapped axis from Axes component
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
 		linesComponent.swapPoints(fromIndex, toIndex);
+		dimensions = reorderArray(dimensions, fromIndex, toIndex);
 	}
 
 	// Handle axis filtering
@@ -88,6 +88,14 @@
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
+	}
+
+	// Helper function to reorder an array
+	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
+		const result = [...arr];
+		const [removed] = result.splice(fromIndex, 1);
+		result.splice(toIndex, 0, removed);
+		return result;
 	}
 
 	onDestroy(() => {
@@ -108,7 +116,7 @@
 		<Axes
 			{width}
 			{height}
-			initialDimensions={dimensions}
+			{dimensions}
 			{margin}
 			{handleAxesSwapped}
 			{handleFiltering}

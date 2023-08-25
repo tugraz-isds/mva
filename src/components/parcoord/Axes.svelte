@@ -4,7 +4,7 @@
 
 	export let width: number = 0;
 	export let height: number = 0;
-	export let initialDimensions: string[] = []; // Initial order of dimensions
+	export let dimensions: string[] = []; // Initial order of dimensions
 	export let margin: any;
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleFiltering: Function; // Callback function when filter is applied
@@ -12,7 +12,6 @@
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
-	let dimensions: string[]; // Dimensions used for swapping
 	let axisLines: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
 	let axisFilterBackgrounds: any[] = []; // Array of SVG elements for axis filter backgrounds
@@ -32,6 +31,7 @@
 		svg.selectAll('.axis-title').remove();
 		svg.selectAll('.axis-filter-background').remove();
 		svg.selectAll('.axis-filter').remove();
+		svg.selectAll('.axis-invert').remove();
 	}
 
 	// Draw axes elements
@@ -112,7 +112,7 @@
 		dimensions.forEach((dim: string) => {
 			// Add drag behavior to the axis title
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 10 })) // Set initial position
+				.subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 20 })) // Set initial position
 				.on('start', (event) => {
 					draggingIndex = dimensions.indexOf(dim);
 					event.subject.x = xScales[dimensions.indexOf(dim)];
@@ -123,12 +123,16 @@
 
 					// Move dragged axis
 					axisLines[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
-					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 10})`);
+					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 20})`);
 					axisFilterBackgrounds[draggingIndex].attr(
 						'transform',
 						`translate(${newX - 20}, ${margin.top})`
 					);
 					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 20}, 0)`);
+					axisInvertIcons[draggingIndex].attr(
+						'transform',
+						`translate(${newX}, ${margin.top - 10}) rotate(180)`
+					);
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -144,7 +148,7 @@
 						);
 						axisTitles[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex]}, ${margin.top - 10})`
+							`translate(${xScales[draggingIndex]}, ${margin.top - 20})`
 						);
 						axisFilterBackgrounds[newIndex].attr(
 							'transform',
@@ -154,11 +158,16 @@
 							'transform',
 							`translate(${xScales[draggingIndex] - 20}, 0)`
 						);
+						axisInvertIcons[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex]}, ${margin.top - 10}) rotate(180)`
+						);
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
 						axisLines = reorderArray(axisLines, draggingIndex, newIndex);
 						axisTitles = reorderArray(axisTitles, draggingIndex, newIndex);
 						axisFilterBackgrounds = reorderArray(axisFilterBackgrounds, draggingIndex, newIndex);
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
+						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						draggingIndex = newIndex;
 					}
 				})
@@ -168,7 +177,7 @@
 						`translate(${xScales[draggingIndex]}, ${margin.top})`
 					);
 					axisTitles[draggingIndex]
-						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 10})`)
+						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 20})`)
 						.attr('class', 'axis-title cursor-grab');
 					axisFilterBackgrounds[draggingIndex].attr(
 						'transform',
@@ -177,6 +186,10 @@
 					axisFilterRectangles[draggingIndex].attr(
 						'transform',
 						`translate(${xScales[draggingIndex] - 20}, 0)`
+					);
+					axisInvertIcons[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex]}, ${margin.top - 10}) rotate(180)`
 					);
 					draggingIndex = -1;
 				});
@@ -230,12 +243,7 @@
 		return result;
 	}
 
-	onMount(() => {
-		dimensions = initialDimensions;
-	});
-
 	afterUpdate(() => {
-		dimensions = initialDimensions;
 		clearSVG();
 		renderAxes();
 	});
@@ -243,7 +251,7 @@
 
 <svg
 	id="parcoord-canvas-axes"
-	width={width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width}
+	width={width < 100 * dimensions.length ? dimensions.length * 100 : width}
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
