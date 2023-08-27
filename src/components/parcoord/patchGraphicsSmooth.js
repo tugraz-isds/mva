@@ -1,5 +1,6 @@
 //*** Source: https://codesandbox.io/s/pixi-graphics-line-intersect-gw46lb?file=/src/index.js:174-196 ***/
 import { Rectangle, Matrix, Point } from '@pixi/math';
+import { Bounds } from '@pixi/display';
 import { SmoothGraphics, SmoothGraphicsGeometry, LINE_SCALE_MODE } from '@pixi/graphics-smooth';
 
 function geomIntersectsRect(rect, transform = Matrix.IDENTITY) {

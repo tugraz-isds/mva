@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
 	import { scaleLinear, extent } from 'd3';
 	import type { DSVParsedArray } from 'd3';
 	import Axes from './Axes.svelte';
 	import Lines from './Lines.svelte';
+	import { brushingArray } from '../../stores/brushing';
 
 	let width: number = 0;
 	let height: number = 0;
@@ -16,6 +17,9 @@
 
 	let linesComponent: Lines; // Svelte Lines component
 
+	let hoveredLineIndex: number | null = null; // Currently hovered line
+	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
+
 	const margin = { top: 35, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	let dataset: DSVParsedArray<any>;
@@ -25,20 +29,13 @@
 			dimensions = Object.keys(dataset[0]);
 			dimensions = filterDimensions(dimensions);
 			dimensionsInitial = dimensions;
+			calculateYScales();
 		}
 	});
 
-	// Update yScales when dataset changes
 	$: {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
-			yScales = dimensions.reduce((acc: any, dim: string) => {
-				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-				acc[dim] = scaleLinear()
-					.domain(dimExtent)
-					.range([height - margin.top - margin.bottom, 0])
-					.nice();
-				return acc;
-			}, {});
+			calculateYScales();
 		}
 	}
 
@@ -55,6 +52,20 @@
 							: width - margin.right
 					])(i)
 			);
+		}
+	}
+
+	// Update yScales
+	function calculateYScales() {
+		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
+			yScales = dimensions.reduce((acc: any, dim: string) => {
+				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
+				acc[dim] = scaleLinear()
+					.domain(dimExtent)
+					.range([height - margin.top - margin.bottom, 0])
+					.nice();
+				return acc;
+			}, {});
 		}
 	}
 
@@ -78,9 +89,9 @@
 		dimensions = reorderArray(dimensions, fromIndex, toIndex);
 	}
 
-	// Handle axis filtering
-	function handleFiltering(axisIndex: number, filterStart: number, filterEnd: number) {
-		linesComponent.applyFilters(axisIndex, filterStart, filterEnd);
+	// Handle start/stop of filtering
+	function handleCurrentlyFiltering(isFiltering: boolean) {
+		linesComponent.handleCurrentlyFiltering(isFiltering);
 	}
 
 	// Handle inverting axes
@@ -98,29 +109,50 @@
 		return result;
 	}
 
+	/* --- Handle line clicks --- */
+	// Set currently hovered line
+	function setHoveredLine(lineIndex: number | null) {
+		hoveredLineIndex = lineIndex;
+	}
+	// Handle click on line
+	function handleLineClick() {
+		if (!hoveredLineIndex) return;
+
+		if (brushedLinesIndices.has(hoveredLineIndex))
+			brushedLinesIndices.delete(hoveredLineIndex); // Remove the index if it exists
+		else brushedLinesIndices.add(hoveredLineIndex); // Add the index if it doesn't exist
+		brushingArray.set(brushedLinesIndices);
+	}
+
+	onMount(() => {
+		calculateYScales();
+	});
+
 	onDestroy(() => {
 		unsubscribe();
 	});
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	id="parcoord-canvas"
 	class="w-full h-full overflow-scroll-x"
 	style="overflow-x: scroll !important;"
 	bind:clientWidth={width}
 	bind:clientHeight={height}
+	on:click={() => handleLineClick()}
 >
 	{#if dataset?.length === 0}
 		<span>No data available.</span>
-	{:else}
+	{:else if yScales && Object.keys(yScales).length !== 0}
 		<Axes
 			{width}
 			{height}
 			{dimensions}
 			{margin}
 			{handleAxesSwapped}
-			{handleFiltering}
 			{handleInvertAxis}
+			{handleCurrentlyFiltering}
 			{xScales}
 			{yScales}
 		/>
@@ -133,6 +165,7 @@
 			{margin}
 			{xScales}
 			{yScales}
+			{setHoveredLine}
 		/>
 	{/if}
 </div>

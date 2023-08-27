@@ -1,22 +1,26 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import { axisLeft, select, drag, symbol, symbolTriangle } from 'd3';
+	import { linkingArray } from '../../stores/linking';
 
 	export let width: number = 0;
 	export let height: number = 0;
 	export let dimensions: string[] = []; // Initial order of dimensions
 	export let margin: any;
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
-	export let handleFiltering: Function; // Callback function when filter is applied
 	export let handleInvertAxis: Function; // Callback function when filter is applied
+	export let handleCurrentlyFiltering: Function; // Callback function when filtering starts/stops
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
+	// SVG elements arrays
 	let axisLines: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
 	let axisFilterBackgrounds: any[] = []; // Array of SVG elements for axis filter backgrounds
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
+
+	let axesFilters: { start: number; end: number }[] = []; // Filter values array for linking
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -72,7 +76,8 @@
 					.attr('class', 'axis-filter')
 					.attr('cursor', 'crosshair')
 					.attr('width', 40)
-					.attr('height', 0)
+					.attr('height', axesFilters[i] ? axesFilters[i].end - axesFilters[i].start : 0)
+					.attr('y', axesFilters[i] ? margin.top + axesFilters[i].start : 0)
 					.attr('fill', 'rgba(255, 255, 255, 0)')
 					.attr('stroke', 'rgba(0, 0, 0, 1)')
 					.attr('transform', `translate(${xScales[i] - 20}, 0)`)
@@ -168,6 +173,7 @@
 						axisFilterBackgrounds = reorderArray(axisFilterBackgrounds, draggingIndex, newIndex);
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
+						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
 						draggingIndex = newIndex;
 					}
 				})
@@ -205,9 +211,9 @@
 			// Add drag behavior to filter data
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {
-					// Start filtering
 					currentAxis = dimensions.indexOf(dim);
 					filterStart = event.y;
+					handleCurrentlyFiltering(true);
 				})
 				.on('drag', (event) => {
 					if (currentAxis === -1) return;
@@ -221,14 +227,16 @@
 						.attr('y', deltaY > 0 ? filterStart : newY)
 						.attr('height', filterHeight); // Update or create the filter rectangle
 
-					handleFiltering(
-						currentAxis,
-						(deltaY > 0 ? filterStart : newY) - margin.top - 1,
-						(deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
-					);
+					axesFilters[currentAxis] = {
+						start: (deltaY > 0 ? filterStart : newY) - margin.top - 1,
+						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
+					};
+
+					linkingArray.set(axesFilters);
 				})
 				.on('end', () => {
 					currentAxis = -1;
+					handleCurrentlyFiltering(false);
 				});
 
 			axisFilterBackgrounds[dimensions.indexOf(dim)].call(dragBehavior);
@@ -242,6 +250,10 @@
 		result.splice(toIndex, 0, removed);
 		return result;
 	}
+
+	onMount(() => {
+		axesFilters = Array(dimensions.length).fill(null);
+	});
 
 	afterUpdate(() => {
 		clearSVG();

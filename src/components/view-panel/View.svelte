@@ -42,13 +42,13 @@
 </script>
 
 <div class="w-full h-full p-1 {showView ? 'block' : 'hidden'}">
-	<div class="flex flex-row justify-between" style="height: 5%;">
+	<div class="flex flex-row justify-between" style="height: 18px; font-size: 14px;">
 		<span>{currView.title}</span>
 		<div id="{currView.id}-expand-container">
 			<div class="flex flex-row gap-1">
 				<ArrowsRightLeft
 					id="{currView.id}-swap"
-					size="24"
+					size="16"
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
 				/>
 				<Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 3;">
@@ -64,7 +64,7 @@
 				</Dropdown>
 				<ArrowsPointingOut
 					id="{currView.id}-expand"
-					size="24"
+					size="16"
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
 					on:click={openWinbox}
 				/>

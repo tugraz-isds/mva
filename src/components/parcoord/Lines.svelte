@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { afterUpdate, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as PIXI from 'pixi.js';
 	import { SmoothGraphics } from '@pixi/graphics-smooth';
 	import { patchGraphicsSmooth } from './patchGraphicsSmooth';
+	import { brushingArray } from '../../stores/brushing';
+	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
 
 	patchGraphicsSmooth();
@@ -15,6 +17,7 @@
 	export let margin: any;
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
+	export let setHoveredLine: Function; // Set currently hovered line
 
 	const lineData: DSVParsedArray<any>[] = []; // Array to store the data for each drawn line as array of numbers
 	const lineGraphicsData: SmoothGraphics[] = []; // Array to store the data for each drawn line as PIXI.Graphics object
@@ -22,8 +25,32 @@
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: { start: number; end: number }[] = [];
+	let isCurrentlyFiltering: boolean = false;
+	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
 	let app: PIXI.Application; // Pixi Application object
+
+	const unsubscribeLinking = linkingArray.subscribe((value: any) => {
+		axesFilters = value;
+		if (dataset?.length > 0 && dimensions?.length > 0) {
+			applyFilters();
+		}
+	});
+
+	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
+		brushedLinesIndices = value;
+		if (dataset?.length > 0 && dimensions?.length > 0 && app) {
+			app.stage.removeChildren();
+			app.renderer.resize(
+				width < 100 * initialDimensions.length
+					? initialDimensions.length * 100 - margin.right
+					: width - margin.right,
+				height
+			);
+			dimensions = initialDimensions;
+			drawLines();
+		}
+	});
 
 	// Function to initialize Pixi application
 	function initPixi() {
@@ -55,14 +82,27 @@
 
 			line.eventMode = 'static'; // Add event listeners for hover interactions
 			line.on('mouseover', () => {
-				const lineHover = new SmoothGraphics();
-				lineHover.lineStyle(3, 0xee4b2b, 1);
-				drawLine(lineHover, dataRow);
-				app.stage.addChildAt(lineHover, app.stage.children.length - 1);
+				if (!isCurrentlyFiltering) {
+					const lineHover = new SmoothGraphics();
+					lineHover.lineStyle(3, 0xee4b2b, 1);
+					drawLine(lineHover, dataRow);
+					app.stage.addChildAt(lineHover, app.stage.children.length - 1);
+					setHoveredLine(idx);
+				}
 			});
 			line.on('mouseout', () => {
-				app.stage.removeChildAt(app.stage.children.length - 2);
+				if (!isCurrentlyFiltering) {
+					app.stage.removeChildAt(app.stage.children.length - 2);
+					setHoveredLine(null);
+				}
 			});
+		});
+
+		brushedLinesIndices.forEach((idx: number) => {
+			const lineBrushed = new SmoothGraphics();
+			lineBrushed.lineStyle(3, 0xffa500, 1);
+			drawLine(lineBrushed, dataset[idx]);
+			app.stage.addChildAt(lineBrushed, app.stage.children.length - 1);
 		});
 	}
 
@@ -80,9 +120,7 @@
 	}
 
 	// Apply filters and change line color if needed
-	export const applyFilters = (axisIndex: number, filterStart: number, filterEnd: number) => {
-		axesFilters[axisIndex] = { start: filterStart, end: filterEnd };
-
+	export const applyFilters = () => {
 		lineData.forEach((line: any, i: number) => {
 			lineShow[i] = true;
 			dimensions.forEach((dim: string, j: number) => {
@@ -98,6 +136,9 @@
 			else lineGraphicsData[i].tint = 0x808080;
 		});
 	};
+
+	export const handleCurrentlyFiltering = (isFiltering: boolean) =>
+		(isCurrentlyFiltering = isFiltering);
 
 	// Function that swaps line points when axes are swapped
 	export const swapPoints = (fromIndex: number, toIndex: number) => {
@@ -132,9 +173,12 @@
 				height
 			);
 			dimensions = initialDimensions;
-			axesFilters = Array(dimensions.length).fill(null);
-			lineShow = Array(lineShow.length).fill(true);
 			drawLines();
 		}
+	});
+
+	onDestroy(() => {
+		unsubscribeLinking();
+		unsubscribeBrushing();
 	});
 </script>
