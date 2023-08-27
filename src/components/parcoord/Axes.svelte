@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import { axisLeft, select, drag, symbol, symbolTriangle } from 'd3';
-	import { linkingArray } from '../../stores/linking';
+	import { filtersArray } from '../../stores/parcoord';
 
 	export let width: number = 0;
 	export let height: number = 0;
@@ -232,7 +232,7 @@
 						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
 					};
 
-					linkingArray.set(axesFilters);
+					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
 					currentAxis = -1;

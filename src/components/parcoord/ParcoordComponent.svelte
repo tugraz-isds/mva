@@ -22,6 +22,7 @@
 
 	const margin = { top: 35, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
 
+	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;
 	const unsubscribe = datasetStore.subscribe((value: any) => {
 		dataset = value;
@@ -30,6 +31,7 @@
 			dimensions = filterDimensions(dimensions);
 			dimensionsInitial = dimensions;
 			calculateYScales();
+			brushingArray.set(new Set<number>());
 		}
 	});
 

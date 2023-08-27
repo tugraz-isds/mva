@@ -4,6 +4,7 @@
 	import { SmoothGraphics } from '@pixi/graphics-smooth';
 	import { patchGraphicsSmooth } from './patchGraphicsSmooth';
 	import { brushingArray } from '../../stores/brushing';
+	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
 
@@ -30,7 +31,7 @@
 
 	let app: PIXI.Application; // Pixi Application object
 
-	const unsubscribeLinking = linkingArray.subscribe((value: any) => {
+	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
 			applyFilters();
@@ -75,7 +76,7 @@
 
 			const line = new SmoothGraphics();
 			line.lineStyle(2, 0xffffff, 0.75);
-			line.tint = lineShow[idx] ? 0x4169e1 : 0x808080;
+			line.tint = lineShow[idx] ? 0x4169e1 : 0xcbd5e0;
 			drawLine(line, dataRow);
 			lineGraphicsData.push(line); // Store the data for each line as PIXI.Graphics object
 			app.stage.addChild(line); // Add the line to the stage
@@ -121,6 +122,7 @@
 
 	// Apply filters and change line color if needed
 	export const applyFilters = () => {
+		lineShow = [];
 		lineData.forEach((line: any, i: number) => {
 			lineShow[i] = true;
 			dimensions.forEach((dim: string, j: number) => {
@@ -133,8 +135,10 @@
 				}
 			});
 			if (lineShow[i]) lineGraphicsData[i].tint = 0x4169e1;
-			else lineGraphicsData[i].tint = 0x808080;
+			else lineGraphicsData[i].tint = 0xcbd5e0;
 		});
+
+		linkingArray.set(lineShow);
 	};
 
 	export const handleCurrentlyFiltering = (isFiltering: boolean) =>
@@ -159,7 +163,8 @@
 	onMount(() => {
 		dimensions = initialDimensions;
 		axesFilters = Array(dimensions.length).fill(null);
-		lineShow = Array(lineShow.length).fill(true);
+		lineShow = Array(dataset.length).fill(true);
+		linkingArray.set(lineShow);
 		initPixi();
 	});
 
@@ -178,7 +183,7 @@
 	});
 
 	onDestroy(() => {
-		unsubscribeLinking();
+		unsubscribeFilters();
 		unsubscribeBrushing();
 	});
 </script>
