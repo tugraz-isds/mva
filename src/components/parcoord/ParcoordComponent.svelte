@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
+	import { brushingArray, hoveredItem } from '../../stores/brushing';
 	import { scaleLinear, extent } from 'd3';
-	import type { DSVParsedArray } from 'd3';
 	import Axes from './Axes.svelte';
 	import Lines from './Lines.svelte';
-	import { brushingArray } from '../../stores/brushing';
+	import type { DSVParsedArray } from 'd3';
 
 	let width: number = 0;
 	let height: number = 0;
@@ -24,7 +24,7 @@
 
 	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;
-	const unsubscribe = datasetStore.subscribe((value: any) => {
+	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
 		dataset = value;
 		if (dataset?.length > 0) {
 			dimensions = Object.keys(dataset[0]);
@@ -33,6 +33,10 @@
 			calculateYScales();
 			brushingArray.set(new Set<number>());
 		}
+	});
+
+	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
+		hoveredLineIndex = value;
 	});
 
 	$: {
@@ -111,14 +115,9 @@
 		return result;
 	}
 
-	/* --- Handle line clicks --- */
-	// Set currently hovered line
-	function setHoveredLine(lineIndex: number | null) {
-		hoveredLineIndex = lineIndex;
-	}
 	// Handle click on line
 	function handleLineClick() {
-		if (!hoveredLineIndex) return;
+		if (hoveredLineIndex === null) return;
 
 		if (brushedLinesIndices.has(hoveredLineIndex))
 			brushedLinesIndices.delete(hoveredLineIndex); // Remove the index if it exists
@@ -131,7 +130,8 @@
 	});
 
 	onDestroy(() => {
-		unsubscribe();
+		unsubscribeDataset();
+		unsubscribeHovered();
 	});
 </script>
 
@@ -167,7 +167,6 @@
 			{margin}
 			{xScales}
 			{yScales}
-			{setHoveredLine}
 		/>
 	{/if}
 </div>

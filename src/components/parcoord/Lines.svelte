@@ -4,6 +4,7 @@
 	import { SmoothGraphics } from '@pixi/graphics-smooth';
 	import { patchGraphicsSmooth } from './patchGraphicsSmooth';
 	import { brushingArray } from '../../stores/brushing';
+	import { hoveredItem } from '../../stores/brushing';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
@@ -18,7 +19,6 @@
 	export let margin: any;
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
-	export let setHoveredLine: Function; // Set currently hovered line
 
 	const lineData: DSVParsedArray<any>[] = []; // Array to store the data for each drawn line as array of numbers
 	const lineGraphicsData: SmoothGraphics[] = []; // Array to store the data for each drawn line as PIXI.Graphics object
@@ -27,7 +27,9 @@
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: { start: number; end: number }[] = [];
 	let isCurrentlyFiltering: boolean = false;
+	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
+	let lineHover: SmoothGraphics;
 
 	let app: PIXI.Application; // Pixi Application object
 
@@ -38,6 +40,7 @@
 		}
 	});
 
+	// Redraw after brushing
 	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
 		brushedLinesIndices = value;
 		if (dataset?.length > 0 && dimensions?.length > 0 && app) {
@@ -50,6 +53,22 @@
 			);
 			dimensions = initialDimensions;
 			drawLines();
+		}
+	});
+
+	// Draw hovered line
+	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
+		hoveredLineIndex = value;
+		if (!app) return;
+		if (hoveredLineIndex === null) {
+			if (!isCurrentlyFiltering) {
+				app.stage.removeChild(lineHover);
+			}
+		} else {
+			lineHover = new SmoothGraphics();
+			lineHover.lineStyle(3, 0xef4444, 1);
+			drawLine(lineHover, dataset[hoveredLineIndex]);
+			app.stage.addChildAt(lineHover, app.stage.children.length - 1);
 		}
 	});
 
@@ -83,25 +102,17 @@
 
 			line.eventMode = 'static'; // Add event listeners for hover interactions
 			line.on('mouseover', () => {
-				if (!isCurrentlyFiltering) {
-					const lineHover = new SmoothGraphics();
-					lineHover.lineStyle(3, 0xee4b2b, 1);
-					drawLine(lineHover, dataRow);
-					app.stage.addChildAt(lineHover, app.stage.children.length - 1);
-					setHoveredLine(idx);
-				}
+				hoveredItem.set(idx);
 			});
 			line.on('mouseout', () => {
-				if (!isCurrentlyFiltering) {
-					app.stage.removeChildAt(app.stage.children.length - 2);
-					setHoveredLine(null);
-				}
+				hoveredItem.set(null);
 			});
 		});
 
+		// Draw brushed lines
 		brushedLinesIndices.forEach((idx: number) => {
 			const lineBrushed = new SmoothGraphics();
-			lineBrushed.lineStyle(3, 0xffa500, 1);
+			lineBrushed.lineStyle(3, 0xfb923c, 1);
 			drawLine(lineBrushed, dataset[idx]);
 			app.stage.addChildAt(lineBrushed, app.stage.children.length - 1);
 		});
@@ -185,5 +196,6 @@
 	onDestroy(() => {
 		unsubscribeFilters();
 		unsubscribeBrushing();
+		unsubscribeHovered();
 	});
 </script>
