@@ -11,6 +11,7 @@
 	let height: number = 0;
 	let dimensions: string[] = []; // Dataset dimensions
 	let dimensionsInitial: string[] = []; // Dataset initial dimensions
+	let initialHeight: number; // Initial height (needed after resizing)
 
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
@@ -126,6 +127,7 @@
 	}
 
 	onMount(() => {
+		initialHeight = height;
 		calculateYScales();
 	});
 

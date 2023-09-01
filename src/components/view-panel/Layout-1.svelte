@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ViewComponent from './View.svelte';
-	import type { View } from './View';
+	import type { View } from './ViewType';
 
 	export let views: View[];
 	export let handleSwap: Function;

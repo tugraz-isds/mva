@@ -3,7 +3,7 @@
 	import ViewComponent from './View.svelte';
 	import HorizontalDivider from './HorizontalDivider.svelte';
 	import VerticalDivider from './VerticalDivider.svelte';
-	import type { View } from './View';
+	import type { View } from './ViewType';
 
 	export let views: View[];
 	export let handleSwap: Function;

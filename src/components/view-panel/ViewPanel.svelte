@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import type { View } from './View';
+	import type { View } from './ViewType';
 	import { activeViewsStore } from '../../stores/views';
 	import Layout_1 from './Layout-1.svelte';
 	import Layout_2 from './Layout-2.svelte';

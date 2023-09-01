@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
-	import { Dropdown, DropdownItem } from 'flowbite-svelte';
+	import { openWindow } from 'svelte-window-system';
+	import { Button, Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
-	import type { View } from '../view-panel/View';
+	import type { View } from './ViewType';
 
 	export let otherViews: View[];
 	export let handleSwap: Function;
@@ -22,9 +23,13 @@
 	function openWinbox() {
 		showView = false;
 		activeViewsStore.set(activeViews.filter((view: View) => view.title !== currView.title));
-		window.dispatchEvent(
-			new CustomEvent('openWinbox', { detail: { title: currView.title, id: currView.id } })
-		);
+		openWindow(currView.component, {
+			width: window.innerWidth * 0.8,
+			height: window.innerHeight * 0.8,
+			title: currView.title,
+			customTitlebarClass: 'bg-sky-900 font-sans'
+			//customTitlebarButtons: [{ value: 'X', callback: () => {} }]
+		});
 	}
 
 	onMount(() => {
