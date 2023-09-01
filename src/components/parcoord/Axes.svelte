@@ -2,11 +2,12 @@
 	import { afterUpdate, onMount } from 'svelte';
 	import { axisLeft, select, drag, symbol, symbolTriangle } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
+	import type { AxesFilter } from './AxesFilterType';
 
-	export let width: number = 0;
-	export let height: number = 0;
+	export let width: number; // Container width
+	export let height: number; // Container height
 	export let dimensions: string[] = []; // Initial order of dimensions
-	export let margin: any;
+	export let margin: any; // Margin object
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
 	export let handleCurrentlyFiltering: Function; // Callback function when filtering starts/stops
@@ -20,7 +21,7 @@
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
 
-	let axesFilters: { start: number; end: number }[] = []; // Filter values array for linking
+	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -73,11 +74,14 @@
 			axisFilterRectangles.push(
 				svg
 					.append('rect')
-					.attr('class', 'axis-filter')
+					.attr('class', 'axis-filter cursor-move')
 					.attr('cursor', 'crosshair')
 					.attr('width', 40)
-					.attr('height', axesFilters[i] ? axesFilters[i].end - axesFilters[i].start : 0)
-					.attr('y', axesFilters[i] ? margin.top + axesFilters[i].start : 0)
+					.attr(
+						'height',
+						axesFilters[i]?.pixels ? axesFilters[i].pixels.end - axesFilters[i].pixels.start : 0
+					)
+					.attr('y', axesFilters[i]?.pixels ? margin.top + axesFilters[i].pixels.start : 0)
 					.attr('fill', 'rgba(255, 255, 255, 0)')
 					.attr('stroke', 'rgba(0, 0, 0, 1)')
 					.attr('transform', `translate(${xScales[i] - 20}, 0)`)
@@ -102,11 +106,12 @@
 					.attr('class', 'axis-invert cursor-pointer')
 					.attr('transform', `translate(${xScales[i]}, ${margin.top - 10}) rotate(180)`)
 					.attr('d', triangle)
-					.on('click', () => handleInvertAxis(i))
+					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
 		});
 
 		handleAxesDragging();
+		handleFilterDrawing();
 		handleFilterDragging();
 	}
 
@@ -178,6 +183,7 @@
 					}
 				})
 				.on('end', () => {
+					// Snap elements into correct place
 					axisLines[draggingIndex].attr(
 						'transform',
 						`translate(${xScales[draggingIndex]}, ${margin.top})`
@@ -204,7 +210,8 @@
 		});
 	}
 
-	function handleFilterDragging() {
+	// Handle drawing of the filter rectangle
+	function handleFilterDrawing() {
 		dimensions.forEach((dim: string) => {
 			let currentAxis = -1;
 			let filterStart = 0; // Starting position of filter
@@ -227,9 +234,13 @@
 						.attr('y', deltaY > 0 ? filterStart : newY)
 						.attr('height', filterHeight); // Update or create the filter rectangle
 
-					axesFilters[currentAxis] = {
+					axesFilters[currentAxis].pixels = {
 						start: (deltaY > 0 ? filterStart : newY) - margin.top - 1,
-						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
+						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.bottom + 1
+					};
+					axesFilters[currentAxis].values = {
+						start: yScales[dim].invert(axesFilters[currentAxis].pixels?.start),
+						end: yScales[dim].invert(axesFilters[currentAxis].pixels?.end)
 					};
 
 					filtersArray.set(axesFilters);
@@ -243,6 +254,64 @@
 		});
 	}
 
+	// Handle dragging of the filter rectangle
+	function handleFilterDragging() {
+		dimensions.forEach((dim: string, i: number) => {
+			let startY = 0;
+			let rectangleStart: number;
+			// Add drag behavior to the axis title
+			const dragBehavior = drag<SVGTextElement, unknown, any>()
+				.on('start', (event) => {
+					startY = event.y;
+					rectangleStart = +axisFilterRectangles[i].attr('y');
+					handleCurrentlyFiltering(true);
+				})
+				.on('drag', (event) => {
+					let newY = rectangleStart + (event.y - startY);
+					let filterHeight = +axisFilterRectangles[i].attr('height');
+					if (newY <= margin.top) newY = margin.top - 1;
+					else if (newY + filterHeight >= height - margin.bottom + 1)
+						newY = height - filterHeight - margin.bottom + 1;
+
+					axisFilterRectangles[i].attr('y', `${newY}`); // Move filter rectangle
+
+					// Update axesFilters
+					axesFilters[i].pixels = {
+						start: newY - margin.top,
+						end: newY + filterHeight - margin.top
+					};
+					axesFilters[i].values = {
+						start: yScales[dim].invert(axesFilters[i].pixels?.start),
+						end: yScales[dim].invert(axesFilters[i].pixels?.end)
+					};
+					filtersArray.set(axesFilters);
+				})
+				.on('end', () => {
+					startY = 0;
+					handleCurrentlyFiltering(false);
+				});
+
+			axisFilterRectangles[dimensions.indexOf(dim)].call(dragBehavior);
+		});
+	}
+
+	// Handle click on invert
+	function handleOnInvertAxesClick(dim: string, i: number) {
+		handleInvertAxis(i); // Handle inverting axes in parent component
+
+		// Swap filter rectangle start and end
+		const temp = axesFilters[i].values.end;
+		axesFilters[i].values.end = axesFilters[i].values.start;
+		axesFilters[i].values.start = temp;
+		axesFilters[i].pixels.start = yScales[dim](axesFilters[i].values.start);
+		axesFilters[i].pixels.end = yScales[dim](axesFilters[i].values.end);
+
+		// Set timeout for correct rendering
+		setTimeout(() => {
+			axisFilterRectangles[i].attr('y', margin.top + yScales[dim](axesFilters[i].values.start)); // Update or create the filter rectangle
+		}, 10);
+	}
+
 	// Helper function to reorder an array
 	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
 		const result = [...arr];
@@ -252,12 +321,24 @@
 	}
 
 	onMount(() => {
-		axesFilters = Array(dimensions.length).fill(null);
+		axesFilters = dimensions.map(() => ({ pixels: null, values: null }));
 	});
 
 	afterUpdate(() => {
 		clearSVG();
 		renderAxes();
+
+		// Resize axes filter rectangles
+		dimensions.forEach((dim: string, i: number) => {
+			if (axesFilters[i].pixels === null || axesFilters[i].values === null) return;
+			axesFilters[i].pixels = {
+				start: yScales[dim](axesFilters[i].values.start),
+				end: yScales[dim](axesFilters[i].values.end)
+			};
+			axisFilterRectangles[i]
+				.attr('y', margin.top + axesFilters[i].pixels.start)
+				.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start); // Update or create the filter rectangle
+		});
 	});
 </script>
 

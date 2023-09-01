@@ -8,6 +8,7 @@
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
+	import type { AxesFilter } from './AxesFilterType';
 
 	patchGraphicsSmooth();
 	console.log('Is WebGL supported: ', PIXI.utils.isWebGLSupported());
@@ -25,7 +26,7 @@
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
 
 	let dimensions: string[]; // Dimensions used for swapping
-	let axesFilters: { start: number; end: number }[] = [];
+	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false;
 	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
@@ -59,7 +60,7 @@
 	// Draw hovered line
 	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
 		hoveredLineIndex = value;
-		if (!app) return;
+		if (!app || isCurrentlyFiltering) return;
 		if (hoveredLineIndex === null) {
 			if (!isCurrentlyFiltering) {
 				app.stage.removeChild(lineHover);
@@ -137,11 +138,14 @@
 		lineData.forEach((line: any, i: number) => {
 			lineShow[i] = true;
 			dimensions.forEach((dim: string, j: number) => {
-				if (!axesFilters[j]) return;
+				if (!axesFilters[j]?.pixels) return;
 
 				const originalYValue = line[dim];
 				const scaledYValue = yScales[dim](originalYValue);
-				if (scaledYValue < axesFilters[j].start || scaledYValue > axesFilters[j].end) {
+				if (
+					scaledYValue < axesFilters[j].pixels.start ||
+					scaledYValue > axesFilters[j].pixels.end
+				) {
 					lineShow[i] = false;
 				}
 			});
@@ -173,7 +177,7 @@
 
 	onMount(() => {
 		dimensions = initialDimensions;
-		axesFilters = Array(dimensions.length).fill(null);
+		axesFilters = dimensions.map(() => ({ pixels: null, values: null }));
 		lineShow = Array(dataset.length).fill(true);
 		linkingArray.set(lineShow);
 		initPixi();

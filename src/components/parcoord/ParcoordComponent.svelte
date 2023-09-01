@@ -7,8 +7,8 @@
 	import Lines from './Lines.svelte';
 	import type { DSVParsedArray } from 'd3';
 
-	let width: number = 0;
-	let height: number = 0;
+	let width: number; // Container width
+	let height: number; // Container height
 	let dimensions: string[] = []; // Dataset dimensions
 	let dimensionsInitial: string[] = []; // Dataset initial dimensions
 	let initialHeight: number; // Initial height (needed after resizing)
@@ -18,7 +18,6 @@
 
 	let linesComponent: Lines; // Svelte Lines component
 
-	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
 	const margin = { top: 35, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
@@ -28,14 +27,19 @@
 	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
 		dataset = value;
 		if (dataset?.length > 0) {
+			// Get correct dimensions
 			dimensions = Object.keys(dataset[0]);
 			dimensions = filterDimensions(dimensions);
 			dimensionsInitial = dimensions;
-			calculateYScales();
-			brushingArray.set(new Set<number>());
+
+			calculateYScales(); // Calculate new yScales
+
+			brushingArray.set(new Set<number>()); // Reset brusing
 		}
 	});
 
+	// Currently hovered line
+	let hoveredLineIndex: number | null = null;
 	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
 		hoveredLineIndex = value;
 	});
@@ -76,18 +80,13 @@
 		}
 	}
 
+	// Get dimensions that have data as numbers
 	function filterDimensions(dimensions: string[]) {
 		const newDimensions: string[] = [];
 		dimensions.forEach((dim: string) => {
 			if (isNumber(dataset[0][dim])) newDimensions.push(dim);
 		});
 		return newDimensions;
-	}
-
-	function isNumber(item: any) {
-		if (typeof item === 'number') return true;
-		if (typeof item === 'string') return !isNaN(+item);
-		return false;
 	}
 
 	// Handle swapped axis from Axes component
@@ -108,14 +107,6 @@
 		);
 	}
 
-	// Helper function to reorder an array
-	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
-		const result = [...arr];
-		const [removed] = result.splice(fromIndex, 1);
-		result.splice(toIndex, 0, removed);
-		return result;
-	}
-
 	// Handle click on line
 	function handleLineClick() {
 		if (hoveredLineIndex === null) return;
@@ -124,6 +115,21 @@
 			brushedLinesIndices.delete(hoveredLineIndex); // Remove the index if it exists
 		else brushedLinesIndices.add(hoveredLineIndex); // Add the index if it doesn't exist
 		brushingArray.set(brushedLinesIndices);
+	}
+
+	// Helper function to reorder an array
+	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
+		const result = [...arr];
+		const [removed] = result.splice(fromIndex, 1);
+		result.splice(toIndex, 0, removed);
+		return result;
+	}
+
+	// Helper function that returns whether item is a number
+	function isNumber(item: any) {
+		if (typeof item === 'number') return true;
+		if (typeof item === 'string') return !isNaN(+item);
+		return false;
 	}
 
 	onMount(() => {

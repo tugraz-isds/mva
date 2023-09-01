@@ -32,14 +32,14 @@
 		});
 	}
 
-	onMount(() => {
-		window.addEventListener('closeWinbox', (event: any) => {
-			if (currView.id === event.detail.id) {
-				showView = true;
-				activeViewsStore.set([...activeViews, currView]);
-			}
-		});
-	});
+	// onMount(() => {
+	// 	window.addEventListener('closeWinbox', (event: any) => {
+	// 		if (currView.id === event.detail.id) {
+	// 			showView = true;
+	// 			activeViewsStore.set([...activeViews, currView]);
+	// 		}
+	// 	});
+	// });
 
 	onDestroy(() => {
 		unsubscribeActive();

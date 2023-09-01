@@ -1,2 +1,4 @@
 import { writable } from 'svelte/store';
-export const filtersArray = writable<{ start: number; end: number }[]>([]);
+import type { AxesFilter } from '../components/parcoord/AxesFilterType';
+
+export const filtersArray = writable<AxesFilter[]>([]);
