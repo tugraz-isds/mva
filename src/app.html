@@ -9,8 +9,6 @@
 		/>
 		<!-- Roboto Mono -->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono" />
-		<!-- Winbox -->
-		<link rel="preload" href="/winbox.bundle.min.js" as="script" />
 		<!-- Other -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
@@ -21,53 +19,10 @@
 				padding: 0;
 				height: 100%;
 			}
-
-			.winbox {
-				width: 80% !important;
-				height: 80% !important;
-			}
-
-			.wb-header {
-				background-color: #0c4a6e;
-			}
 		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
-
-		<script src="/winbox.bundle.min.js" async></script>
-		<script>
-			// Create winbox when expand button is clicked
-			function createWinbox(title, containerClass) {
-				const expandButtonContainer = document.querySelector(`#${containerClass}-expand-container`);
-				const expandButton = document.querySelector(`#${containerClass}-expand`);
-
-				if (expandButton) {
-					const canvas = document.querySelector(`#${containerClass}-canvas`);
-					const winBox = new WinBox({
-						title: title,
-						mount: canvas,
-						onfocus: () => {
-							expandButtonContainer.style.display = 'none';
-						},
-						onclose: () => {
-							expandButtonContainer.style.display = 'block';
-							window.dispatchEvent(
-								new CustomEvent('closeWinbox', {
-									detail: { id: containerClass }
-								})
-							);
-						}
-					});
-				}
-			}
-
-			// Open winbox when custom event is triggered (expand button clicked)
-			window.addEventListener('openWinbox', (event) => {
-				const { title, id } = event.detail;
-				createWinbox(`${title} (Expanded)`, id);
-			});
-		</script>
 	</body>
 </html>

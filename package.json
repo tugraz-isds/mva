@@ -47,6 +47,7 @@
 		"flowbite": "^1.6.6",
 		"flowbite-svelte": "^0.38.5",
 		"pixi.js": "^7.2.4",
+		"svelte-window-system": "^0.1.0",
 		"tailwind-merge": "^1.13.2",
 		"winbox": "^0.2.6"
 	}
