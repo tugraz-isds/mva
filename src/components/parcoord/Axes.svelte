@@ -236,7 +236,7 @@
 
 					axesFilters[currentAxis].pixels = {
 						start: (deltaY > 0 ? filterStart : newY) - margin.top - 1,
-						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.bottom + 1
+						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
 					};
 					axesFilters[currentAxis].values = {
 						start: yScales[dim].invert(axesFilters[currentAxis].pixels?.start),
