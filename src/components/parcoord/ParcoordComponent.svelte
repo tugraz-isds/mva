@@ -4,7 +4,8 @@
 	import { brushingArray, hoveredItem } from '../../stores/brushing';
 	import { scaleLinear, extent } from 'd3';
 	import Axes from './Axes.svelte';
-	import Lines from './Lines.svelte';
+	import LinesPixi from './LinesPixi.svelte';
+	import LinesThree from './LinesThree.svelte';
 	import type { DSVParsedArray } from 'd3';
 
 	let width: number; // Container width
@@ -16,7 +17,7 @@
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
 
-	let linesComponent: Lines; // Svelte Lines component
+	let linesComponent: LinesPixi; // Svelte Lines component
 
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
@@ -97,7 +98,7 @@
 
 	// Handle start/stop of filtering
 	function handleCurrentlyFiltering(isFiltering: boolean) {
-		linesComponent.handleCurrentlyFiltering(isFiltering);
+		//linesComponent.handleCurrentlyFiltering(isFiltering);
 	}
 
 	// Handle inverting axes
@@ -166,8 +167,17 @@
 			{xScales}
 			{yScales}
 		/>
-		<Lines
+		<!-- <Lines
 			bind:this={linesComponent}
+			{width}
+			{height}
+			{dataset}
+			initialDimensions={dimensions}
+			{margin}
+			{xScales}
+			{yScales}
+		/> -->
+		<LinesThree
 			{width}
 			{height}
 			{dataset}

@@ -19,6 +19,7 @@
 		"@sveltejs/vite-plugin-svelte": "^2.4.2",
 		"@tauri-apps/cli": "^1.4.0",
 		"@types/d3": "^7.4.0",
+		"@types/three": "^0.156.0",
 		"@types/winbox": "^0.2.1",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
@@ -41,6 +42,7 @@
 	"type": "module",
 	"dependencies": {
 		"@pixi/graphics-smooth": "^1.1.0",
+		"@pixi/layers": "^2.1.0",
 		"@popperjs/core": "^2.11.8",
 		"@types/pixi.js": "^5.0.0",
 		"d3": "^7.8.5",
@@ -49,6 +51,7 @@
 		"pixi.js": "^7.2.4",
 		"svelte-window-system": "^0.1.0",
 		"tailwind-merge": "^1.13.2",
+		"three": "^0.156.1",
 		"winbox": "^0.2.6"
 	}
 }

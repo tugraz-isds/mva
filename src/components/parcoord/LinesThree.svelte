@@ -1,0 +1,229 @@
+<script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
+	import * as THREE from 'three';
+	import { brushingArray } from '../../stores/brushing';
+	import { hoveredItem } from '../../stores/brushing';
+	import { filtersArray } from '../../stores/parcoord';
+	import { linkingArray } from '../../stores/linking';
+	import type { DSVParsedArray } from 'd3';
+	import type { AxesFilter } from './AxesFilterType';
+
+	export let width: number;
+	export let height: number;
+	export let dataset: DSVParsedArray<any>;
+	export let initialDimensions: string[] = []; // Initial order of dimensions
+	export let margin: any;
+	export let xScales: any[]; // Scales for all of the X-axes
+	export let yScales: any; // Scales for all of the Y-axes
+
+	let newWidth = width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width;
+
+	// ThreeJS elements
+	let canvasEl: HTMLCanvasElement;
+	let camera: THREE.OrthographicCamera;
+	let scene: THREE.Scene;
+	let renderer: THREE.WebGLRenderer;
+	let line: any;
+	let raycaster: THREE.Raycaster;
+	let mouse: THREE.Vector2;
+
+	let hoveredLine: any; // Currently hovered line object
+	let lines: THREE.Line[] = []; // Array to store all line objects
+	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
+
+	let dimensions: string[]; // Dimensions used for swapping
+	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let isCurrentlyFiltering: boolean = false;
+	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
+
+	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
+		axesFilters = value;
+		if (dataset?.length > 0 && dimensions?.length > 0) {
+			applyFilters();
+		}
+	});
+
+	// Redraw after brushing
+	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
+		brushedLinesIndices = value;
+		console.log(brushedLinesIndices);
+		if (dataset?.length > 0 && dimensions?.length > 0) {
+			drawLines();
+		}
+	});
+
+	// Function to initialize ThreeJS scene
+	function initScene() {
+		// Create a scene
+		scene = new THREE.Scene();
+
+		// Create a camera
+		camera = new THREE.OrthographicCamera(0, newWidth, 0, height, 0.1, 1000);
+		camera.position.set(0, 0, 5);
+
+		// Create a renderer and append the canvas to the specified element
+		renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
+		renderer.setClearColor(0xffffff);
+		renderer.setSize(newWidth, height);
+		const parcoordDiv = document.getElementById('parcoord-canvas');
+		if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
+
+		// Initialize raycaster and mouse
+		raycaster = new THREE.Raycaster();
+		mouse = new THREE.Vector2();
+	}
+
+	function drawLines() {
+		dataset.forEach((dataRow: any, idx: number) => {
+			drawLine(dataRow, idx);
+		});
+
+		// Change color for brushed lines
+		const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
+		brushedLinesIndices.forEach((idx: number) => {
+			if (idx === undefined) return;
+			lines[idx].material = material;
+			changeLinePosition(lines[idx], 1);
+		});
+
+		render();
+	}
+
+	// Function to draw a single line from array
+	function drawLine(dataRow: any[], idx: number) {
+		const linePoints = [];
+		for (let i = 0; i < xScales.length; i++) {
+			const dim = initialDimensions[i];
+			linePoints.push(
+				new THREE.Vector3(
+					xScales[i],
+					yScales[dim](dataRow[dim as any])
+						? yScales[dim](dataRow[dim as any]) + margin.top
+						: margin.top,
+					0
+				)
+			);
+		}
+
+		const material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 });
+		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
+		line = new THREE.Line(geometry, material);
+		line.index = idx; // Add custom property index to hovered line
+		lines.push(line);
+		scene.add(line);
+	}
+
+	// Function to handle mousemove events
+	function handleMouseMove(event: MouseEvent) {
+		// Calculate normalized mouse coordinates relative to the canvas
+		const canvasRect = canvasEl.getBoundingClientRect();
+		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+		mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+
+		raycaster.setFromCamera(mouse, camera); // Update the raycaster
+		const intersects = raycaster.intersectObjects(lines); // Check for intersections
+
+		if (intersects.length === 0 && hoveredLine !== undefined) {
+			hoveredLine.material = new THREE.LineBasicMaterial({
+				color: brushedLinesIndices.has(hoveredLine.index) ? 0xfb923c : 0x4169e1,
+				linewidth: 1
+			});
+			hoveredLine = undefined;
+			render();
+		}
+		if (intersects.length > 0) {
+			if (hoveredLine !== undefined) {
+				hoveredLine.material = new THREE.LineBasicMaterial({
+					color: brushedLinesIndices.has(hoveredLine.index) ? 0xfb923c : 0x4169e1,
+					linewidth: 1
+				});
+			}
+			hoveredLine = intersects[0].object as THREE.Line;
+			hoveredLine.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 }); // Change color for the hovered line
+			changeLinePosition(hoveredLine, 2);
+			render();
+		}
+	}
+
+	function handleClick() {
+		if (hoveredLine?.index === undefined) return;
+
+		if (brushedLinesIndices.has(hoveredLine.index))
+			// Remove the index if it exists
+			brushedLinesIndices.delete(hoveredLine.index);
+		else brushedLinesIndices.add(hoveredLine.index); // Add the index if it doesn't exist
+		brushingArray.set(brushedLinesIndices);
+	}
+
+	export const applyFilters = () => {
+		lineShow = [];
+		dataset.forEach((line: any[], idx: number) => {
+			lineShow[idx] = true;
+			dimensions.forEach((dim: string, j: number) => {
+				if (!axesFilters[j]?.pixels) return;
+
+				const originalYValue = line[dim as any];
+				const scaledYValue = yScales[dim](originalYValue);
+				if (
+					scaledYValue < axesFilters[j].pixels.start ||
+					scaledYValue > axesFilters[j].pixels.end
+				) {
+					lineShow[idx] = false;
+				}
+			});
+			if (lineShow[idx]) {
+				lines[idx].material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 }); // Set color to active
+				changeLinePosition(lines[idx], 0);
+			} else {
+				lines[idx].material = new THREE.LineBasicMaterial({ color: 0xcbd5e0, linewidth: 1 }); // Set color to inactive
+				changeLinePosition(lines[idx], -1);
+			}
+		});
+
+		// Change color for brushed lines
+		const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
+		brushedLinesIndices.forEach((idx: number) => {
+			if (idx === undefined) return;
+			lines[idx].material = material;
+			changeLinePosition(lines[idx], 1);
+		});
+
+		render();
+	};
+
+	function changeLinePosition(line: THREE.Line, newZPosition: number) {
+		const positions = line.geometry.attributes.position.array;
+
+		// Iterate through the positions and update the z-coordinate
+		for (let i = 0; i < positions.length; i += 3) {
+			positions[i + 2] = newZPosition;
+		}
+
+		// Update the position attribute and tell Three.js to update the rendering
+		line.geometry.attributes.position.needsUpdate = true;
+	}
+
+	function render() {
+		renderer.clear();
+		renderer.render(scene, camera);
+	}
+
+	onMount(() => {
+		dimensions = initialDimensions;
+		axesFilters = dimensions.map(() => ({ pixels: null, values: null }));
+		lineShow = Array(dataset.length).fill(true);
+		linkingArray.set(lineShow);
+		initScene();
+		drawLines();
+		window.addEventListener('mousemove', handleMouseMove, false);
+		window.addEventListener('click', handleClick, false);
+	});
+
+	onDestroy(() => {
+		window.removeEventListener('mousemove', handleMouseMove);
+		unsubscribeFilters();
+		unsubscribeBrushing();
+	});
+</script>
+
+<canvas bind:this={canvasEl} />
