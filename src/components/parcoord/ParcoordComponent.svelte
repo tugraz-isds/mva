@@ -21,7 +21,7 @@
 
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
-	const margin = { top: 35, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
+	const margin = { top: 40, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;

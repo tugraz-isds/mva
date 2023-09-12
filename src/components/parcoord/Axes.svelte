@@ -17,9 +17,13 @@
 	// SVG elements arrays
 	let axisLines: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
-	let axisFilterBackgrounds: any[] = []; // Array of SVG elements for axis filter backgrounds
-	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
+	let axisUpperFilters: any = []; // Array of SVG elements for axis upper filters
+	let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
+	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
+
+	let upperFilterY: number;
+	let lowerFilterY: number;
 
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 
@@ -27,16 +31,18 @@
 	function clearSVG() {
 		axisLines = [];
 		axisTitles = [];
-		axisFilterBackgrounds = [];
-		axisFilterRectangles = [];
 		axisInvertIcons = [];
+		axisUpperFilters = [];
+		axisLowerFilters = [];
+		axisFilterRectangles = [];
 
 		const svg = select('#parcoord-canvas-axes');
 		svg.selectAll('.y-axis').remove();
 		svg.selectAll('.axis-title').remove();
-		svg.selectAll('.axis-filter-background').remove();
-		svg.selectAll('.axis-filter').remove();
 		svg.selectAll('.axis-invert').remove();
+		svg.selectAll('.axis-filter-upper').remove();
+		svg.selectAll('.axis-filter-lower').remove();
+		svg.selectAll('.axis-filter-rect').remove();
 	}
 
 	// Draw axes elements
@@ -58,41 +64,12 @@
 					.call(axis)
 			);
 
-			// Create filter background rectangles SVG
-			axisFilterBackgrounds.push(
-				svg
-					.append('rect')
-					.attr('class', 'axis-filter-background')
-					.attr('width', 40)
-					.attr('height', height - margin.top - margin.bottom)
-					.attr('fill', 'rgba(255, 255, 255, 0)')
-					.attr('cursor', 'crosshair')
-					.attr('transform', `translate(${xScales[i] - 20}, ${margin.top})`)
-			);
-
-			// Create filter rectangles SVG
-			axisFilterRectangles.push(
-				svg
-					.append('rect')
-					.attr('class', 'axis-filter cursor-move')
-					.attr('cursor', 'crosshair')
-					.attr('width', 40)
-					.attr(
-						'height',
-						axesFilters[i]?.pixels ? axesFilters[i].pixels.end - axesFilters[i].pixels.start : 0
-					)
-					.attr('y', axesFilters[i]?.pixels ? margin.top + axesFilters[i].pixels.start : 0)
-					.attr('fill', 'rgba(255, 255, 255, 0)')
-					.attr('stroke', 'rgba(0, 0, 0, 1)')
-					.attr('transform', `translate(${xScales[i] - 20}, 0)`)
-			);
-
 			// Create axis titles SVG
 			axisTitles.push(
 				svg
 					.append('text')
 					.attr('class', 'axis-title cursor-grab')
-					.attr('transform', `translate(${xScales[i]}, ${margin.top - 20})`)
+					.attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
 					.text(dim)
@@ -104,15 +81,69 @@
 				svg
 					.append('path')
 					.attr('class', 'axis-invert cursor-pointer')
-					.attr('transform', `translate(${xScales[i]}, ${margin.top - 10}) rotate(180)`)
+					.attr('transform', `translate(${xScales[i]}, ${margin.top - 20}) rotate(180)`)
 					.attr('d', triangle)
 					.on('click', () => handleOnInvertAxesClick(dim, i))
+			);
+
+			// Create axis upper filter
+			const trianglePoints = [
+				{ x: 0, y: 0 },
+				{ x: 8, y: 8 },
+				{ x: 16, y: 0 }
+			];
+			axisUpperFilters.push(
+				svg
+					.append('path')
+					.attr('class', 'axis-filter-upper cursor-grab')
+					.attr(
+						'd',
+						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
+					)
+					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 8})`)
+					.attr('fill', 'black')
+			);
+
+			// Create axis lower filter
+			axisLowerFilters.push(
+				svg
+					.append('path')
+					.attr('class', 'axis-filter-lower')
+					.attr(
+						'd',
+						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
+					)
+					.attr(
+						'transform',
+						`translate(${xScales[i] + 8}, ${height - margin.bottom + 8}) rotate(180)`
+					)
+					.attr('fill', 'black')
+			);
+
+			// Create filter rectangles SVG
+			axisFilterRectangles.push(
+				svg
+					.append('rect')
+					.attr('class', 'axis-filter-rect cursor-move')
+					.attr('cursor', 'crosshair')
+					.attr('width', 20)
+					.attr(
+						'height',
+						axesFilters[i]?.pixels
+							? axesFilters[i].pixels.end - axesFilters[i].pixels.start
+							: height - margin.top - margin.bottom
+					)
+					.attr('y', axesFilters[i]?.pixels ? margin.top + axesFilters[i].pixels.start : margin.top)
+					.attr('fill', 'rgba(255, 255, 100, 0.1)')
+					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
+					.attr('transform', `translate(${xScales[i] - 10}, 0)`)
 			);
 		});
 
 		handleAxesDragging();
-		handleFilterDrawing();
-		handleFilterDragging();
+		//handleFilterDrawing();
+		//handleFilterDragging();
+		handleUpperFilterDragging();
 	}
 
 	// Handle dragging and swapping of axes
@@ -133,15 +164,11 @@
 
 					// Move dragged axis
 					axisLines[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
-					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 20})`);
-					axisFilterBackgrounds[draggingIndex].attr(
-						'transform',
-						`translate(${newX - 20}, ${margin.top})`
-					);
-					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 20}, 0)`);
+					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 30})`);
+					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 10}, 0)`);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
-						`translate(${newX}, ${margin.top - 10}) rotate(180)`
+						`translate(${newX}, ${margin.top - 20}) rotate(180)`
 					);
 
 					// Set new index for swapping if needed
@@ -158,24 +185,19 @@
 						);
 						axisTitles[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex]}, ${margin.top - 20})`
-						);
-						axisFilterBackgrounds[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 20}, ${margin.top})`
+							`translate(${xScales[draggingIndex]}, ${margin.top - 30})`
 						);
 						axisFilterRectangles[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex] - 20}, 0)`
+							`translate(${xScales[draggingIndex] - 10}, 0)`
 						);
 						axisInvertIcons[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex]}, ${margin.top - 10}) rotate(180)`
+							`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
 						);
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
 						axisLines = reorderArray(axisLines, draggingIndex, newIndex);
 						axisTitles = reorderArray(axisTitles, draggingIndex, newIndex);
-						axisFilterBackgrounds = reorderArray(axisFilterBackgrounds, draggingIndex, newIndex);
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
@@ -189,19 +211,15 @@
 						`translate(${xScales[draggingIndex]}, ${margin.top})`
 					);
 					axisTitles[draggingIndex]
-						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 20})`)
+						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 30})`)
 						.attr('class', 'axis-title cursor-grab');
-					axisFilterBackgrounds[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] - 20}, ${margin.top})`
-					);
 					axisFilterRectangles[draggingIndex].attr(
 						'transform',
-						`translate(${xScales[draggingIndex] - 20}, 0)`
+						`translate(${xScales[draggingIndex] - 10}, 0)`
 					);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
-						`translate(${xScales[draggingIndex]}, ${margin.top - 10}) rotate(180)`
+						`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
 					);
 					draggingIndex = -1;
 				});
@@ -249,8 +267,41 @@
 					currentAxis = -1;
 					handleCurrentlyFiltering(false);
 				});
+		});
+	}
 
-			axisFilterBackgrounds[dimensions.indexOf(dim)].call(dragBehavior);
+	function handleUpperFilterDragging() {
+		dimensions.forEach((dim: string, idx: number) => {
+			const dragBehavior = drag<SVGTextElement, unknown, any>()
+				.on('start', (event) => {
+					axisUpperFilters[idx].attr('class', 'cursor-grabbing');
+				})
+				.on('drag', (event) => {
+					const minY = margin.top - 8; // Minimum y position
+					const maxY = height - margin.bottom; // Maximum y position
+					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+
+					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 8}, ${newY})`); // Move upper filter
+					axisFilterRectangles[idx]
+						.attr('y', `${newY + 8}`)
+						.attr('height', `${height - newY - margin.bottom - 8}`); // Move filter rectangle
+
+					axesFilters[idx].pixels = {
+						start: newY - margin.top - 1 + 8,
+						end: newY + height - newY - margin.bottom - margin.top + 8
+					};
+					axesFilters[idx].values = {
+						start: yScales[dim].invert(axesFilters[idx].pixels?.start),
+						end: yScales[dim].invert(axesFilters[idx].pixels?.end)
+					};
+
+					filtersArray.set(axesFilters);
+				})
+				.on('end', () => {
+					axisUpperFilters[idx].attr('class', 'cursor-grab');
+				});
+
+			axisUpperFilters[dimensions.indexOf(dim)].call(dragBehavior);
 		});
 	}
 
@@ -325,6 +376,7 @@
 	});
 
 	afterUpdate(() => {
+		console.log('after update');
 		clearSVG();
 		renderAxes();
 
