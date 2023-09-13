@@ -22,9 +22,6 @@
 	let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 
-	let upperFilterY: number;
-	let lowerFilterY: number;
-
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 
 	// Remove all axes elements and drag handlers
@@ -100,7 +97,10 @@
 						'd',
 						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
 					)
-					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 8})`)
+					.attr(
+						'transform',
+						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
+					)
 					.attr('fill', 'black')
 			);
 
@@ -108,14 +108,16 @@
 			axisLowerFilters.push(
 				svg
 					.append('path')
-					.attr('class', 'axis-filter-lower')
+					.attr('class', 'axis-filter-lower cursor-grab')
 					.attr(
 						'd',
 						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
 					)
 					.attr(
 						'transform',
-						`translate(${xScales[i] + 8}, ${height - margin.bottom + 8}) rotate(180)`
+						`translate(${xScales[i] + 8}, ${
+							axesFilters[i].pixels.end + margin.top + 8
+						}) rotate(180)`
 					)
 					.attr('fill', 'black')
 			);
@@ -127,23 +129,18 @@
 					.attr('class', 'axis-filter-rect cursor-move')
 					.attr('cursor', 'crosshair')
 					.attr('width', 20)
-					.attr(
-						'height',
-						axesFilters[i]?.pixels
-							? axesFilters[i].pixels.end - axesFilters[i].pixels.start
-							: height - margin.top - margin.bottom
-					)
-					.attr('y', axesFilters[i]?.pixels ? margin.top + axesFilters[i].pixels.start : margin.top)
-					.attr('fill', 'rgba(255, 255, 100, 0.1)')
+					.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
+					.attr('y', margin.top + axesFilters[i].pixels.start)
+					.attr('fill', 'rgba(255, 255, 100, 0.2)')
 					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
 					.attr('transform', `translate(${xScales[i] - 10}, 0)`)
 			);
 		});
 
 		handleAxesDragging();
-		//handleFilterDrawing();
-		//handleFilterDragging();
+		handleFilterRectDragging();
 		handleUpperFilterDragging();
+		handleLowerFilterDragging();
 	}
 
 	// Handle dragging and swapping of axes
@@ -165,11 +162,21 @@
 					// Move dragged axis
 					axisLines[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
 					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 30})`);
-					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 10}, 0)`);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
 						`translate(${newX}, ${margin.top - 20}) rotate(180)`
 					);
+					axisUpperFilters[draggingIndex].attr(
+						'transform',
+						`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
+					);
+					axisLowerFilters[draggingIndex].attr(
+						'transform',
+						`translate(${newX + 8}, ${
+							axesFilters[draggingIndex].pixels.end + margin.top + 8
+						}) rotate(180)`
+					);
+					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 10}, 0)`);
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -187,13 +194,25 @@
 							'transform',
 							`translate(${xScales[draggingIndex]}, ${margin.top - 30})`
 						);
-						axisFilterRectangles[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 10}, 0)`
-						);
 						axisInvertIcons[newIndex].attr(
 							'transform',
 							`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
+						);
+						axisUpperFilters[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] - 8}, ${
+								axesFilters[draggingIndex].pixels.start + margin.top - 8
+							})`
+						);
+						axisLowerFilters[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] + 8}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top + 8
+							}) rotate(180)`
+						);
+						axisFilterRectangles[newIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] - 10}, 0)`
 						);
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
 						axisLines = reorderArray(axisLines, draggingIndex, newIndex);
@@ -213,13 +232,25 @@
 					axisTitles[draggingIndex]
 						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 30})`)
 						.attr('class', 'axis-title cursor-grab');
-					axisFilterRectangles[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] - 10}, 0)`
-					);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
 						`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
+					);
+					axisUpperFilters[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex] - 8}, ${
+							axesFilters[draggingIndex].pixels.start + margin.top - 8
+						})`
+					);
+					axisLowerFilters[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex] + 8}, ${
+							axesFilters[draggingIndex].pixels.end + margin.top + 8
+						}) rotate(180)`
+					);
+					axisFilterRectangles[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex] - 10}, 0)`
 					);
 					draggingIndex = -1;
 				});
@@ -228,53 +259,11 @@
 		});
 	}
 
-	// Handle drawing of the filter rectangle
-	function handleFilterDrawing() {
-		dimensions.forEach((dim: string) => {
-			let currentAxis = -1;
-			let filterStart = 0; // Starting position of filter
-			// Add drag behavior to filter data
-			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {
-					currentAxis = dimensions.indexOf(dim);
-					filterStart = event.y;
-					handleCurrentlyFiltering(true);
-				})
-				.on('drag', (event) => {
-					if (currentAxis === -1) return;
-					const minY = margin.top; // Minimum y position
-					const maxY = height - margin.bottom; // Maximum y position
-					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
-					const deltaY = newY - filterStart;
-					const filterHeight = Math.abs(deltaY);
-
-					axisFilterRectangles[currentAxis]
-						.attr('y', deltaY > 0 ? filterStart : newY)
-						.attr('height', filterHeight); // Update or create the filter rectangle
-
-					axesFilters[currentAxis].pixels = {
-						start: (deltaY > 0 ? filterStart : newY) - margin.top - 1,
-						end: (deltaY > 0 ? filterStart : newY) + filterHeight - margin.top + 1
-					};
-					axesFilters[currentAxis].values = {
-						start: yScales[dim].invert(axesFilters[currentAxis].pixels?.start),
-						end: yScales[dim].invert(axesFilters[currentAxis].pixels?.end)
-					};
-
-					filtersArray.set(axesFilters);
-				})
-				.on('end', () => {
-					currentAxis = -1;
-					handleCurrentlyFiltering(false);
-				});
-		});
-	}
-
 	function handleUpperFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {
-					axisUpperFilters[idx].attr('class', 'cursor-grabbing');
+					axisUpperFilters[idx].attr('class', 'axis-filter-upper cursor-grabbing');
 				})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
@@ -284,29 +273,54 @@
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 8}, ${newY})`); // Move upper filter
 					axisFilterRectangles[idx]
 						.attr('y', `${newY + 8}`)
-						.attr('height', `${height - newY - margin.bottom - 8}`); // Move filter rectangle
+						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
 
-					axesFilters[idx].pixels = {
-						start: newY - margin.top - 1 + 8,
-						end: newY + height - newY - margin.bottom - margin.top + 8
-					};
-					axesFilters[idx].values = {
-						start: yScales[dim].invert(axesFilters[idx].pixels?.start),
-						end: yScales[dim].invert(axesFilters[idx].pixels?.end)
-					};
-
+					axesFilters[idx].pixels.start = newY - margin.top - 1 + 8;
+					axesFilters[idx].values.start = yScales[dim].invert(axesFilters[idx].pixels?.start);
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
-					axisUpperFilters[idx].attr('class', 'cursor-grab');
+					axisUpperFilters[idx].attr('class', 'axis-filter-upper cursor-grab');
 				});
 
 			axisUpperFilters[dimensions.indexOf(dim)].call(dragBehavior);
 		});
 	}
 
+	function handleLowerFilterDragging() {
+		dimensions.forEach((dim: string, idx: number) => {
+			const dragBehavior = drag<SVGTextElement, unknown, any>()
+				.on('start', (event) => {
+					axisLowerFilters[idx].attr('class', 'axis-filter-lower cursor-grabbing');
+				})
+				.on('drag', (event) => {
+					const minY = margin.top - 8; // Minimum y position
+					const maxY = height - margin.bottom; // Maximum y position
+					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+
+					axisLowerFilters[idx].attr(
+						'transform',
+						`translate(${xScales[idx] + 8}, ${newY + 8}) rotate(180)`
+					); // Move upper filter
+					axisFilterRectangles[idx].attr(
+						'height',
+						`${newY - axesFilters[idx].pixels.start - margin.top}`
+					); // Move filter rectangle
+
+					axesFilters[idx].pixels.end = newY - margin.top;
+					axesFilters[idx].values.end = yScales[dim].invert(axesFilters[idx].pixels?.end);
+					filtersArray.set(axesFilters);
+				})
+				.on('end', () => {
+					axisLowerFilters[idx].attr('class', 'axis-filter-lower cursor-grab');
+				});
+
+			axisLowerFilters[dimensions.indexOf(dim)].call(dragBehavior);
+		});
+	}
+
 	// Handle dragging of the filter rectangle
-	function handleFilterDragging() {
+	function handleFilterRectDragging() {
 		dimensions.forEach((dim: string, i: number) => {
 			let startY = 0;
 			let rectangleStart: number;
@@ -336,6 +350,18 @@
 						end: yScales[dim].invert(axesFilters[i].pixels?.end)
 					};
 					filtersArray.set(axesFilters);
+
+					// Update axis upper and lower filters
+					axisUpperFilters[i].attr(
+						'transform',
+						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
+					);
+					axisLowerFilters[i].attr(
+						'transform',
+						`translate(${xScales[i] + 8}, ${
+							axesFilters[i].pixels.end + margin.top + 8
+						}) rotate(180)`
+					);
 				})
 				.on('end', () => {
 					startY = 0;
@@ -371,26 +397,40 @@
 		return result;
 	}
 
-	onMount(() => {
-		axesFilters = dimensions.map(() => ({ pixels: null, values: null }));
-	});
+	// Function to initialize axis filter values
+	function initAxesFilters() {
+		axesFilters = dimensions.map((dim: string, i: number) => ({
+			pixels: {
+				start: 0,
+				end: height - margin.bottom - margin.top
+			},
+			values: {
+				start: yScales[dim].invert(0),
+				end: yScales[dim].invert(height - margin.bottom - margin.top)
+			}
+		}));
+		filtersArray.set(axesFilters);
+	}
 
-	afterUpdate(() => {
-		console.log('after update');
-		clearSVG();
-		renderAxes();
-
-		// Resize axes filter rectangles
+	// Function to resize axes filters
+	function resizeFilters() {
 		dimensions.forEach((dim: string, i: number) => {
-			if (axesFilters[i].pixels === null || axesFilters[i].values === null) return;
+			// Calculate new pixel values
 			axesFilters[i].pixels = {
 				start: yScales[dim](axesFilters[i].values.start),
 				end: yScales[dim](axesFilters[i].values.end)
 			};
-			axisFilterRectangles[i]
-				.attr('y', margin.top + axesFilters[i].pixels.start)
-				.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start); // Update or create the filter rectangle
 		});
+	}
+
+	onMount(() => {
+		initAxesFilters();
+	});
+
+	afterUpdate(() => {
+		clearSVG();
+		renderAxes();
+		resizeFilters();
 	});
 </script>
 

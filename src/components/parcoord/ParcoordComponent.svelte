@@ -167,7 +167,7 @@
 			{xScales}
 			{yScales}
 		/>
-		<!-- <Lines
+		<!-- <LinesPixi
 			bind:this={linesComponent}
 			{width}
 			{height}

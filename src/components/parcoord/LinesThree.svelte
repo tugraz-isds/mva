@@ -46,7 +46,6 @@
 	// Redraw after brushing
 	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
 		brushedLinesIndices = value;
-		console.log(brushedLinesIndices);
 		if (dataset?.length > 0 && dimensions?.length > 0) {
 			drawLines();
 		}
@@ -210,7 +209,6 @@
 
 	onMount(() => {
 		dimensions = initialDimensions;
-		axesFilters = dimensions.map(() => ({ pixels: null, values: null }));
 		lineShow = Array(dataset.length).fill(true);
 		linkingArray.set(lineShow);
 		initScene();
