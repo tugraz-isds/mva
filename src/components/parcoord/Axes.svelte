@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
-	import { axisLeft, select, drag, symbol, symbolTriangle } from 'd3';
+	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
 	import type { AxesFilter } from './AxesFilterType';
 
@@ -23,6 +23,7 @@
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -73,13 +74,23 @@
 			);
 
 			// Create axis invert icons SVG
-			const triangle = symbol().type(symbolTriangle).size(25);
+			if (i === 0) console.log(invertedAxes[i]);
 			axisInvertIcons.push(
 				svg
-					.append('path')
+					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.attr('transform', `translate(${xScales[i]}, ${margin.top - 20}) rotate(180)`)
-					.attr('d', triangle)
+					.html(
+						invertedAxes[i]
+							? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
+      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
+    </svg>`
+							: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
+      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+    </svg>`
+					)
+					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
 
@@ -164,7 +175,7 @@
 					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 30})`);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
-						`translate(${newX}, ${margin.top - 20}) rotate(180)`
+						`translate(${newX - 8}, ${margin.top - 28})`
 					);
 					axisUpperFilters[draggingIndex].attr(
 						'transform',
@@ -196,7 +207,7 @@
 						);
 						axisInvertIcons[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
+							`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
 						);
 						axisUpperFilters[newIndex].attr(
 							'transform',
@@ -234,7 +245,7 @@
 						.attr('class', 'axis-title cursor-grab');
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
-						`translate(${xScales[draggingIndex]}, ${margin.top - 20}) rotate(180)`
+						`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
 					);
 					axisUpperFilters[draggingIndex].attr(
 						'transform',
@@ -386,6 +397,20 @@
 		// Set timeout for correct rendering
 		setTimeout(() => {
 			axisFilterRectangles[i].attr('y', margin.top + yScales[dim](axesFilters[i].values.start)); // Update or create the filter rectangle
+
+			// Rotate arrow
+			invertedAxes[i] = !invertedAxes[i];
+			axisInvertIcons[i].html(
+				invertedAxes[i]
+					? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
+      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
+    </svg>`
+					: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
+      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
+    </svg>`
+			);
 		}, 10);
 	}
 
@@ -410,6 +435,8 @@
 			}
 		}));
 		filtersArray.set(axesFilters);
+
+		invertedAxes = Array(dimensions.length).fill(false);
 	}
 
 	// Function to resize axes filters
