@@ -121,13 +121,16 @@
 
 	function drawLine(line: SmoothGraphics, dataRow: any) {
 		line.moveTo(xScales[0], yScales[dimensions[0]](dataRow[dimensions[0] as any]) + margin.top);
-		for (let i = 1; i < xScales.length; i++) {
+		for (let i = 1; i < dimensions.length; i++) {
 			const dim = dimensions[i];
+
+			let yPos;
+			if (yScales[dim].invert) yPos = yScales[dim](dataRow[dim as any]);
+			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
+
 			line.lineTo(
 				xScales[i],
-				yScales[dim](dataRow[dim as any])
-					? yScales[dim](dataRow[dim as any]) + margin.top
-					: margin.top
+				isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
 			);
 		}
 	}

@@ -91,14 +91,17 @@
 	// Function to draw a single line from array
 	function drawLine(dataRow: any[], idx: number) {
 		const linePoints = [];
-		for (let i = 0; i < xScales.length; i++) {
-			const dim = initialDimensions[i];
+		for (let i = 0; i < dimensions.length; i++) {
+			const dim = dimensions[i];
+
+			let yPos;
+			if (yScales[dim].invert) yPos = yScales[dim](dataRow[dim as any]);
+			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
+
 			linePoints.push(
 				new THREE.Vector3(
 					xScales[i],
-					yScales[dim](dataRow[dim as any])
-						? yScales[dim](dataRow[dim as any]) + margin.top
-						: margin.top,
+					isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top,
 					0
 				)
 			);

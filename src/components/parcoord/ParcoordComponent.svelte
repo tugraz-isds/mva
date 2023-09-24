@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
 	import { brushingArray, hoveredItem } from '../../stores/brushing';
-	import { scaleLinear, extent } from 'd3';
+	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
 	import LinesPixi from './LinesPixi.svelte';
 	import LinesThree from './LinesThree.svelte';
@@ -30,7 +30,7 @@
 		if (dataset?.length > 0) {
 			// Get correct dimensions
 			dimensions = Object.keys(dataset[0]);
-			dimensions = filterDimensions(dimensions);
+			//dimensions = filterDimensions(dimensions);
 			dimensionsInitial = dimensions;
 
 			calculateYScales(); // Calculate new yScales
@@ -71,11 +71,18 @@
 	function calculateYScales() {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
 			yScales = dimensions.reduce((acc: any, dim: string) => {
-				const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-				acc[dim] = scaleLinear()
-					.domain(dimExtent)
-					.range([height - margin.top - margin.bottom, 0])
-					.nice();
+				if (isNumber(dataset[0][dim])) {
+					const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
+					acc[dim] = scaleLinear()
+						.domain(dimExtent)
+						.range([height - margin.top - margin.bottom, 0])
+						.nice();
+				} else {
+					const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
+					acc[dim] = scaleBand()
+						.domain(categoricalValues)
+						.range([height - margin.top - margin.bottom, 0]);
+				}
 				return acc;
 			}, {});
 		}
@@ -167,7 +174,7 @@
 			{xScales}
 			{yScales}
 		/>
-		<!-- <LinesPixi
+		<LinesPixi
 			bind:this={linesComponent}
 			{width}
 			{height}
@@ -176,8 +183,8 @@
 			{margin}
 			{xScales}
 			{yScales}
-		/> -->
-		<LinesThree
+		/>
+		<!-- <LinesThree
 			{width}
 			{height}
 			{dataset}
@@ -185,6 +192,6 @@
 			{margin}
 			{xScales}
 			{yScales}
-		/>
+		/> -->
 	{/if}
 </div>

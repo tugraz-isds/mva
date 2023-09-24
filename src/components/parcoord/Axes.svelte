@@ -51,7 +51,16 @@
 
 		// Create SVG elements of axes and axes titles
 		dimensions.forEach((dim: string, i: number) => {
-			const axis = axisLeft(yScales[dim]).ticks(5);
+			let axis;
+			//axis = axisLeft(yScales[dim]).ticks(5);
+			if (yScales[dim].invert) axis = axisLeft(yScales[dim]).ticks(5);
+			else {
+				axis = axisLeft(yScales[dim]);
+				const domainValues = yScales[dim].domain();
+				const step = Math.ceil(domainValues.length / 30);
+				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
+				axis.tickValues(tickValues);
+			}
 
 			// Create axis lines SVG
 			axisLines.push(
@@ -74,7 +83,6 @@
 			);
 
 			// Create axis invert icons SVG
-			if (i === 0) console.log(invertedAxes[i]);
 			axisInvertIcons.push(
 				svg
 					.append('g')
@@ -287,7 +295,9 @@
 						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
 
 					axesFilters[idx].pixels.start = newY - margin.top - 1 + 8;
-					axesFilters[idx].values.start = yScales[dim].invert(axesFilters[idx].pixels?.start);
+					axesFilters[idx].values.start = yScales[dim].invert
+						? yScales[dim].invert(axesFilters[idx].pixels?.start)
+						: getCategoryForPixel(yScales[dim], axesFilters[idx].pixels?.start);
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
@@ -319,7 +329,9 @@
 					); // Move filter rectangle
 
 					axesFilters[idx].pixels.end = newY - margin.top;
-					axesFilters[idx].values.end = yScales[dim].invert(axesFilters[idx].pixels?.end);
+					axesFilters[idx].values.end = yScales[dim].invert
+						? yScales[dim].invert(axesFilters[idx].pixels?.end)
+						: getCategoryForPixel(yScales[dim], axesFilters[idx].pixels?.end);
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
@@ -357,8 +369,12 @@
 						end: newY + filterHeight - margin.top
 					};
 					axesFilters[i].values = {
-						start: yScales[dim].invert(axesFilters[i].pixels?.start),
-						end: yScales[dim].invert(axesFilters[i].pixels?.end)
+						start: yScales[dim].invert
+							? yScales[dim].invert(axesFilters[i].pixels?.start)
+							: getCategoryForPixel(yScales[dim], axesFilters[i].pixels?.start),
+						end: yScales[dim].invert
+							? yScales[dim].invert(axesFilters[i].pixels?.end)
+							: getCategoryForPixel(yScales[dim], axesFilters[i].pixels?.end)
 					};
 					filtersArray.set(axesFilters);
 
@@ -388,15 +404,28 @@
 		handleInvertAxis(i); // Handle inverting axes in parent component
 
 		// Swap filter rectangle start and end
-		const temp = axesFilters[i].values.end;
-		axesFilters[i].values.end = axesFilters[i].values.start;
-		axesFilters[i].values.start = temp;
-		axesFilters[i].pixels.start = yScales[dim](axesFilters[i].values.start);
-		axesFilters[i].pixels.end = yScales[dim](axesFilters[i].values.end);
+		// if (yScales[dim].invert) {
+		// 	const temp = axesFilters[i].values.end;
+		// 	axesFilters[i].values.end = axesFilters[i].values.start;
+		// 	axesFilters[i].values.start = temp;
+		// 	axesFilters[i].pixels.start = yScales[dim](axesFilters[i].values.start);
+		// 	axesFilters[i].pixels.end = yScales[dim](axesFilters[i].values.end);
+		// } else {
+		const temp = axesFilters[i].pixels.end;
+		axesFilters[i].pixels.end = height - margin.bottom - margin.top - axesFilters[i].pixels.start;
+		console.log(height - margin.bottom - margin.top, axesFilters[i].pixels.start);
+		axesFilters[i].pixels.start = height - margin.bottom - margin.top - temp;
+		// }
 
 		// Set timeout for correct rendering
 		setTimeout(() => {
-			axisFilterRectangles[i].attr('y', margin.top + yScales[dim](axesFilters[i].values.start)); // Update or create the filter rectangle
+			// Update or create the filter rectangle
+			// if (yScales[dim].invert)
+			// 	axisFilterRectangles[i].attr('y', margin.top + yScales[dim](axesFilters[i].values.start));
+			// else {
+			// 	console.log(margin.top + axesFilters[i].pixels.start);
+			axisFilterRectangles[i].attr('y', margin.top + axesFilters[i].pixels.start);
+			// }
 
 			// Rotate arrow
 			invertedAxes[i] = !invertedAxes[i];
@@ -412,6 +441,22 @@
     </svg>`
 			);
 		}, 10);
+	}
+
+	// Helper function to get the selected category for scaleBand scales
+	function getCategoryForPixel(scale: any, pixel: any) {
+		const domain = scale.domain();
+		const categoryIndex = Math.floor((pixel - scale.range()[0]) / scale.bandwidth());
+		console.log(domain[categoryIndex], categoryIndex);
+		return domain[categoryIndex];
+	}
+
+	function getValueFromScaleBand(scale: any, position: number) {
+		const step = scale.step(); // Calculate the step size (width of each band)
+		const index = Math.floor((position - scale.range()[0]) / step); // Calculate the index of the band that corresponds to the position
+		console.log(index);
+		const domainValue = scale.domain()[index]; // Use the index to get the corresponding domain value
+		return domainValue;
 	}
 
 	// Helper function to reorder an array
@@ -430,10 +475,11 @@
 				end: height - margin.bottom - margin.top
 			},
 			values: {
-				start: yScales[dim].invert(0),
-				end: yScales[dim].invert(height - margin.bottom - margin.top)
+				start: yScales[dim].invert ? yScales[dim].invert(0) : null,
+				end: yScales[dim].invert ? yScales[dim].invert(height - margin.bottom - margin.top) : null
 			}
 		}));
+
 		filtersArray.set(axesFilters);
 
 		invertedAxes = Array(dimensions.length).fill(false);
@@ -441,13 +487,15 @@
 
 	// Function to resize axes filters
 	function resizeFilters() {
-		dimensions.forEach((dim: string, i: number) => {
-			// Calculate new pixel values
-			axesFilters[i].pixels = {
-				start: yScales[dim](axesFilters[i].values.start),
-				end: yScales[dim](axesFilters[i].values.end)
-			};
-		});
+		console.log('her');
+		// dimensions.forEach((dim: string, i: number) => {
+		// 	// Calculate new pixel values
+		// 	if (yScales[dim].invert)
+		// 		axesFilters[i].pixels = {
+		// 			start: yScales[dim](axesFilters[i].values.start),
+		// 			end: yScales[dim](axesFilters[i].values.end)
+		// 		};
+		// });
 	}
 
 	onMount(() => {
