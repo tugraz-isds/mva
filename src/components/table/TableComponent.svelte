@@ -9,6 +9,10 @@
 	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let brushedRowsIndices = new Set<number>(); // Currently brushed rows
 
+	// Selection range
+	let rangeStart: number | null = null; // Start of range of rows
+	let rangeEnd: number | null = null; // End of range of rows
+
 	let dataset: DSVParsedArray<any>;
 	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
 		dataset = value;
@@ -29,12 +33,43 @@
 	});
 
 	// Handle click on row
-	function handleRowClick() {
+	function handleRowClick(event: MouseEvent) {
 		if (hoveredLineIndex === null) return;
-		if (brushedRowsIndices.has(hoveredLineIndex))
-			brushedRowsIndices.delete(hoveredLineIndex); // Remove the index if it exists
-		else brushedRowsIndices.add(hoveredLineIndex); // Add the index if it doesn't exist
+
+		if (event.ctrlKey) {
+			// Toggle the selection of individual items with Ctrl key
+			if (brushedRowsIndices.has(hoveredLineIndex)) {
+				brushedRowsIndices.delete(hoveredLineIndex);
+			} else {
+				brushedRowsIndices.add(hoveredLineIndex);
+			}
+		} else if (event.shiftKey) {
+			// Select a range of items with Shift key
+			if (rangeStart !== null) {
+				const tempStart = Math.min(rangeStart, hoveredLineIndex);
+				const tempEnd = Math.max(rangeStart, hoveredLineIndex);
+				brushedRowsIndices.clear();
+				for (let i = tempStart; i <= tempEnd; i++) {
+					brushedRowsIndices.add(i);
+				}
+			} else {
+				brushedRowsIndices.clear();
+				brushedRowsIndices.add(hoveredLineIndex);
+				rangeStart = rangeEnd = hoveredLineIndex;
+			}
+		} else {
+			// Select a single item without Ctrl or Shift
+			if (brushedRowsIndices.size === 1 && brushedRowsIndices.has(hoveredLineIndex))
+				brushedRowsIndices.clear();
+			else {
+				brushedRowsIndices.clear();
+				brushedRowsIndices.add(hoveredLineIndex);
+				rangeStart = rangeEnd = hoveredLineIndex;
+			}
+		}
+
 		brushingArray.set(brushedRowsIndices);
+		window.getSelection()?.removeAllRanges(); // Remove selection from text
 	}
 
 	onDestroy(() => {
