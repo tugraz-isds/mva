@@ -166,10 +166,13 @@
 
 				const originalYValue = line[dim as any];
 				const scaledYValue = yScales[dim](originalYValue);
-				if (
-					scaledYValue < axesFilters[j].pixels.start ||
-					scaledYValue > axesFilters[j].pixels.end
-				) {
+				const filterValueStart = yScales[dim].invert
+					? axesFilters[j].pixels.start
+					: axesFilters[j].pixels.start - yScales[dim].step() / 2;
+				const filterValueEnd = yScales[dim].invert
+					? axesFilters[j].pixels.end
+					: axesFilters[j].pixels.end - yScales[dim].step() / 2;
+				if (scaledYValue < filterValueStart || scaledYValue > filterValueEnd) {
 					lineShow[idx] = false;
 				}
 			});

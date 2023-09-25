@@ -21,9 +21,12 @@
 	let axisUpperFilters: any = []; // Array of SVG elements for axis upper filters
 	let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
+	let axisHeight: number; // Actual axis height in pixels
 
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
+
+	$: axisHeight = height - margin.top - margin.bottom;
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -295,9 +298,7 @@
 						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
 
 					axesFilters[idx].pixels.start = newY - margin.top - 1 + 8;
-					axesFilters[idx].values.start = yScales[dim].invert
-						? yScales[dim].invert(axesFilters[idx].pixels?.start)
-						: getCategoryForPixel(yScales[dim], axesFilters[idx].pixels?.start);
+					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
@@ -329,9 +330,7 @@
 					); // Move filter rectangle
 
 					axesFilters[idx].pixels.end = newY - margin.top;
-					axesFilters[idx].values.end = yScales[dim].invert
-						? yScales[dim].invert(axesFilters[idx].pixels?.end)
-						: getCategoryForPixel(yScales[dim], axesFilters[idx].pixels?.end);
+					axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
@@ -368,13 +367,9 @@
 						start: newY - margin.top,
 						end: newY + filterHeight - margin.top
 					};
-					axesFilters[i].values = {
-						start: yScales[dim].invert
-							? yScales[dim].invert(axesFilters[i].pixels?.start)
-							: getCategoryForPixel(yScales[dim], axesFilters[i].pixels?.start),
-						end: yScales[dim].invert
-							? yScales[dim].invert(axesFilters[i].pixels?.end)
-							: getCategoryForPixel(yScales[dim], axesFilters[i].pixels?.end)
+					axesFilters[i].percentages = {
+						start: axesFilters[i].pixels.start / axisHeight,
+						end: axesFilters[i].pixels.end / axisHeight
 					};
 					filtersArray.set(axesFilters);
 
@@ -404,28 +399,15 @@
 		handleInvertAxis(i); // Handle inverting axes in parent component
 
 		// Swap filter rectangle start and end
-		// if (yScales[dim].invert) {
-		// 	const temp = axesFilters[i].values.end;
-		// 	axesFilters[i].values.end = axesFilters[i].values.start;
-		// 	axesFilters[i].values.start = temp;
-		// 	axesFilters[i].pixels.start = yScales[dim](axesFilters[i].values.start);
-		// 	axesFilters[i].pixels.end = yScales[dim](axesFilters[i].values.end);
-		// } else {
 		const temp = axesFilters[i].pixels.end;
-		axesFilters[i].pixels.end = height - margin.bottom - margin.top - axesFilters[i].pixels.start;
-		console.log(height - margin.bottom - margin.top, axesFilters[i].pixels.start);
-		axesFilters[i].pixels.start = height - margin.bottom - margin.top - temp;
-		// }
+		axesFilters[i].pixels.end = axisHeight - axesFilters[i].pixels.start;
+		axesFilters[i].pixels.start = axisHeight - temp;
+		axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
+		axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
 
 		// Set timeout for correct rendering
 		setTimeout(() => {
-			// Update or create the filter rectangle
-			// if (yScales[dim].invert)
-			// 	axisFilterRectangles[i].attr('y', margin.top + yScales[dim](axesFilters[i].values.start));
-			// else {
-			// 	console.log(margin.top + axesFilters[i].pixels.start);
-			axisFilterRectangles[i].attr('y', margin.top + axesFilters[i].pixels.start);
-			// }
+			axisFilterRectangles[i].attr('y', margin.top + axesFilters[i].pixels.start); // Update the filter rectangle
 
 			// Rotate arrow
 			invertedAxes[i] = !invertedAxes[i];
@@ -443,22 +425,6 @@
 		}, 10);
 	}
 
-	// Helper function to get the selected category for scaleBand scales
-	function getCategoryForPixel(scale: any, pixel: any) {
-		const domain = scale.domain();
-		const categoryIndex = Math.floor((pixel - scale.range()[0]) / scale.bandwidth());
-		console.log(domain[categoryIndex], categoryIndex);
-		return domain[categoryIndex];
-	}
-
-	function getValueFromScaleBand(scale: any, position: number) {
-		const step = scale.step(); // Calculate the step size (width of each band)
-		const index = Math.floor((position - scale.range()[0]) / step); // Calculate the index of the band that corresponds to the position
-		console.log(index);
-		const domainValue = scale.domain()[index]; // Use the index to get the corresponding domain value
-		return domainValue;
-	}
-
 	// Helper function to reorder an array
 	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
 		const result = [...arr];
@@ -472,11 +438,11 @@
 		axesFilters = dimensions.map((dim: string, i: number) => ({
 			pixels: {
 				start: 0,
-				end: height - margin.bottom - margin.top
+				end: axisHeight
 			},
-			values: {
-				start: yScales[dim].invert ? yScales[dim].invert(0) : null,
-				end: yScales[dim].invert ? yScales[dim].invert(height - margin.bottom - margin.top) : null
+			percentages: {
+				start: 0,
+				end: 1
 			}
 		}));
 
@@ -487,15 +453,13 @@
 
 	// Function to resize axes filters
 	function resizeFilters() {
-		console.log('her');
-		// dimensions.forEach((dim: string, i: number) => {
-		// 	// Calculate new pixel values
-		// 	if (yScales[dim].invert)
-		// 		axesFilters[i].pixels = {
-		// 			start: yScales[dim](axesFilters[i].values.start),
-		// 			end: yScales[dim](axesFilters[i].values.end)
-		// 		};
-		// });
+		dimensions.forEach((dim: string, i: number) => {
+			// Calculate new pixel values
+			axesFilters[i].pixels = {
+				start: axesFilters[i].percentages.start * axisHeight,
+				end: axesFilters[i].percentages.end * axisHeight
+			};
+		});
 	}
 
 	onMount(() => {

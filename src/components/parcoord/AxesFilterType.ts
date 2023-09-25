@@ -1,11 +1,11 @@
 export type AxesFilter = {
 	pixels: {
-		// Actual pixel values of start/end
+		// Actual pixel values of filters start/end
 		start: number;
 		end: number;
 	};
-	values: {
-		// Values on plot of start/end
+	percentages: {
+		// Percentages on plot of filters start/end
 		start: number;
 		end: number;
 	};
