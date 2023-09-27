@@ -2,6 +2,7 @@
 	import { afterUpdate, onMount } from 'svelte';
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
+	import { arrowDown, arrowUp } from './ArrowIcons';
 	import type { AxesFilter } from './AxesFilterType';
 
 	export let width: number; // Container width
@@ -59,11 +60,11 @@
 			if (yScales[dim].invert) axis = axisLeft(yScales[dim]).ticks(5);
 			else {
 				axis = axisLeft(yScales[dim]);
-				// const domainValues = yScales[dim].domain();
-				// const step = Math.ceil(domainValues.length / 30);
-				// const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
-				// axis.tickValues(tickValues);
-				//if (yScales[dim].domain().length > 20) axis.tickValues([]);
+				const domainValues = yScales[dim].domain();
+				const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
+				const step = Math.ceil(domainValues.length / tickNumber);
+				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
+				axis.tickValues(tickValues);
 			}
 
 			// Create axis lines SVG
@@ -91,17 +92,7 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(
-						invertedAxes[i]
-							? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
-      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
-    </svg>`
-							: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
-      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
-    </svg>`
-					)
+					.html(invertedAxes[i] ? arrowUp : arrowDown)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
@@ -151,12 +142,12 @@
 					.append('rect')
 					.attr('class', 'axis-filter-rect cursor-move')
 					.attr('cursor', 'crosshair')
-					.attr('width', 20)
+					.attr('width', 12)
 					.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
 					.attr('y', margin.top + axesFilters[i].pixels.start)
 					.attr('fill', 'rgba(255, 255, 100, 0.2)')
 					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
-					.attr('transform', `translate(${xScales[i] - 10}, 0)`)
+					.attr('transform', `translate(${xScales[i] - 6}, 0)`)
 			);
 		});
 
@@ -199,7 +190,7 @@
 							axesFilters[draggingIndex].pixels.end + margin.top + 8
 						}) rotate(180)`
 					);
-					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 10}, 0)`);
+					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -235,7 +226,7 @@
 						);
 						axisFilterRectangles[newIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex] - 10}, 0)`
+							`translate(${xScales[draggingIndex] - 6}, 0)`
 						);
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
 						axisLines = reorderArray(axisLines, draggingIndex, newIndex);
@@ -273,7 +264,7 @@
 					);
 					axisFilterRectangles[draggingIndex].attr(
 						'transform',
-						`translate(${xScales[draggingIndex] - 10}, 0)`
+						`translate(${xScales[draggingIndex] - 6}, 0)`
 					);
 					draggingIndex = -1;
 				});
@@ -412,17 +403,7 @@
 
 			// Rotate arrow
 			invertedAxes[i] = !invertedAxes[i];
-			axisInvertIcons[i].html(
-				invertedAxes[i]
-					? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
-      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 19.5v-15m0 0l-6.75 6.75M12 4.5l6.75 6.75" />
-    </svg>`
-					: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16">
-      <rect width="24" height="24" fill="transparent" stroke="none" /> <!-- Set stroke to "none" -->
-      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0l6.75-6.75M12 19.5l-6.75-6.75" />
-    </svg>`
-			);
+			axisInvertIcons[i].html(invertedAxes[i] ? arrowUp : arrowDown);
 		}, 10);
 	}
 
