@@ -174,7 +174,7 @@
 			{xScales}
 			{yScales}
 		/>
-		<LinesPixi
+		<!-- <LinesPixi
 			bind:this={linesComponent}
 			{width}
 			{height}
@@ -183,8 +183,8 @@
 			{margin}
 			{xScales}
 			{yScales}
-		/>
-		<!-- <LinesThree
+		/> -->
+		<LinesThree
 			{width}
 			{height}
 			{dataset}
@@ -192,6 +192,6 @@
 			{margin}
 			{xScales}
 			{yScales}
-		/> -->
+		/>
 	{/if}
 </div>

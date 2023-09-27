@@ -54,15 +54,16 @@
 
 		// Create SVG elements of axes and axes titles
 		dimensions.forEach((dim: string, i: number) => {
+			// Create axis objects
 			let axis;
-			//axis = axisLeft(yScales[dim]).ticks(5);
 			if (yScales[dim].invert) axis = axisLeft(yScales[dim]).ticks(5);
 			else {
 				axis = axisLeft(yScales[dim]);
-				const domainValues = yScales[dim].domain();
-				const step = Math.ceil(domainValues.length / 30);
-				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
-				axis.tickValues(tickValues);
+				// const domainValues = yScales[dim].domain();
+				// const step = Math.ceil(domainValues.length / 30);
+				// const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
+				// axis.tickValues(tickValues);
+				//if (yScales[dim].domain().length > 20) axis.tickValues([]);
 			}
 
 			// Create axis lines SVG

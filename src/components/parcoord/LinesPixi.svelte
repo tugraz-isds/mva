@@ -67,7 +67,7 @@
 			}
 		} else {
 			lineHover = new SmoothGraphics();
-			lineHover.lineStyle(3, 0xef4444, 1);
+			lineHover.lineStyle(2, 0xef4444, 1);
 			drawLine(lineHover, dataset[hoveredLineIndex]);
 			app.stage.addChildAt(lineHover, app.stage.children.length - 1);
 		}
@@ -95,7 +95,7 @@
 			lineShow.push(true);
 
 			const line = new SmoothGraphics();
-			line.lineStyle(2, 0xffffff, 0.75);
+			line.lineStyle(1, 0xffffff, 0.75);
 			line.tint = lineShow[idx] ? 0x4169e1 : 0xcbd5e0;
 			drawLine(line, dataRow);
 			lineGraphicsData.push(line); // Store the data for each line as PIXI.Graphics object
@@ -113,7 +113,7 @@
 		// Draw brushed lines
 		brushedLinesIndices.forEach((idx: number) => {
 			const lineBrushed = new SmoothGraphics();
-			lineBrushed.lineStyle(3, 0xfb923c, 1);
+			lineBrushed.lineStyle(2, 0xfb923c, 1);
 			drawLine(lineBrushed, dataset[idx]);
 			app.stage.addChildAt(lineBrushed, app.stage.children.length - 1);
 		});

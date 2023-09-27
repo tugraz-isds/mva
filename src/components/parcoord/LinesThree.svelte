@@ -107,7 +107,12 @@
 			);
 		}
 
-		const material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 });
+		const material = new THREE.LineBasicMaterial({
+			color: 0x4169e1,
+			linewidth: 1,
+			transparent: true,
+			opacity: 0.75
+		});
 		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
 		line = new THREE.Line(geometry, material);
 		line.index = idx; // Add custom property index to hovered line
