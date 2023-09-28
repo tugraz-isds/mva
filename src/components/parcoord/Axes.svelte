@@ -80,10 +80,11 @@
 			axisTitles.push(
 				svg
 					.append('text')
-					.attr('class', 'axis-title cursor-grab')
+					.attr('class', 'axis-title')
 					.attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
+					.style('cursor', `url("arrows-right-left.svg") 9 9, auto`)
 					.text(dim)
 			);
 
@@ -94,6 +95,7 @@
 					.attr('class', 'axis-invert cursor-pointer')
 					.html(invertedAxes[i] ? arrowUp : arrowDown)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
+					.style('cursor', `url("arrows-invert.svg") 9 9, auto`)
 					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
 
@@ -106,7 +108,7 @@
 			axisUpperFilters.push(
 				svg
 					.append('path')
-					.attr('class', 'axis-filter-upper cursor-grab')
+					.attr('class', 'axis-filter-upper')
 					.attr(
 						'd',
 						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
@@ -116,13 +118,14 @@
 						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
 					)
 					.attr('fill', 'black')
+					.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
 			);
 
 			// Create axis lower filter
 			axisLowerFilters.push(
 				svg
 					.append('path')
-					.attr('class', 'axis-filter-lower cursor-grab')
+					.attr('class', 'axis-filter-lower')
 					.attr(
 						'd',
 						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
@@ -134,13 +137,14 @@
 						}) rotate(180)`
 					)
 					.attr('fill', 'black')
+					.style('cursor', `url("arrow-filter-up.svg") 9 9, auto`)
 			);
 
 			// Create filter rectangles SVG
 			axisFilterRectangles.push(
 				svg
 					.append('rect')
-					.attr('class', 'axis-filter-rect cursor-move')
+					.attr('class', 'axis-filter-rect')
 					.attr('cursor', 'crosshair')
 					.attr('width', 12)
 					.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
@@ -148,6 +152,7 @@
 					.attr('fill', 'rgba(255, 255, 100, 0.2)')
 					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
 					.attr('transform', `translate(${xScales[i] - 6}, 0)`)
+					.style('cursor', `url("arrow-filter-up-down.svg") 9 9, auto`)
 			);
 		});
 
@@ -168,7 +173,6 @@
 				.on('start', (event) => {
 					draggingIndex = dimensions.indexOf(dim);
 					event.subject.x = xScales[dimensions.indexOf(dim)];
-					axisTitles[dimensions.indexOf(dim)].attr('class', 'axis-title cursor-grabbing');
 				})
 				.on('drag', (event) => {
 					const newX = event.x;
@@ -243,9 +247,10 @@
 						'transform',
 						`translate(${xScales[draggingIndex]}, ${margin.top})`
 					);
-					axisTitles[draggingIndex]
-						.attr('transform', `translate(${xScales[draggingIndex]}, ${margin.top - 30})`)
-						.attr('class', 'axis-title cursor-grab');
+					axisTitles[draggingIndex].attr(
+						'transform',
+						`translate(${xScales[draggingIndex]}, ${margin.top - 30})`
+					);
 					axisInvertIcons[draggingIndex].attr(
 						'transform',
 						`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
@@ -276,9 +281,7 @@
 	function handleUpperFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {
-					axisUpperFilters[idx].attr('class', 'axis-filter-upper cursor-grabbing');
-				})
+				.on('start', (event) => {})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
 					const maxY = height - margin.bottom; // Maximum y position
@@ -293,9 +296,7 @@
 					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {
-					axisUpperFilters[idx].attr('class', 'axis-filter-upper cursor-grab');
-				});
+				.on('end', () => {});
 
 			axisUpperFilters[dimensions.indexOf(dim)].call(dragBehavior);
 		});
@@ -304,9 +305,7 @@
 	function handleLowerFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {
-					axisLowerFilters[idx].attr('class', 'axis-filter-lower cursor-grabbing');
-				})
+				.on('start', (event) => {})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
 					const maxY = height - margin.bottom; // Maximum y position
@@ -325,9 +324,7 @@
 					axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {
-					axisLowerFilters[idx].attr('class', 'axis-filter-lower cursor-grab');
-				});
+				.on('end', () => {});
 
 			axisLowerFilters[dimensions.indexOf(dim)].call(dragBehavior);
 		});
@@ -461,3 +458,10 @@
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
+
+<style>
+	.cursor-arrows-left-right {
+		cursor: grab;
+		background-color: red;
+	}
+</style>
