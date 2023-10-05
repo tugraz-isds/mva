@@ -446,6 +446,7 @@
 	});
 
 	afterUpdate(() => {
+		if (axesFilters.length !== dimensions.length) initAxesFilters();
 		clearSVG();
 		renderAxes();
 		resizeFilters();

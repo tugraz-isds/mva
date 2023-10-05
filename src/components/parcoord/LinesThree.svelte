@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
 	import { brushingArray } from '../../stores/brushing';
 	import { hoveredItem } from '../../stores/brushing';
@@ -28,18 +28,21 @@
 	let mouse: THREE.Vector2;
 
 	let hoveredLine: any; // Currently hovered line object
+	let hoveredLines: any[] = []; // Currently hovered line objects
 	let lines: THREE.Line[] = []; // Array to store all line objects
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
+	let lineColors: number[] = []; // Array of number colors for all lines
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false;
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
+	// Apply filters
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
-			applyFilters();
+			if (axesFilters.length === dimensions.length) applyFilters();
 		}
 	});
 
@@ -73,17 +76,18 @@
 	}
 
 	function drawLines() {
+		lines = [];
 		dataset.forEach((dataRow: any, idx: number) => {
 			drawLine(dataRow, idx);
 		});
 
 		// Change color for brushed lines
-		const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
-		brushedLinesIndices.forEach((idx: number) => {
-			if (idx === undefined) return;
-			lines[idx].material = material;
-			changeLinePosition(lines[idx], 1);
-		});
+		// const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
+		// brushedLinesIndices.forEach((idx: number) => {
+		// 	if (idx === undefined) return;
+		// 	lines[idx].material = material;
+		// 	changeLinePosition(lines[idx], 1);
+		// });
 
 		render();
 	}
@@ -108,7 +112,7 @@
 		}
 
 		const material = new THREE.LineBasicMaterial({
-			color: 0x4169e1,
+			color: lineColors[idx],
 			linewidth: 1,
 			transparent: true,
 			opacity: 0.75
@@ -127,29 +131,31 @@
 		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
 		mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
 
-		raycaster.setFromCamera(mouse, camera); // Update the raycaster
-		const intersects = raycaster.intersectObjects(lines); // Check for intersections
-
-		if (intersects.length === 0 && hoveredLine !== undefined) {
-			hoveredLine.material = new THREE.LineBasicMaterial({
-				color: brushedLinesIndices.has(hoveredLine.index) ? 0xfb923c : 0x4169e1,
+		// Re-color currently hovered lines
+		hoveredLines.forEach((line: any) => {
+			line.material = new THREE.LineBasicMaterial({
+				color: lineColors[line.index],
 				linewidth: 1
 			});
-			hoveredLine = undefined;
-			render();
-		}
-		if (intersects.length > 0) {
-			if (hoveredLine !== undefined) {
-				hoveredLine.material = new THREE.LineBasicMaterial({
-					color: brushedLinesIndices.has(hoveredLine.index) ? 0xfb923c : 0x4169e1,
-					linewidth: 1
-				});
-			}
-			hoveredLine = intersects[0].object as THREE.Line;
-			hoveredLine.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 }); // Change color for the hovered line
-			changeLinePosition(hoveredLine, 2);
-			render();
-		}
+		});
+
+		hoveredLines = [];
+
+		raycaster.setFromCamera(mouse, camera); // Update the raycaster
+		const intersects = raycaster.intersectObjects(lines); // Check for intersections
+		// Add hovered lines
+		intersects.forEach((intersection) => {
+			const line = intersection.object as THREE.Line;
+			hoveredLines.push(line);
+		});
+
+		// Highlight all currently hovered lines
+		hoveredLines.forEach((line: any) => {
+			line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
+			changeLinePosition(line, 2);
+		});
+
+		render();
 	}
 
 	function handleClick() {
@@ -182,9 +188,11 @@
 				}
 			});
 			if (lineShow[idx]) {
+				lineColors[idx] = 0x4169e1;
 				lines[idx].material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 }); // Set color to active
 				changeLinePosition(lines[idx], 0);
 			} else {
+				lineColors[idx] = 0xcbd5e0;
 				lines[idx].material = new THREE.LineBasicMaterial({ color: 0xcbd5e0, linewidth: 1 }); // Set color to inactive
 				changeLinePosition(lines[idx], -1);
 			}
@@ -199,6 +207,11 @@
 		});
 
 		render();
+	};
+
+	export const handleInvertAxis = () => {
+		initScene();
+		drawLines();
 	};
 
 	function changeLinePosition(line: THREE.Line, newZPosition: number) {
@@ -221,11 +234,18 @@
 	onMount(() => {
 		dimensions = initialDimensions;
 		lineShow = Array(dataset.length).fill(true);
+		lineColors = Array(dataset.length).fill(0x4169e1);
 		linkingArray.set(lineShow);
 		initScene();
 		drawLines();
 		window.addEventListener('mousemove', handleMouseMove, false);
 		window.addEventListener('click', handleClick, false);
+	});
+
+	afterUpdate(() => {
+		if (axesFilters.length !== dimensions.length) dimensions = initialDimensions;
+		initScene();
+		drawLines();
 	});
 
 	onDestroy(() => {

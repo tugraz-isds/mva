@@ -4,7 +4,6 @@
 	import { brushingArray, hoveredItem } from '../../stores/brushing';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
-	import LinesPixi from './LinesPixi.svelte';
 	import LinesThree from './LinesThree.svelte';
 	import type { DSVParsedArray } from 'd3';
 
@@ -17,7 +16,8 @@
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
 
-	let linesComponent: LinesPixi; // Svelte Lines component
+	let linesComponent: LinesThree; // Svelte Lines component
+	let axesComponent: Axes; // Svelte Axes component
 
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
@@ -30,7 +30,6 @@
 		if (dataset?.length > 0) {
 			// Get correct dimensions
 			dimensions = Object.keys(dataset[0]);
-			//dimensions = filterDimensions(dimensions);
 			dimensionsInitial = dimensions;
 
 			calculateYScales(); // Calculate new yScales
@@ -113,6 +112,7 @@
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
+		linesComponent.handleInvertAxis();
 	}
 
 	// Handle click on line
@@ -164,6 +164,7 @@
 		<span>No data available.</span>
 	{:else if yScales && Object.keys(yScales).length !== 0}
 		<Axes
+			bind:this={axesComponent}
 			{width}
 			{height}
 			{dimensions}
@@ -185,6 +186,7 @@
 			{yScales}
 		/> -->
 		<LinesThree
+			bind:this={linesComponent}
 			{width}
 			{height}
 			{dataset}
