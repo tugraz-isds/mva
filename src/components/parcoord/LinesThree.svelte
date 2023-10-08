@@ -32,10 +32,10 @@
 	let lines: THREE.Line[] = []; // Array to store all line objects
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
 	let lineColors: number[] = []; // Array of number colors for all lines
+	let linePositions: number[] = []; // Array of number positions for all lines
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
-	let isCurrentlyFiltering: boolean = false;
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
 	// Apply filters
@@ -50,7 +50,7 @@
 	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
 		brushedLinesIndices = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
-			drawLines();
+			//drawLines();
 		}
 	});
 
@@ -106,7 +106,7 @@
 				new THREE.Vector3(
 					xScales[i],
 					isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top,
-					0
+					linePositions[idx]
 				)
 			);
 		}
@@ -137,6 +137,7 @@
 				color: lineColors[line.index],
 				linewidth: 1
 			});
+			changeLinePosition(line, linePositions[line.index]);
 		});
 
 		hoveredLines = [];
@@ -189,28 +190,29 @@
 			});
 			if (lineShow[idx]) {
 				lineColors[idx] = 0x4169e1;
+				linePositions[idx] = 0;
 				lines[idx].material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 }); // Set color to active
 				changeLinePosition(lines[idx], 0);
 			} else {
 				lineColors[idx] = 0xcbd5e0;
+				linePositions[idx] = -1;
 				lines[idx].material = new THREE.LineBasicMaterial({ color: 0xcbd5e0, linewidth: 1 }); // Set color to inactive
 				changeLinePosition(lines[idx], -1);
 			}
 		});
 
 		// Change color for brushed lines
-		const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
-		brushedLinesIndices.forEach((idx: number) => {
-			if (idx === undefined) return;
-			lines[idx].material = material;
-			changeLinePosition(lines[idx], 1);
-		});
+		// const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
+		// brushedLinesIndices.forEach((idx: number) => {
+		// 	if (idx === undefined) return;
+		// 	lines[idx].material = material;
+		// 	changeLinePosition(lines[idx], 1);
+		// });
 
 		render();
 	};
 
 	export const handleInvertAxis = () => {
-		initScene();
 		drawLines();
 	};
 
@@ -229,17 +231,19 @@
 	function render() {
 		renderer.clear();
 		renderer.render(scene, camera);
+		// console.log(scene.children.length);
 	}
 
 	onMount(() => {
 		dimensions = initialDimensions;
 		lineShow = Array(dataset.length).fill(true);
 		lineColors = Array(dataset.length).fill(0x4169e1);
+		linePositions = Array(dataset.length).fill(0);
 		linkingArray.set(lineShow);
 		initScene();
 		drawLines();
 		window.addEventListener('mousemove', handleMouseMove, false);
-		window.addEventListener('click', handleClick, false);
+		// window.addEventListener('click', handleClick, false);
 	});
 
 	afterUpdate(() => {
