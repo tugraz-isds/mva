@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
-	import { brushingArray, hoveredItem } from '../../stores/brushing';
+	import { brushingArray } from '../../stores/brushing';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
@@ -36,12 +36,6 @@
 
 			brushingArray.set(new Set<number>()); // Reset brusing
 		}
-	});
-
-	// Currently hovered line
-	let hoveredLineIndex: number | null = null;
-	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
-		hoveredLineIndex = value;
 	});
 
 	$: {
@@ -115,16 +109,6 @@
 		linesComponent.handleInvertAxis();
 	}
 
-	// Handle click on line
-	function handleLineClick() {
-		if (hoveredLineIndex === null) return;
-
-		if (brushedLinesIndices.has(hoveredLineIndex))
-			brushedLinesIndices.delete(hoveredLineIndex); // Remove the index if it exists
-		else brushedLinesIndices.add(hoveredLineIndex); // Add the index if it doesn't exist
-		brushingArray.set(brushedLinesIndices);
-	}
-
 	// Helper function to reorder an array
 	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
 		const result = [...arr];
@@ -147,7 +131,6 @@
 
 	onDestroy(() => {
 		unsubscribeDataset();
-		unsubscribeHovered();
 	});
 </script>
 
@@ -158,7 +141,6 @@
 	style="overflow-x: scroll !important;"
 	bind:clientWidth={width}
 	bind:clientHeight={height}
-	on:click={() => handleLineClick()}
 >
 	{#if dataset?.length === 0}
 		<span>No data available.</span>

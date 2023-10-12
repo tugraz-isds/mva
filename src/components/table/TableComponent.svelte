@@ -2,12 +2,13 @@
 	import { onDestroy } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
 	import { linkingArray } from '../../stores/linking';
-	import { brushingArray, hoveredItem } from '../../stores/brushing';
+	import { brushingArray, hoveredArray, previouslyHoveredArray } from '../../stores/brushing';
 	import type { DSVParsedArray } from 'd3';
 
 	let rowShow: boolean[] = []; // Array of booleans that store info if each table row should be drawn
 	let hoveredLineIndex: number | null = null; // Currently hovered line
-	let brushedRowsIndices = new Set<number>(); // Currently brushed rows
+	let hoveredRowsIndices: Set<number> = new Set(); // Currently hovered rows
+	let brushedRowsIndices: Set<number> = new Set(); // Currently brushed rows
 
 	// Selection range
 	let rangeStart: number | null = null; // Start of range of rows
@@ -28,8 +29,8 @@
 		if (dataset?.length > 0) brushedRowsIndices = value;
 	});
 
-	const unsubscribeHovered = hoveredItem.subscribe((value: number | null) => {
-		hoveredLineIndex = value;
+	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+		hoveredRowsIndices = value;
 	});
 
 	// Handle click on row
@@ -72,6 +73,18 @@
 		window.getSelection()?.removeAllRanges(); // Remove selection from text
 	}
 
+	function handleMouseEnter(index: number) {
+		hoveredLineIndex = index;
+		hoveredArray.set(new Set([hoveredLineIndex]));
+		previouslyHoveredArray.set(new Set([hoveredLineIndex]));
+	}
+
+	function handleMouseLeave() {
+		hoveredLineIndex = null;
+		hoveredRowsIndices.clear();
+		hoveredArray.set(hoveredRowsIndices);
+	}
+
 	onDestroy(() => {
 		unsubscribeDataset();
 		unsubscribeLinking();
@@ -90,14 +103,14 @@
 			</tr>
 			{#each dataset as row, index}
 				<tr
-					class="{hoveredLineIndex === index
+					class="{hoveredLineIndex === index || hoveredRowsIndices.has(index)
 						? 'bg-red-500'
 						: brushedRowsIndices.has(index)
 						? 'bg-orange-400'
 						: ''}
 						{rowShow[index] ? 'text-black' : 'text-gray-400'}"
-					on:mouseenter={() => hoveredItem.set(index)}
-					on:mouseleave={() => hoveredItem.set(null)}
+					on:mouseenter={() => handleMouseEnter(index)}
+					on:mouseleave={handleMouseLeave}
 					on:mousedown={handleRowClick}
 				>
 					{#each Object.keys(row) as key}

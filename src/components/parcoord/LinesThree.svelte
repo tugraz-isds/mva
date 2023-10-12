@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { brushingArray } from '../../stores/brushing';
-	import { hoveredItem } from '../../stores/brushing';
+	import { brushingArray, hoveredArray, previouslyHoveredArray } from '../../stores/brushing';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
@@ -36,6 +35,8 @@
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let hoveredLinesIndices = new Set<number>(); // Currently hovered lines
+	let previouslyHoveredLinesIndices = new Set<number>(); // Previously hovered lines
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 
 	// Apply filters
@@ -46,12 +47,22 @@
 		}
 	});
 
-	// Redraw after brushing
 	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
 		brushedLinesIndices = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
 			//drawLines();
 		}
+	});
+
+	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+		removeHoveredLines(previouslyHoveredLinesIndices);
+		hoveredLinesIndices = value;
+		drawHoveredLines(hoveredLinesIndices);
+		previouslyHoveredArray.set(hoveredLinesIndices);
+	});
+
+	const unsubscribePrevHovered = previouslyHoveredArray.subscribe((value: Set<number>) => {
+		previouslyHoveredLinesIndices = value;
 	});
 
 	// Function to initialize ThreeJS scene
@@ -80,14 +91,6 @@
 		dataset.forEach((dataRow: any, idx: number) => {
 			drawLine(dataRow, idx);
 		});
-
-		// Change color for brushed lines
-		// const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
-		// brushedLinesIndices.forEach((idx: number) => {
-		// 	if (idx === undefined) return;
-		// 	lines[idx].material = material;
-		// 	changeLinePosition(lines[idx], 1);
-		// });
 
 		render();
 	}
@@ -124,6 +127,24 @@
 		scene.add(line);
 	}
 
+	function drawHoveredLines(hoveredLines: Set<number>) {
+		hoveredLines.forEach((i) => {
+			const line = lines[i];
+			line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
+			changeLinePosition(line, 2);
+		});
+		render();
+	}
+
+	function removeHoveredLines(hoveredLines: Set<number>) {
+		hoveredLines.forEach((i) => {
+			const line = lines[i];
+			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
+			changeLinePosition(line, linePositions[i]);
+		});
+		render();
+	}
+
 	// Function to handle mousemove events
 	function handleMouseMove(event: MouseEvent) {
 		// Calculate normalized mouse coordinates relative to the canvas
@@ -131,19 +152,22 @@
 		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
 		mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
 
-		// Re-color currently hovered lines
-		hoveredLines.forEach((line: any) => {
-			line.material = new THREE.LineBasicMaterial({
-				color: lineColors[line.index],
-				linewidth: 1
-			});
-			changeLinePosition(line, linePositions[line.index]);
-		});
+		// If mouse is not in parcoord, return
+		if (
+			!(
+				event.clientY >= canvasRect.top &&
+				event.clientY <= canvasRect.bottom &&
+				event.clientX >= canvasRect.left &&
+				event.clientX <= canvasRect.right
+			)
+		)
+			return;
 
 		hoveredLines = [];
 
 		raycaster.setFromCamera(mouse, camera); // Update the raycaster
 		const intersects = raycaster.intersectObjects(lines); // Check for intersections
+
 		// Add hovered lines
 		intersects.forEach((intersection) => {
 			const line = intersection.object as THREE.Line;
@@ -151,23 +175,26 @@
 		});
 
 		// Highlight all currently hovered lines
+		const hoveredLinesSet: Set<number> = new Set();
 		hoveredLines.forEach((line: any) => {
-			line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
-			changeLinePosition(line, 2);
+			hoveredLinesSet.add(line.index);
+			// line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
+			// changeLinePosition(line, 2);
 		});
+		hoveredArray.set(hoveredLinesSet);
 
-		render();
+		//render();
 	}
 
-	function handleClick() {
-		if (hoveredLine?.index === undefined) return;
+	// function handleClick() {
+	// 	if (hoveredLine?.index === undefined) return;
 
-		if (brushedLinesIndices.has(hoveredLine.index))
-			// Remove the index if it exists
-			brushedLinesIndices.delete(hoveredLine.index);
-		else brushedLinesIndices.add(hoveredLine.index); // Add the index if it doesn't exist
-		brushingArray.set(brushedLinesIndices);
-	}
+	// 	if (brushedLinesIndices.has(hoveredLine.index))
+	// 		// Remove the index if it exists
+	// 		brushedLinesIndices.delete(hoveredLine.index);
+	// 	else brushedLinesIndices.add(hoveredLine.index); // Add the index if it doesn't exist
+	// 	brushingArray.set(brushedLinesIndices);
+	// }
 
 	export const applyFilters = () => {
 		lineShow = [];
@@ -209,6 +236,8 @@
 		// 	changeLinePosition(lines[idx], 1);
 		// });
 
+		linkingArray.set(lineShow);
+
 		render();
 	};
 
@@ -229,17 +258,22 @@
 	}
 
 	function render() {
+		if (!renderer) return;
 		renderer.clear();
 		renderer.render(scene, camera);
 		// console.log(scene.children.length);
 	}
 
-	onMount(() => {
+	function initialzeArrays() {
 		dimensions = initialDimensions;
 		lineShow = Array(dataset.length).fill(true);
 		lineColors = Array(dataset.length).fill(0x4169e1);
 		linePositions = Array(dataset.length).fill(0);
 		linkingArray.set(lineShow);
+	}
+
+	onMount(() => {
+		initialzeArrays();
 		initScene();
 		drawLines();
 		window.addEventListener('mousemove', handleMouseMove, false);
@@ -247,7 +281,10 @@
 	});
 
 	afterUpdate(() => {
-		if (axesFilters.length !== dimensions.length) dimensions = initialDimensions;
+		if (axesFilters.length !== dimensions.length) {
+			dimensions = initialDimensions;
+			initialzeArrays();
+		}
 		initScene();
 		drawLines();
 	});
@@ -256,6 +293,8 @@
 		window.removeEventListener('mousemove', handleMouseMove);
 		unsubscribeFilters();
 		unsubscribeBrushing();
+		unsubscribeHovered();
+		unsubscribePrevHovered();
 	});
 </script>
 

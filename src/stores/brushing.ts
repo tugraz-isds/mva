@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { DSVParsedArray } from 'd3';
 
 export const brushingArray = writable<Set<number>>(new Set<number>());
-export const hoveredItem = writable<number | null>(undefined);
+export const hoveredArray = writable<Set<number>>(new Set<number>());
+export const previouslyHoveredArray = writable<Set<number>>(new Set<number>());
