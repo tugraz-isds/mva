@@ -7,10 +7,11 @@
 		previouslyHoveredArray,
 		previouslyBrushedArray
 	} from '../../stores/brushing';
+	import { labelDimension } from '../../stores/dataset';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
-	import type { AxesFilter } from './AxesFilterType';
+	import type { AxesFilterType } from './types';
 
 	export let width: number;
 	export let height: number;
@@ -19,6 +20,7 @@
 	export let margin: any;
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
+	export let setTooltipData: Function; // Callback function when filter is applied
 
 	let newWidth = width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width;
 
@@ -37,11 +39,12 @@
 	let linePositions: number[] = []; // Array of number positions for all lines
 
 	let dimensions: string[]; // Dimensions used for swapping
-	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let hoveredLinesIndices = new Set<number>(); // Currently hovered lines
 	let previouslyHoveredLinesIndices = new Set<number>(); // Previously hovered lines
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 	let previouslyBrushedLinesIndices = new Set<number>(); // Previously brushed lines
+	let labelDim: string; // Dataset label dimension
 
 	// Apply filters
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -70,6 +73,10 @@
 	const unsubscribePrevBrushed = previouslyBrushedArray.subscribe((value: Set<number>) => {
 		previouslyBrushedLinesIndices = value;
 		removeBrushedLines();
+	});
+
+	const unsubscribeLabelDim = labelDimension.subscribe((value: string) => {
+		labelDim = value;
 	});
 
 	// Function to initialize ThreeJS scene
@@ -202,8 +209,11 @@
 			hoveredLinesSet.add(line.index);
 		});
 
-		if (!areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet))
-			hoveredArray.set(hoveredLinesSet);
+		if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
+
+		setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+
+		hoveredArray.set(hoveredLinesSet);
 	}
 
 	function handleClick(event: MouseEvent) {
@@ -258,22 +268,47 @@
 					lineShow[idx] = false;
 				}
 			});
-			if (lineShow[idx]) {
-				lineColors[idx] = 0x4169e1;
-				linePositions[idx] = 0;
-				lines[idx].material = new THREE.LineBasicMaterial({ color: 0x4169e1, linewidth: 1 }); // Set color to active
-				changeLinePosition(lines[idx], 0);
+			if (brushedLinesIndices.has(idx)) {
+				lineColors[idx] = 0xfb923c;
+				linePositions[idx] = 1;
 			} else {
-				lineColors[idx] = 0xcbd5e0;
-				linePositions[idx] = -1;
-				lines[idx].material = new THREE.LineBasicMaterial({ color: 0xcbd5e0, linewidth: 1 }); // Set color to inactive
-				changeLinePosition(lines[idx], -1);
+				if (lineShow[idx]) {
+					lineColors[idx] = 0x4169e1;
+					linePositions[idx] = 0;
+				} else {
+					lineColors[idx] = 0xcbd5e0;
+					linePositions[idx] = -1;
+				}
 			}
+			lines[idx].material = new THREE.LineBasicMaterial({ color: lineColors[idx], linewidth: 1 });
+			changeLinePosition(lines[idx], linePositions[idx]);
 		});
 
 		linkingArray.set(lineShow);
 		render();
 	};
+
+	function setTooltip(hoveredLinesSet: Set<number>, x: number, y: number) {
+		if (hoveredLinesSet.size === 0) {
+			setTooltipData({
+				visible: false,
+				xPos: 0,
+				yPos: 0,
+				text: []
+			});
+		} else {
+			let tooltipText: string[] = [];
+			hoveredLinesSet.forEach((i) => {
+				tooltipText.push(`${dataset[i][labelDim]}`);
+			});
+			setTooltipData({
+				visible: true,
+				xPos: x + 25,
+				yPos: y,
+				text: tooltipText
+			});
+		}
+	}
 
 	export const handleInvertAxis = () => {
 		drawLines();
@@ -302,7 +337,6 @@
 		if (!renderer) return;
 		renderer.clear();
 		renderer.render(scene, camera);
-		console.log(scene.children.length);
 	}
 
 	// Helper function to reorder an array
@@ -349,6 +383,7 @@
 		unsubscribeHovered();
 		unsubscribePrevHovered();
 		unsubscribePrevBrushed();
+		unsubscribeLabelDim();
 	});
 </script>
 

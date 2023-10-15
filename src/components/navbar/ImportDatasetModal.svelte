@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
 	import { csvParse, autoType, type DSVParsedArray } from 'd3';
-	import { datasetStore } from '../../stores/dataset';
+	import { datasetStore, labelDimension } from '../../stores/dataset';
 
 	export let isOpen: boolean;
 
@@ -30,6 +30,11 @@
 
 			datasetStore.set(dataset);
 			localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
+
+			// Set first dimension as label
+			const labelDim = Object.keys(dataset[0])[0];
+			labelDimension.set(labelDim);
+			localStorage.setItem('labelDimension', labelDim);
 
 			validUpload = true;
 			closeModal();

@@ -1,4 +1,4 @@
 import { writable } from 'svelte/store';
-import type { AxesFilter } from '../components/parcoord/AxesFilterType';
+import type { AxesFilterType } from '../components/parcoord/types';
 
-export const filtersArray = writable<AxesFilter[]>([]);
+export const filtersArray = writable<AxesFilterType[]>([]);

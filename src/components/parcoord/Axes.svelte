@@ -3,7 +3,7 @@
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
 	import { arrowDown, arrowUp } from './ArrowIcons';
-	import type { AxesFilter } from './AxesFilterType';
+	import type { AxesFilterType } from './types';
 
 	export let width: number; // Container width
 	export let height: number; // Container height
@@ -11,7 +11,6 @@
 	export let margin: any; // Margin object
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
-	export let handleCurrentlyFiltering: Function; // Callback function when filtering starts/stops
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
@@ -24,7 +23,7 @@
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 	let axisHeight: number; // Actual axis height in pixels
 
-	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	$: axisHeight = height - margin.top - margin.bottom;
@@ -340,7 +339,6 @@
 				.on('start', (event) => {
 					startY = event.y;
 					rectangleStart = +axisFilterRectangles[i].attr('y');
-					handleCurrentlyFiltering(true);
 				})
 				.on('drag', (event) => {
 					let newY = rectangleStart + (event.y - startY);
@@ -376,7 +374,6 @@
 				})
 				.on('end', () => {
 					startY = 0;
-					handleCurrentlyFiltering(false);
 				});
 
 			axisFilterRectangles[dimensions.indexOf(dim)].call(dragBehavior);

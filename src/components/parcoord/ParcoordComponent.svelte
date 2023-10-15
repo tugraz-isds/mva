@@ -5,7 +5,9 @@
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
+	import Tooltip from './Tooltip.svelte';
 	import type { DSVParsedArray } from 'd3';
+	import type { TooltipType } from './types';
 
 	let width: number; // Container width
 	let height: number; // Container height
@@ -20,6 +22,14 @@
 	let axesComponent: Axes; // Svelte Axes component
 
 	const margin = { top: 40, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
+
+	// Tooltip data
+	let tooltip: TooltipType = {
+		visible: false,
+		xPos: 0,
+		yPos: 0,
+		text: []
+	};
 
 	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;
@@ -94,17 +104,16 @@
 		dimensions = reorderArray(dimensions, fromIndex, toIndex);
 	}
 
-	// Handle start/stop of filtering
-	function handleCurrentlyFiltering(isFiltering: boolean) {
-		//linesComponent.handleCurrentlyFiltering(isFiltering);
-	}
-
 	// Handle inverting axes
 	function handleInvertAxis(axisIndex: number) {
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
 		linesComponent.handleInvertAxis();
+	}
+
+	function setTooltipData(data: TooltipType) {
+		tooltip = data;
 	}
 
 	// Helper function to reorder an array
@@ -151,20 +160,12 @@
 			{margin}
 			{handleAxesSwapped}
 			{handleInvertAxis}
-			{handleCurrentlyFiltering}
 			{xScales}
 			{yScales}
 		/>
-		<!-- <LinesPixi
-			bind:this={linesComponent}
-			{width}
-			{height}
-			{dataset}
-			initialDimensions={dimensions}
-			{margin}
-			{xScales}
-			{yScales}
-		/> -->
+
+		<Tooltip data={tooltip} />
+
 		<LinesThree
 			bind:this={linesComponent}
 			{width}
@@ -174,6 +175,7 @@
 			{margin}
 			{xScales}
 			{yScales}
+			{setTooltipData}
 		/>
 	{/if}
 </div>

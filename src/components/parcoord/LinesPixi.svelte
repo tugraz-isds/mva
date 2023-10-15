@@ -8,7 +8,7 @@
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
-	import type { AxesFilter } from './AxesFilterType';
+	import type { AxesFilterType } from './types
 
 	patchGraphicsSmooth();
 	console.log('Is WebGL supported: ', PIXI.utils.isWebGLSupported());
@@ -26,7 +26,7 @@
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
 
 	let dimensions: string[]; // Dimensions used for swapping
-	let axesFilters: AxesFilter[] = []; // Filter values array for linking
+	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false;
 	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
