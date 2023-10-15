@@ -2,7 +2,12 @@
 	import { onDestroy } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
 	import { linkingArray } from '../../stores/linking';
-	import { brushingArray, hoveredArray, previouslyHoveredArray } from '../../stores/brushing';
+	import {
+		brushedArray,
+		hoveredArray,
+		previouslyHoveredArray,
+		previouslyBrushedArray
+	} from '../../stores/brushing';
 	import type { DSVParsedArray } from 'd3';
 
 	let rowShow: boolean[] = []; // Array of booleans that store info if each table row should be drawn
@@ -25,7 +30,7 @@
 		}
 	});
 
-	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
+	const unsubscribeBrushing = brushedArray.subscribe((value: any) => {
 		if (dataset?.length > 0) brushedRowsIndices = value;
 	});
 
@@ -35,6 +40,7 @@
 
 	// Handle click on row
 	function handleRowClick(event: MouseEvent) {
+		previouslyBrushedArray.set(brushedRowsIndices);
 		if (hoveredLineIndex === null) return;
 
 		if (event.ctrlKey) {
@@ -69,7 +75,7 @@
 			}
 		}
 
-		brushingArray.set(brushedRowsIndices);
+		brushedArray.set(brushedRowsIndices);
 		window.getSelection()?.removeAllRanges(); // Remove selection from text
 	}
 

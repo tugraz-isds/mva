@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore } from '../../stores/dataset';
-	import { brushingArray } from '../../stores/brushing';
+	import { brushedArray } from '../../stores/brushing';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
@@ -19,8 +19,6 @@
 	let linesComponent: LinesThree; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 
-	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
-
 	const margin = { top: 40, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	// Set dataset and handle new dataset upload
@@ -34,7 +32,7 @@
 
 			calculateYScales(); // Calculate new yScales
 
-			brushingArray.set(new Set<number>()); // Reset brusing
+			brushedArray.set(new Set<number>()); // Reset brusing
 		}
 	});
 

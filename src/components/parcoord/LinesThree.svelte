@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { brushingArray, hoveredArray, previouslyHoveredArray } from '../../stores/brushing';
+	import {
+		brushedArray,
+		hoveredArray,
+		previouslyHoveredArray,
+		previouslyBrushedArray
+	} from '../../stores/brushing';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
@@ -26,8 +31,6 @@
 	let raycaster: THREE.Raycaster;
 	let mouse: THREE.Vector2;
 
-	let hoveredLine: any; // Currently hovered line object
-	let hoveredLines: any[] = []; // Currently hovered line objects
 	let lines: THREE.Line[] = []; // Array to store all line objects
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
 	let lineColors: number[] = []; // Array of number colors for all lines
@@ -38,6 +41,7 @@
 	let hoveredLinesIndices = new Set<number>(); // Currently hovered lines
 	let previouslyHoveredLinesIndices = new Set<number>(); // Previously hovered lines
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
+	let previouslyBrushedLinesIndices = new Set<number>(); // Previously brushed lines
 
 	// Apply filters
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -47,22 +51,25 @@
 		}
 	});
 
-	const unsubscribeBrushing = brushingArray.subscribe((value: any) => {
-		brushedLinesIndices = value;
-		if (dataset?.length > 0 && dimensions?.length > 0) {
-			//drawLines();
-		}
-	});
-
 	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
-		removeHoveredLines(previouslyHoveredLinesIndices);
+		removeHoveredLines();
 		hoveredLinesIndices = value;
-		drawHoveredLines(hoveredLinesIndices);
+		drawHoveredLines();
 		previouslyHoveredArray.set(hoveredLinesIndices);
 	});
 
 	const unsubscribePrevHovered = previouslyHoveredArray.subscribe((value: Set<number>) => {
 		previouslyHoveredLinesIndices = value;
+	});
+
+	const unsubscribeBrushing = brushedArray.subscribe((value: any) => {
+		brushedLinesIndices = value;
+		drawBrushedLines();
+	});
+
+	const unsubscribePrevBrushed = previouslyBrushedArray.subscribe((value: Set<number>) => {
+		previouslyBrushedLinesIndices = value;
+		removeBrushedLines();
 	});
 
 	// Function to initialize ThreeJS scene
@@ -127,8 +134,8 @@
 		scene.add(line);
 	}
 
-	function drawHoveredLines(hoveredLines: Set<number>) {
-		hoveredLines.forEach((i) => {
+	function drawHoveredLines() {
+		hoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
 			line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
 			changeLinePosition(line, 2);
@@ -136,9 +143,31 @@
 		render();
 	}
 
-	function removeHoveredLines(hoveredLines: Set<number>) {
-		hoveredLines.forEach((i) => {
+	function drawBrushedLines() {
+		brushedLinesIndices.forEach((i) => {
 			const line = lines[i];
+			lineColors[i] = 0xfb923c;
+			linePositions[i] = 1;
+			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
+			changeLinePosition(line, linePositions[i]);
+		});
+		render();
+	}
+
+	function removeHoveredLines() {
+		previouslyHoveredLinesIndices.forEach((i) => {
+			const line = lines[i];
+			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
+			changeLinePosition(line, linePositions[i]);
+		});
+		render();
+	}
+
+	function removeBrushedLines() {
+		previouslyBrushedLinesIndices.forEach((i) => {
+			const line = lines[i];
+			lineColors[i] = lineShow[i] ? 0x4169e1 : 0xcbd5e0;
+			linePositions[i] = lineShow[i] ? 0 : -1;
 			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
 			changeLinePosition(line, linePositions[i]);
 		});
@@ -163,38 +192,52 @@
 		)
 			return;
 
-		hoveredLines = [];
-
 		raycaster.setFromCamera(mouse, camera); // Update the raycaster
 		const intersects = raycaster.intersectObjects(lines); // Check for intersections
 
 		// Add hovered lines
-		intersects.forEach((intersection) => {
-			const line = intersection.object as THREE.Line;
-			hoveredLines.push(line);
-		});
-
-		// Highlight all currently hovered lines
 		const hoveredLinesSet: Set<number> = new Set();
-		hoveredLines.forEach((line: any) => {
+		intersects.forEach((intersection) => {
+			const line = intersection.object as any;
 			hoveredLinesSet.add(line.index);
-			// line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
-			// changeLinePosition(line, 2);
 		});
-		hoveredArray.set(hoveredLinesSet);
 
-		//render();
+		if (!areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet))
+			hoveredArray.set(hoveredLinesSet);
 	}
 
-	// function handleClick() {
-	// 	if (hoveredLine?.index === undefined) return;
+	function handleClick(event: MouseEvent) {
+		const canvasRect = canvasEl.getBoundingClientRect();
+		// If mouse is not in parcoord, return
+		if (
+			!(
+				event.clientY >= canvasRect.top &&
+				event.clientY <= canvasRect.bottom &&
+				event.clientX >= canvasRect.left &&
+				event.clientX <= canvasRect.right
+			)
+		)
+			return;
 
-	// 	if (brushedLinesIndices.has(hoveredLine.index))
-	// 		// Remove the index if it exists
-	// 		brushedLinesIndices.delete(hoveredLine.index);
-	// 	else brushedLinesIndices.add(hoveredLine.index); // Add the index if it doesn't exist
-	// 	brushingArray.set(brushedLinesIndices);
-	// }
+		previouslyBrushedArray.set(brushedLinesIndices);
+
+		// Add to brushed if Ctrl key is pressed
+		if (event.ctrlKey) {
+			hoveredLinesIndices.forEach((i) => {
+				if (brushedLinesIndices.has(i)) brushedLinesIndices.delete(i);
+				else brushedLinesIndices.add(i);
+			});
+		}
+		// Set brushed to hovered
+		else {
+			const newBrushedLinesIndices = new Set<number>();
+			hoveredLinesIndices.forEach((i) => {
+				if (!brushedLinesIndices.has(i)) newBrushedLinesIndices.add(i);
+			});
+			brushedLinesIndices = newBrushedLinesIndices;
+		}
+		brushedArray.set(brushedLinesIndices);
+	}
 
 	export const applyFilters = () => {
 		lineShow = [];
@@ -228,20 +271,18 @@
 			}
 		});
 
-		// Change color for brushed lines
-		// const material = new THREE.LineBasicMaterial({ color: 0xfb923c, linewidth: 1 });
-		// brushedLinesIndices.forEach((idx: number) => {
-		// 	if (idx === undefined) return;
-		// 	lines[idx].material = material;
-		// 	changeLinePosition(lines[idx], 1);
-		// });
-
 		linkingArray.set(lineShow);
-
 		render();
 	};
 
 	export const handleInvertAxis = () => {
+		drawLines();
+	};
+
+	// Function to swap points when axes are reordered
+	export const swapPoints = (fromIndex: number, toIndex: number) => {
+		dimensions = reorderArray(dimensions, fromIndex, toIndex);
+		axesFilters = reorderArray(axesFilters, fromIndex, toIndex);
 		drawLines();
 	};
 
@@ -261,7 +302,15 @@
 		if (!renderer) return;
 		renderer.clear();
 		renderer.render(scene, camera);
-		// console.log(scene.children.length);
+		console.log(scene.children.length);
+	}
+
+	// Helper function to reorder an array
+	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
+		const result = [...arr];
+		const [removed] = result.splice(fromIndex, 1);
+		result.splice(toIndex, 0, removed);
+		return result;
 	}
 
 	function initialzeArrays() {
@@ -272,12 +321,16 @@
 		linkingArray.set(lineShow);
 	}
 
+	// Helper function to compare 2 sets
+	const areSetsEqual = (set1: Set<number>, set2: Set<number>) =>
+		set1.size === set2.size && [...set1].every((value) => set2.has(value));
+
 	onMount(() => {
 		initialzeArrays();
 		initScene();
 		drawLines();
 		window.addEventListener('mousemove', handleMouseMove, false);
-		// window.addEventListener('click', handleClick, false);
+		window.addEventListener('click', handleClick, false);
 	});
 
 	afterUpdate(() => {
@@ -295,6 +348,7 @@
 		unsubscribeBrushing();
 		unsubscribeHovered();
 		unsubscribePrevHovered();
+		unsubscribePrevBrushed();
 	});
 </script>
 
