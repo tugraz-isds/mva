@@ -283,7 +283,7 @@
 				.on('start', (event) => {})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
-					const maxY = height - margin.bottom; // Maximum y position
+					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 8}, ${newY})`); // Move upper filter
@@ -306,7 +306,7 @@
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {})
 				.on('drag', (event) => {
-					const minY = margin.top - 8; // Minimum y position
+					const minY = axesFilters[idx].pixels.start + margin.top; // Minimum y position
 					const maxY = height - margin.bottom; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
@@ -437,6 +437,14 @@
 			};
 		});
 	}
+
+	// Save axes to SVG
+	export const saveSVG = () => {
+		const svgElement = document.getElementById('parcoord-canvas-axes');
+		const serializer = new XMLSerializer();
+		if (!svgElement) return;
+		return serializer.serializeToString(svgElement);
+	};
 
 	onMount(() => {
 		initAxesFilters();

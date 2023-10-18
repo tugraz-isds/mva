@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
+	import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer.js';
+	import { select, line as lineD3 } from 'd3';
 	import {
 		brushedArray,
 		hoveredArray,
@@ -221,7 +223,7 @@
 		// If mouse is not in parcoord, return
 		if (
 			!(
-				event.clientY >= canvasRect.top &&
+				event.clientY >= canvasRect.top + margin.top &&
 				event.clientY <= canvasRect.bottom &&
 				event.clientX >= canvasRect.left &&
 				event.clientX <= canvasRect.right
@@ -358,6 +360,60 @@
 	// Helper function to compare 2 sets
 	const areSetsEqual = (set1: Set<number>, set2: Set<number>) =>
 		set1.size === set2.size && [...set1].every((value) => set2.has(value));
+
+	// Save lines to SVG
+	// export const saveSVG = () => {
+	// 	const rendererSVG = new SVGRenderer();
+
+	// 	rendererSVG.setSize(newWidth, height);
+	// 	rendererSVG.render(scene, camera);
+	// 	const serializer = new XMLSerializer();
+	// 	return serializer.serializeToString(rendererSVG.domElement);
+	// };
+
+	export const saveSVG = () => {
+		const tempContainer = document.createElement('div');
+		const svgContainer = select(tempContainer)
+			.append('svg')
+			.attr('width', newWidth)
+			.attr('height', height);
+
+		// dataset.forEach((dataRow, idx) => {
+		// 	drawLineSVG(dataRow, idx, svgContainer);
+		// });
+		svgContainer.append('circle').attr('cx', 50).attr('cy', 50).attr('r', 20).style('fill', 'blue');
+		const line = lineD3()
+			.x((d: any, i: any) => xScales[i])
+			.y((d: any, i: any) => yScales[i]);
+
+		svgContainer
+			.append('path')
+			.datum(dataset[0]) // Bind the data to the path
+			.attr('d', line) // Generate the path
+			.attr('fill', 'none')
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2);
+
+		const serializer = new XMLSerializer();
+		const svgString = serializer.serializeToString(svgContainer.node() as Node);
+		tempContainer.remove();
+		return svgString;
+	};
+
+	// Function to draw a single line from array
+	function drawLineSVG(dataRow: any, idx: number, svgContainer: any) {
+		const line = lineD3()
+			.x((d: any, i: any) => xScales[i])
+			.y((d: any, i: any) => yScales[i]);
+
+		svgContainer
+			.append('path')
+			.datum(dataset[0]) // Bind the data to the path
+			.attr('d', line) // Generate the path
+			.attr('fill', 'none')
+			.attr('stroke', 'blue')
+			.attr('stroke-width', 2);
+	}
 
 	onMount(() => {
 		initialzeArrays();

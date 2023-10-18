@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { ArrowsRightLeft, ArrowsPointingOut } from 'svelte-heros-v2';
+	import { onDestroy } from 'svelte';
+	import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare } from 'svelte-heros-v2';
 	import { openWindow } from 'svelte-window-system';
-	import { Button, Dropdown, DropdownItem } from 'flowbite-svelte';
+	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
 	import type { View } from './ViewType';
 
@@ -41,6 +41,11 @@
 	// 	});
 	// });
 
+	function saveSVG() {
+		const event = new Event(`call-save-svg-${currView.id}`);
+		window.dispatchEvent(event);
+	}
+
 	onDestroy(() => {
 		unsubscribeActive();
 	});
@@ -73,10 +78,22 @@
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
 					on:click={openWinbox}
 				/>
+				{#if currView.id === 'parcoord'}
+					<BookmarkSquare
+						id="{currView.id}-save"
+						size="16"
+						class="text-grey-900 cursor-pointer hover:bg-sky-100"
+						on:click={saveSVG}
+					/>
+				{/if}
 			</div>
 		</div>
 	</div>
 	<div class="view-content" style="height: 95%;">
-		<svelte:component this={currView.component} />
+		{#if currView.id === 'parcoord'}
+			<svelte:component this={currView.component} />
+		{:else}
+			<svelte:component this={currView.component} />
+		{/if}
 	</div>
 </div>

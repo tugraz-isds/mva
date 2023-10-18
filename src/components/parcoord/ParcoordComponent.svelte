@@ -9,6 +9,8 @@
 	import type { DSVParsedArray } from 'd3';
 	import type { TooltipType } from './types';
 
+	let isBrowser = false; // Flag to see if we are in browser
+
 	let width: number; // Container width
 	let height: number; // Container height
 	let dimensions: string[] = []; // Dataset dimensions
@@ -131,13 +133,44 @@
 		return false;
 	}
 
+	export function saveSVG() {
+		const axesStringSvg = axesComponent.saveSVG();
+		const linesStringSvg = linesComponent.saveSVG();
+		console.log(linesStringSvg);
+
+		if (!axesStringSvg || !linesStringSvg) return;
+		const stringSvg =
+			'<svg>' +
+			'\n<!-- Axes -->\n' +
+			axesStringSvg +
+			'\n<!-- Lines -->\n' +
+			linesStringSvg +
+			'\n</svg>';
+		const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+		const svgBlob = new Blob([preface, stringSvg], {
+			type: 'image/svg+xml;charset=utf-8'
+		});
+		const svgUrl = URL.createObjectURL(svgBlob);
+		const downloadLink = document.createElement('a');
+
+		downloadLink.href = svgUrl;
+		downloadLink.download = 'parcoord.svg';
+		document.body.appendChild(downloadLink);
+		downloadLink.click();
+		document.body.removeChild(downloadLink);
+	}
+
 	onMount(() => {
 		initialHeight = height;
 		calculateYScales();
+
+		isBrowser = true;
+		window.addEventListener('call-save-svg-parcoord', saveSVG);
 	});
 
 	onDestroy(() => {
 		unsubscribeDataset();
+		isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
 	});
 </script>
 
