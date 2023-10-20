@@ -136,7 +136,6 @@
 	export function saveSVG() {
 		const axesStringSvg = axesComponent.saveSVG();
 		const linesStringSvg = linesComponent.saveSVG();
-		console.log(linesStringSvg);
 
 		if (!axesStringSvg || !linesStringSvg) return;
 		const stringSvg =

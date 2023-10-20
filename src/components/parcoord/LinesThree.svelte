@@ -378,21 +378,20 @@
 			.attr('width', newWidth)
 			.attr('height', height);
 
-		// dataset.forEach((dataRow, idx) => {
-		// 	drawLineSVG(dataRow, idx, svgContainer);
-		// });
-		svgContainer.append('circle').attr('cx', 50).attr('cy', 50).attr('r', 20).style('fill', 'blue');
-		const line = lineD3()
-			.x((d: any, i: any) => xScales[i])
-			.y((d: any, i: any) => yScales[i]);
+		const lineGenerator = lineD3()
+			.x((d: any) => d[0])
+			.y((d: any) => d[1]);
 
-		svgContainer
-			.append('path')
-			.datum(dataset[0]) // Bind the data to the path
-			.attr('d', line) // Generate the path
-			.attr('fill', 'none')
-			.attr('stroke', 'blue')
-			.attr('stroke-width', 2);
+		dataset.forEach((dataRow: any) => {
+			const lineSvg = drawLineSVG(dataRow);
+			svgContainer
+				.append('path')
+				.datum(lineSvg)
+				.attr('fill', 'none')
+				.attr('stroke', 'blue')
+				.attr('stroke-width', 1)
+				.attr('d', lineGenerator as any);
+		});
 
 		const serializer = new XMLSerializer();
 		const svgString = serializer.serializeToString(svgContainer.node() as Node);
@@ -400,19 +399,22 @@
 		return svgString;
 	};
 
-	// Function to draw a single line from array
-	function drawLineSVG(dataRow: any, idx: number, svgContainer: any) {
-		const line = lineD3()
-			.x((d: any, i: any) => xScales[i])
-			.y((d: any, i: any) => yScales[i]);
+	function drawLineSVG(dataRow: any[]) {
+		const linePoints = [];
+		for (let i = 0; i < dimensions.length; i++) {
+			const dim = dimensions[i];
 
-		svgContainer
-			.append('path')
-			.datum(dataset[0]) // Bind the data to the path
-			.attr('d', line) // Generate the path
-			.attr('fill', 'none')
-			.attr('stroke', 'blue')
-			.attr('stroke-width', 2);
+			let yPos;
+			if (yScales[dim].invert) yPos = yScales[dim](dataRow[dim as any]);
+			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
+
+			linePoints.push([
+				xScales[i],
+				isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
+			]);
+		}
+
+		return linePoints;
 	}
 
 	onMount(() => {
