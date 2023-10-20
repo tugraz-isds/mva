@@ -8,7 +8,10 @@
 		previouslyHoveredArray,
 		previouslyBrushedArray
 	} from '../../stores/brushing';
+	import ContextMenu from './ContextMenu.svelte';
 	import type { DSVParsedArray } from 'd3';
+
+	let contextMenu: ContextMenu;
 
 	let rowShow: boolean[] = []; // Array of booleans that store info if each table row should be drawn
 	let hoveredLineIndex: number | null = null; // Currently hovered line
@@ -99,12 +102,13 @@
 	});
 </script>
 
+<ContextMenu bind:this={contextMenu} />
 <div class="w-full h-full overflow-scroll-x" style="overflow-x: scroll !important;">
 	{#if dataset?.length > 0 && rowShow?.length > 0}
 		<table id="table-canvas" class="w-full">
 			<tr>
 				{#each Object.keys(dataset[0]) as key}
-					<th>{key}</th>
+					<th on:contextmenu={(e) => contextMenu.showContextMenu(e, key)}>{key}</th>
 				{/each}
 			</tr>
 			{#each dataset as row, index}
