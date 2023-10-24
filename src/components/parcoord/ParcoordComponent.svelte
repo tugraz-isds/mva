@@ -134,19 +134,34 @@
 	}
 
 	export function saveSVG() {
-		const axesStringSvg = axesComponent.saveSVG();
-		const linesStringSvg = linesComponent.saveSVG();
+		let axesStringSvg = axesComponent.saveSVG();
+		let linesStringSvg = linesComponent.saveSVG();
 
 		if (!axesStringSvg || !linesStringSvg) return;
+
+		// Add new lines before and after tags
+		axesStringSvg = axesStringSvg.replaceAll(/<[^\/].*?>/g, (match) => `${match}\n`);
+		linesStringSvg = linesStringSvg.replaceAll(/<[^\/].*?>/g, (match) => `${match}\n`);
+		axesStringSvg = axesStringSvg.replaceAll(/<\/.*?>/g, (match) => `\n${match}\n`);
+		linesStringSvg = linesStringSvg.replaceAll(/<\/.*?>/g, (match) => `\n${match}`);
+		// Remove empty spaces at start of line
+		axesStringSvg = axesStringSvg.replace(/^\s+/gm, '');
+		linesStringSvg = linesStringSvg.replace(/^\s+/gm, '');
+		// Trim decimal points to 6 decimals
+		axesStringSvg = axesStringSvg.replace(/\d+\.\d{7,}/g, (match) => `${Number(match).toFixed(6)}`);
+		linesStringSvg = linesStringSvg.replace(
+			/\d+\.\d{7,}/g,
+			(match) => `${Number(match).toFixed(6)}`
+		);
+
 		const stringSvg =
-			'<svg>' +
+			`<svg viewBox="0 0 ${width} ${height}">` +
 			'\n<!-- Axes -->\n' +
 			axesStringSvg +
-			'\n<!-- Lines -->\n' +
+			'\n\n<!-- Lines -->\n' +
 			linesStringSvg +
 			'\n</svg>';
-		const preface = '<?xml version="1.0" standalone="no"?>\r\n';
-		const svgBlob = new Blob([preface, stringSvg], {
+		const svgBlob = new Blob([stringSvg], {
 			type: 'image/svg+xml;charset=utf-8'
 		});
 		const svgUrl = URL.createObjectURL(svgBlob);

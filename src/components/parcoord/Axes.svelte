@@ -460,8 +460,7 @@
 
 <svg
 	id="parcoord-canvas-axes"
-	width={width < 100 * dimensions.length ? dimensions.length * 100 : width}
-	{height}
+	viewBox="0 0 {width < 100 * dimensions.length ? dimensions.length * 100 : width} {height}"
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
 

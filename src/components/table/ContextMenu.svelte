@@ -46,7 +46,7 @@
 		<DropdownItem
 			disabled={dim === labelDim}
 			defaultClass={dim === labelDim ? disabledClass : activeClass}
-			on:click={setLabel}>Set as label</DropdownItem
+			on:click={setLabel}>Use as label</DropdownItem
 		>
 		<DropdownItem defaultClass={activeClass}>Set as categorical</DropdownItem>
 	</div>

@@ -361,22 +361,11 @@
 	const areSetsEqual = (set1: Set<number>, set2: Set<number>) =>
 		set1.size === set2.size && [...set1].every((value) => set2.has(value));
 
-	// Save lines to SVG
-	// export const saveSVG = () => {
-	// 	const rendererSVG = new SVGRenderer();
-
-	// 	rendererSVG.setSize(newWidth, height);
-	// 	rendererSVG.render(scene, camera);
-	// 	const serializer = new XMLSerializer();
-	// 	return serializer.serializeToString(rendererSVG.domElement);
-	// };
-
 	export const saveSVG = () => {
 		const tempContainer = document.createElement('div');
 		const svgContainer = select(tempContainer)
 			.append('svg')
-			.attr('width', newWidth)
-			.attr('height', height);
+			.attr('viewBox', `0 0 ${newWidth} ${height}`);
 
 		const lineGenerator = lineD3()
 			.x((d: any) => d[0])
