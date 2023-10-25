@@ -248,6 +248,9 @@
 			});
 			brushedLinesIndices = newBrushedLinesIndices;
 		}
+		brushedLinesIndices.forEach((i) => {
+			if (!lineShow[i]) brushedLinesIndices.delete(i);
+		});
 		brushedArray.set(brushedLinesIndices);
 	}
 
@@ -271,8 +274,11 @@
 				}
 			});
 			if (brushedLinesIndices.has(idx)) {
-				lineColors[idx] = 0xfb923c;
-				linePositions[idx] = 1;
+				if (!lineShow[idx]) brushedLinesIndices.delete(idx);
+				else {
+					lineColors[idx] = 0xfb923c;
+					linePositions[idx] = 1;
+				}
 			} else {
 				if (lineShow[idx]) {
 					lineColors[idx] = 0x4169e1;
@@ -286,6 +292,7 @@
 			changeLinePosition(lines[idx], linePositions[idx]);
 		});
 
+		brushedArray.set(brushedLinesIndices);
 		linkingArray.set(lineShow);
 		render();
 	};
