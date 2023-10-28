@@ -153,6 +153,8 @@
 			/\d+\.\d{7,}/g,
 			(match) => `${Number(match).toFixed(6)}`
 		);
+		// Replace width and height with viewBox for axes
+		axesStringSvg = axesStringSvg.replace(/width="(\d+)" height="(\d+)"/, 'viewBox="0 0 $1 $2"');
 
 		const stringSvg =
 			`<svg viewBox="0 0 ${width} ${height}">` +
