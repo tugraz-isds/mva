@@ -22,7 +22,7 @@
 	export let margin: any;
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
-	export let setTooltipData: Function; // Callback function when filter is applied
+	export let setTooltipData: Function; // Callback function for tooltip
 
 	let newWidth = width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width;
 

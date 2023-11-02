@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterUpdate } from 'svelte';
 	import { select } from 'd3';
+	import { getTextWidthArray } from '../../util/text';
 	import type { TooltipType } from './types';
 
 	export let data: TooltipType;
@@ -18,6 +19,8 @@
 
 		if (data.text.length === 0) return;
 
+		const tooltipWidth = Math.min(getTextWidthArray(data.text, 10, 'Roboto'), 120);
+
 		// Create a white background rect
 		tooltipBackground = svg
 			.append('rect')
@@ -28,7 +31,7 @@
 			.style('display', data.visible ? 'block' : 'none')
 			.attr('x', data.xPos - 5) // Adjust for padding
 			.attr('y', data.yPos - 5) // Adjust for padding
-			.attr('width', 120) // Adjust the width as needed
+			.attr('width', tooltipWidth + 10) // Adjust the width as needed
 			.attr('height', (data.text.length + 1) * 10); // Adjust the height as needed
 
 		clipPath = svg.append('clipPath').attr('id', 'tooltip-clip');

@@ -3,6 +3,7 @@
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
 	import { arrowDown, arrowUp } from './ArrowIcons';
+	import { calculateMaxLength } from '../../util/text';
 	import type { AxesFilterType } from './types';
 
 	export let width: number; // Container width
@@ -11,12 +12,9 @@
 	export let margin: any; // Margin object
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
+	export let setTooltipAxisTitleData: Function; // Callback function for tooltip
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
-
-	let showTooltip: boolean = false;
-	let mouseX: number;
-	let mouseY: number;
 
 	// SVG elements arrays
 	let axisLines: any[] = []; // Array of SVG elements for axis groups
@@ -91,7 +89,7 @@
 					.style('font-size', '10px')
 					.style('cursor', `url("arrows-right-left.svg") 9 9, auto`)
 					.text(dim.substring(0, maxLength) + (dim.length === maxLength ? '' : '...'))
-					.on('mouseenter', showCustomTooltip)
+					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
 			);
 
@@ -169,18 +167,22 @@
 		handleLowerFilterDragging();
 	}
 
-	function showCustomTooltip(event: MouseEvent) {
-		const svgElement = document.getElementById('parcoord-canvas-axes');
-		if (!svgElement) return;
-		const rect = svgElement.getBoundingClientRect();
-		showTooltip = true;
-		mouseX = event.clientX - rect.left;
-		mouseY = event.clientY - rect.top;
-		console.log(mouseX, mouseY);
+	function showCustomTooltip(axisTitle: string, axisIndex: number) {
+		setTooltipAxisTitleData({
+			visible: true,
+			xPos: xScales[axisIndex],
+			yPos: margin.top - 20,
+			text: axisTitle
+		});
 	}
 
 	function hideCustomTooltip() {
-		showTooltip = false;
+		setTooltipAxisTitleData({
+			visible: false,
+			xPos: 0,
+			yPos: 0,
+			text: ''
+		});
 	}
 
 	// Handle dragging and swapping of axes
@@ -460,42 +462,6 @@
 		});
 	}
 
-	function getTextWidth(text: string, fontSize: number, fontFamily: string) {
-		const canvas = document.createElement('canvas');
-		const context = canvas.getContext('2d');
-		if (!context) return 0;
-		context.font = `${fontSize}px ${fontFamily}`;
-
-		// Measure the text width
-		const textWidth = context.measureText(text).width;
-
-		return textWidth;
-	}
-
-	function calculateMaxLength(
-		text: string,
-		fontSize: number,
-		fontFamily: string,
-		maxWidth: number
-	) {
-		let maxLength = 0;
-		let currentWidth = 0;
-
-		for (let i = 0; i < text.length; i++) {
-			const substring = text.substring(0, i + 1);
-			const substringWidth = getTextWidth(substring, fontSize, fontFamily);
-
-			if (substringWidth <= maxWidth - 20) {
-				maxLength = i + 1;
-				currentWidth = substringWidth;
-			} else {
-				break;
-			}
-		}
-
-		return maxLength;
-	}
-
 	// Save axes to SVG
 	export const saveSVG = () => {
 		const svgElement = document.getElementById('parcoord-canvas-axes');
@@ -522,18 +488,3 @@
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
-
-{#if showTooltip}
-	<div class="custom-tooltip" style="position: absolute; top: 200px; left: 200px;">
-		Custom Tooltip Content
-	</div>
-{/if}
-
-<style>
-	.custom-tooltip {
-		position: absolute;
-		background-color: #f0f0f0;
-		padding: 4px;
-		border: 1px solid #ccc;
-	}
-</style>

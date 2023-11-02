@@ -6,8 +6,9 @@
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
 	import Tooltip from './Tooltip.svelte';
+	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipType } from './types';
+	import type { TooltipType, TooltipAxisTitleType } from './types';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
@@ -31,6 +32,12 @@
 		xPos: 0,
 		yPos: 0,
 		text: []
+	};
+	let tooltipAxisTitle: TooltipAxisTitleType = {
+		visible: false,
+		xPos: 0,
+		yPos: 0,
+		text: ''
 	};
 
 	// Set dataset and handle new dataset upload
@@ -116,6 +123,10 @@
 
 	function setTooltipData(data: TooltipType) {
 		tooltip = data;
+	}
+
+	function setTooltipAxisTitleData(data: TooltipAxisTitleType) {
+		tooltipAxisTitle = data;
 	}
 
 	// Helper function to reorder an array
@@ -209,11 +220,13 @@
 			{margin}
 			{handleAxesSwapped}
 			{handleInvertAxis}
+			{setTooltipAxisTitleData}
 			{xScales}
 			{yScales}
 		/>
 
 		<Tooltip data={tooltip} />
+		<TooltipAxisTitle data={tooltipAxisTitle} />
 
 		<LinesThree
 			bind:this={linesComponent}
