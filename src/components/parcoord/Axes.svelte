@@ -3,7 +3,7 @@
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
 	import { arrowDown, arrowUp } from './ArrowIcons';
-	import { calculateMaxLength } from '../../util/text';
+	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import type { AxesFilterType } from './types';
 
 	export let width: number; // Container width
@@ -56,6 +56,19 @@
 
 		// Create SVG elements of axes and axes titles
 		dimensions.forEach((dim: string, i: number) => {
+			const step = xScales[1] - xScales[0];
+
+			// Format ticks so they dont overflow
+			const longestString = getLongestStringLen(yScales[dim].domain());
+			const maxTickLength = calculateMaxLength(longestString, 12, 'Roboto', step);
+			const tickFormatter = (d: any) => {
+				let formattedTick = d.toString();
+				formattedTick =
+					formattedTick.substring(0, maxTickLength) +
+					(formattedTick.length === maxTickLength ? '' : '...');
+				return formattedTick;
+			};
+
 			// Create axis objects
 			let axis;
 			if (yScales[dim].invert) axis = axisLeft(yScales[dim]).ticks(5);
@@ -65,7 +78,7 @@
 				const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
 				const step = Math.ceil(domainValues.length / tickNumber);
 				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
-				axis.tickValues(tickValues);
+				axis.tickValues(tickValues).tickFormat(tickFormatter);
 			}
 
 			// Create axis lines SVG
@@ -78,8 +91,7 @@
 			);
 
 			// Create axis titles SVG
-			const step = xScales[1] - xScales[0];
-			const maxLength = calculateMaxLength(dim, 10, 'Roboto', step);
+			const maxTitleLength = calculateMaxLength(dim, 10, 'Roboto', step);
 			axisTitles.push(
 				svg
 					.append('text')
@@ -88,7 +100,7 @@
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
 					.style('cursor', `url("arrows-right-left.svg") 9 9, auto`)
-					.text(dim.substring(0, maxLength) + (dim.length === maxLength ? '' : '...'))
+					.text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
 					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
 			);
