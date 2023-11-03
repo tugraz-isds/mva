@@ -113,7 +113,7 @@
 					.html(invertedAxes[i] ? arrowUp : arrowDown)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style('cursor', `url("arrows-invert.svg") 9 9, auto`)
-					.on('click', () => handleOnInvertAxesClick(dim, i))
+					.on('click', () => handleOnInvertAxesClick(i))
 			);
 
 			// Create axis upper filter
@@ -417,7 +417,7 @@
 	}
 
 	// Handle click on invert
-	function handleOnInvertAxesClick(dim: string, i: number) {
+	function handleOnInvertAxesClick(i: number) {
 		handleInvertAxis(i); // Handle inverting axes in parent component
 
 		// Swap filter rectangle start and end
@@ -484,10 +484,22 @@
 
 	onMount(() => {
 		initAxesFilters();
+		setTimeout(() => {
+			dimensions.forEach((dim: string, i: number) => {
+				if (!yScales[dim].invert) handleOnInvertAxesClick(i);
+			});
+		}, 5);
 	});
 
 	afterUpdate(() => {
-		if (axesFilters.length !== dimensions.length) initAxesFilters();
+		if (axesFilters.length !== dimensions.length) {
+			initAxesFilters();
+			setTimeout(() => {
+				dimensions.forEach((dim: string, i: number) => {
+					if (!yScales[dim].invert) handleOnInvertAxesClick(i);
+				});
+			}, 5);
+		}
 		clearSVG();
 		renderAxes();
 		resizeFilters();
