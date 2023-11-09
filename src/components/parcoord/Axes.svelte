@@ -110,10 +110,18 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(invertedAxes[i] ? arrowUp : arrowDown)
+					.html(
+						yScales[dim].invert
+							? invertedAxes[i]
+								? arrowDown
+								: arrowUp
+							: invertedAxes[i]
+							? arrowUp
+							: arrowDown
+					)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style('cursor', `url("arrows-invert.svg") 9 9, auto`)
-					.on('click', () => handleOnInvertAxesClick(i))
+					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
 
 			// Create axis upper filter
@@ -417,7 +425,7 @@
 	}
 
 	// Handle click on invert
-	function handleOnInvertAxesClick(i: number) {
+	function handleOnInvertAxesClick(dim: string, i: number) {
 		handleInvertAxis(i); // Handle inverting axes in parent component
 
 		// Swap filter rectangle start and end
@@ -433,7 +441,15 @@
 
 			// Rotate arrow
 			invertedAxes[i] = !invertedAxes[i];
-			axisInvertIcons[i].html(invertedAxes[i] ? arrowUp : arrowDown);
+			axisInvertIcons[i].html(
+				yScales[dim].invert
+					? invertedAxes[i]
+						? arrowDown
+						: arrowUp
+					: invertedAxes[i]
+					? arrowUp
+					: arrowDown
+			);
 		}, 10);
 	}
 
@@ -486,7 +502,7 @@
 		initAxesFilters();
 		setTimeout(() => {
 			dimensions.forEach((dim: string, i: number) => {
-				if (!yScales[dim].invert) handleOnInvertAxesClick(i);
+				if (!yScales[dim].invert) handleOnInvertAxesClick(dim, i);
 			});
 		}, 5);
 	});
@@ -496,7 +512,7 @@
 			initAxesFilters();
 			setTimeout(() => {
 				dimensions.forEach((dim: string, i: number) => {
-					if (!yScales[dim].invert) handleOnInvertAxesClick(i);
+					if (!yScales[dim].invert) handleOnInvertAxesClick(dim, i);
 				});
 			}, 5);
 		}
