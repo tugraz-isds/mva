@@ -1,35 +1,11 @@
-export const arrowDown = `<svg
-	fill="none"
-	viewBox="0 0 24 24"
-	stroke-width="1.5"
-	stroke="currentColor"
-	width="16"
-	height="16"
-	xmlns="http://www.w3.org/2000/svg">
-	<rect width="24" height="24" fill="transparent" stroke="none" />
-	<path
-		stroke-linecap="round"
-		stroke-linejoin="round"
-		d="M 11.97954,6.2800512 12,19.5 m 0,0 6.75,-6.75 M 12,19.5 5.25,12.75 h 13.5"
-		style="fill:#000000"
-	/>
+export const arrowDown = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+   <rect width="24" height="24" fill="transparent" stroke="none" />
+  <path d="M11.97954 6.2800512 12 19.5M12 19.5 16.090153 12.77046M12 19.5 7.9629158 12.75 15.999 12.75" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
 `;
 
-export const arrowUp = `<svg
-   fill="none"
-   viewBox="0 0 24 24"
-   stroke-width="1.5"
-   stroke="currentColor"
-   width="16"
-   height="16"
-   xmlns="http://www.w3.org/2000/svg">
+export const arrowUp = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
   <rect width="24" height="24" fill="transparent" stroke="none" />
-  <path
-     stroke-linecap="round"
-     stroke-linejoin="round"
-     d="M 12.020566,19.5 12.000106,6.2800512 m 0,0 -6.75,6.7499998 m 6.75,-6.7499998 6.75,6.7499998 h -13.5"
-     inkscape:label="path1"
-     style="fill:#000000" />
+  <path d="M12.245579 19.5 12.225119 6.280051M12.225119 6.280051 8.134966 12.009591M12.225119 6.280051 16.13113 12.030051 8.094045 12.030051" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
 `;
