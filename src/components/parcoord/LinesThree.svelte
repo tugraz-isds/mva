@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer.js';
 	import { select, line as lineD3 } from 'd3';
 	import {
 		brushedArray,
@@ -9,7 +8,7 @@
 		previouslyHoveredArray,
 		previouslyBrushedArray
 	} from '../../stores/brushing';
-	import { labelDimension } from '../../stores/dataset';
+	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
@@ -54,6 +53,11 @@
 		if (dataset?.length > 0 && dimensions?.length > 0) {
 			if (axesFilters.length === dimensions.length) applyFilters();
 		}
+	});
+
+	let dimensionTypes: Map<string, string>;
+	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
+		dimensionTypes = value;
 	});
 
 	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
@@ -118,7 +122,7 @@
 			const dim = dimensions[i];
 
 			let yPos;
-			if (yScales[dim].invert) yPos = yScales[dim](dataRow[dim as any]);
+			if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
 			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
 
 			linePoints.push(
@@ -263,12 +267,14 @@
 
 				const originalYValue = line[dim as any];
 				const scaledYValue = yScales[dim](originalYValue);
-				const filterValueStart = yScales[dim].invert
-					? axesFilters[j].pixels.start
-					: axesFilters[j].pixels.start - yScales[dim].step() / 2;
-				const filterValueEnd = yScales[dim].invert
-					? axesFilters[j].pixels.end
-					: axesFilters[j].pixels.end - yScales[dim].step() / 2;
+				const filterValueStart =
+					dimensionTypes.get(dim) === 'numerical'
+						? axesFilters[j].pixels.start
+						: axesFilters[j].pixels.start - yScales[dim].step() / 2;
+				const filterValueEnd =
+					dimensionTypes.get(dim) === 'numerical'
+						? axesFilters[j].pixels.end
+						: axesFilters[j].pixels.end - yScales[dim].step() / 2;
 				if (scaledYValue < filterValueStart || scaledYValue > filterValueEnd) {
 					lineShow[idx] = false;
 				}
@@ -401,7 +407,7 @@
 			const dim = dimensions[i];
 
 			let yPos;
-			if (yScales[dim].invert) yPos = yScales[dim](dataRow[dim as any]);
+			if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
 			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
 
 			linePoints.push([
@@ -433,6 +439,7 @@
 	onDestroy(() => {
 		window.removeEventListener('mousemove', handleMouseMove);
 		unsubscribeFilters();
+		unsubscribeDimTypes();
 		unsubscribeBrushing();
 		unsubscribeHovered();
 		unsubscribePrevHovered();

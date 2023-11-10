@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
 	import { csvParse, autoType, type DSVParsedArray } from 'd3';
-	import { datasetStore, labelDimension } from '../../stores/dataset';
+	import { datasetStore, labelDimension, dimensionTypeStore } from '../../stores/dataset';
 
 	export let isOpen: boolean;
 
@@ -26,7 +26,19 @@
 			let text = await file.text();
 			files = undefined;
 			if (separator !== ',') text = text.replace(new RegExp(separator, 'g'), ',');
-			const dataset: DSVParsedArray<any> = csvParse(text, autoType);
+			let dataset: DSVParsedArray<any> = csvParse(text, autoType);
+
+			const dimensions = Object.keys(dataset[0]);
+			const dimensionTypeMap = new Map<string, string>(new Map());
+			dimensions.forEach((dim: string, i: number) => {
+				if (isNumber(dataset[0][dim])) dimensionTypeMap.set(dim, 'numerical');
+				else dimensionTypeMap.set(dim, 'categorical');
+			});
+			dimensionTypeStore.set(dimensionTypeMap);
+			localStorage.setItem(
+				'dimensionTypes',
+				JSON.stringify(Array.from(dimensionTypeMap.entries()))
+			);
 
 			datasetStore.set(dataset);
 			localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
@@ -39,6 +51,13 @@
 			validUpload = true;
 			closeModal();
 		} else validUpload = false;
+	}
+
+	// Helper function that returns whether item is a number
+	function isNumber(item: any) {
+		if (typeof item === 'number') return true;
+		if (typeof item === 'string') return !isNaN(+item);
+		return false;
 	}
 </script>
 

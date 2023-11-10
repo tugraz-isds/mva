@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { datasetStore } from '../../stores/dataset';
+	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import Axes from './Axes.svelte';
@@ -55,6 +55,11 @@
 		}
 	});
 
+	let dimensionTypes: Map<string, string>;
+	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
+		dimensionTypes = value;
+	});
+
 	$: {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
 			calculateYScales();
@@ -78,10 +83,10 @@
 	}
 
 	// Update yScales
-	function calculateYScales() {
+	function calculateYScales(init: boolean = false) {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
 			yScales = dimensions.reduce((acc: any, dim: string) => {
-				if (isNumber(dataset[0][dim])) {
+				if (dimensionTypes.get(dim) === 'numerical') {
 					const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
 					acc[dim] = scaleLinear()
 						.domain(dimExtent)
@@ -90,7 +95,7 @@
 				} else {
 					const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
 					acc[dim] = scaleBand()
-						.domain(categoricalValues)
+						.domain(init ? categoricalValues : categoricalValues.reverse())
 						.range([height - margin.top - margin.bottom, 0]);
 				}
 				return acc;
@@ -197,6 +202,7 @@
 
 	onDestroy(() => {
 		unsubscribeDataset();
+		unsubscribeDimTypes();
 		isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
 	});
 </script>

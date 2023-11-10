@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { afterUpdate, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray } from '../../stores/parcoord';
+	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import type { AxesFilterType } from './types';
@@ -29,6 +30,11 @@
 	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	$: axisHeight = height - margin.top - margin.bottom;
+
+	let dimensionTypes: Map<string, string>;
+	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
+		dimensionTypes = value;
+	});
 
 	// Remove all axes elements and drag handlers
 	function clearSVG() {
@@ -71,7 +77,7 @@
 
 			// Create axis objects
 			let axis;
-			if (yScales[dim].invert) axis = axisLeft(yScales[dim]).ticks(5);
+			if (dimensionTypes.get(dim) === 'numerical') axis = axisLeft(yScales[dim]).ticks(5);
 			else {
 				axis = axisLeft(yScales[dim]);
 				const domainValues = yScales[dim].domain();
@@ -110,17 +116,12 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(
-						yScales[dim].invert
-							? invertedAxes[i]
-								? arrowDown
-								: arrowUp
-							: invertedAxes[i]
-							? arrowUp
-							: arrowDown
-					)
+					.html(invertedAxes[i] ? arrowDown : arrowUp)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
-					.style('cursor', `url("arrows-invert.svg") 9 9, auto`)
+					.style(
+						'cursor',
+						`url(${invertedAxes[i] ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'}) 9 9, auto`
+					)
 					.on('click', () => handleOnInvertAxesClick(dim, i))
 			);
 
@@ -441,15 +442,12 @@
 
 			// Rotate arrow
 			invertedAxes[i] = !invertedAxes[i];
-			axisInvertIcons[i].html(
-				yScales[dim].invert
-					? invertedAxes[i]
-						? arrowDown
-						: arrowUp
-					: invertedAxes[i]
-					? arrowUp
-					: arrowDown
-			);
+			axisInvertIcons[i]
+				.html(invertedAxes[i] ? arrowDown : arrowUp)
+				.style(
+					'cursor',
+					`url(${invertedAxes[i] ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'}) 9 9, auto`
+				);
 		}, 10);
 	}
 
@@ -500,25 +498,19 @@
 
 	onMount(() => {
 		initAxesFilters();
-		setTimeout(() => {
-			dimensions.forEach((dim: string, i: number) => {
-				if (!yScales[dim].invert) handleOnInvertAxesClick(dim, i);
-			});
-		}, 5);
 	});
 
 	afterUpdate(() => {
 		if (axesFilters.length !== dimensions.length) {
 			initAxesFilters();
-			setTimeout(() => {
-				dimensions.forEach((dim: string, i: number) => {
-					if (!yScales[dim].invert) handleOnInvertAxesClick(dim, i);
-				});
-			}, 5);
 		}
 		clearSVG();
 		renderAxes();
 		resizeFilters();
+	});
+
+	onDestroy(() => {
+		unsubscribeDimTypes();
 	});
 </script>
 
