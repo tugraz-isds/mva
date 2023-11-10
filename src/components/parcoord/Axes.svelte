@@ -27,9 +27,11 @@
 	let axisHeight: number; // Actual axis height in pixels
 
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
+	let isCurrentlyFiltering: boolean = false; // Is user currently filtering flag
 	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	$: axisHeight = height - margin.top - margin.bottom;
+	$: newWidth = width < 100 * dimensions.length ? dimensions.length * 100 : width;
 
 	let dimensionTypes: Map<string, string>;
 	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
@@ -71,7 +73,7 @@
 				let formattedTick = d.toString();
 				formattedTick =
 					formattedTick.substring(0, maxTickLength) +
-					(formattedTick.length === maxTickLength ? '' : '...');
+					(formattedTick.length < maxTickLength ? '' : '...');
 				return formattedTick;
 			};
 
@@ -109,6 +111,7 @@
 					.text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
 					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
+					.on('mousedown', hideCustomTooltip)
 			);
 
 			// Create axis invert icons SVG
@@ -189,6 +192,7 @@
 	}
 
 	function showCustomTooltip(axisTitle: string, axisIndex: number) {
+		if (isCurrentlyFiltering) return;
 		setTooltipAxisTitleData({
 			visible: true,
 			xPos: xScales[axisIndex],
@@ -217,9 +221,12 @@
 				.on('start', (event) => {
 					draggingIndex = dimensions.indexOf(dim);
 					event.subject.x = xScales[dimensions.indexOf(dim)];
+					isCurrentlyFiltering = true;
 				})
 				.on('drag', (event) => {
-					const newX = event.x;
+					const minX = margin.left; // Minimum x position
+					const maxX = newWidth - margin.right; // Maximum x position
+					const newX = Math.max(minX, Math.min(maxX, event.x)); // Clamp the x position within the valid range
 
 					// Move dragged axis
 					axisLines[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
@@ -242,8 +249,8 @@
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
-					if (newX < xScales[draggingIndex - 1]) newIndex--;
-					else if (newX > xScales[draggingIndex + 1]) newIndex++;
+					if (newX <= xScales[draggingIndex - 1]) newIndex--;
+					else if (newX >= xScales[draggingIndex + 1]) newIndex++;
 
 					// Handle swapping axes
 					if (newIndex !== draggingIndex) {
@@ -282,6 +289,7 @@
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
+						invertedAxes = reorderArray(invertedAxes, draggingIndex, newIndex);
 						draggingIndex = newIndex;
 					}
 				})
@@ -316,6 +324,7 @@
 						`translate(${xScales[draggingIndex] - 6}, 0)`
 					);
 					draggingIndex = -1;
+					isCurrentlyFiltering = false;
 				});
 
 			axisTitles[dimensions.indexOf(dim)].call(dragBehavior);
@@ -516,7 +525,7 @@
 
 <svg
 	id="parcoord-canvas-axes"
-	width={width < 100 * dimensions.length ? dimensions.length * 100 : width}
+	width={newWidth}
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />
