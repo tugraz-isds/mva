@@ -31,7 +31,6 @@
 	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	$: axisHeight = height - margin.top - margin.bottom;
-	$: newWidth = width < 100 * dimensions.length ? dimensions.length * 100 : width;
 
 	let dimensionTypes: Map<string, string>;
 	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
@@ -65,7 +64,6 @@
 		// Create SVG elements of axes and axes titles
 		dimensions.forEach((dim: string, i: number) => {
 			const step = xScales[1] - xScales[0];
-
 			// Format ticks so they dont overflow
 			const longestString = getLongestStringLen(yScales[dim].domain());
 			const maxTickLength = calculateMaxLength(longestString, 12, 'Roboto', step);
@@ -73,7 +71,7 @@
 				let formattedTick = d.toString();
 				formattedTick =
 					formattedTick.substring(0, maxTickLength) +
-					(formattedTick.length < maxTickLength ? '' : '...');
+					(formattedTick.length <= maxTickLength ? '' : '...');
 				return formattedTick;
 			};
 
@@ -225,7 +223,7 @@
 				})
 				.on('drag', (event) => {
 					const minX = margin.left; // Minimum x position
-					const maxX = newWidth - margin.right; // Maximum x position
+					const maxX = width - margin.right; // Maximum x position
 					const newX = Math.max(minX, Math.min(maxX, event.x)); // Clamp the x position within the valid range
 
 					// Move dragged axis
@@ -254,6 +252,18 @@
 
 					// Handle swapping axes
 					if (newIndex !== draggingIndex) {
+						// Calculate new margin left
+						if (
+							(newIndex === 0 && draggingIndex === 1) ||
+							(newIndex === 1 && draggingIndex === 0)
+						) {
+							console.log(width, xScales);
+							const step = xScales[1] - xScales[0];
+							const longestString = getLongestStringLen(yScales[dimensions[1]].domain());
+							const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
+							margin.left = longestStringWidth < step ? longestStringWidth + 15 : step;
+						}
+
 						handleAxesSwapped(draggingIndex, newIndex);
 						axisLines[newIndex].attr(
 							'transform',
@@ -470,6 +480,13 @@
 
 	// Function to initialize axis filter values
 	function initAxesFilters() {
+		// Calculate new margin left
+		console.log(width, xScales);
+		const step = xScales[1] - xScales[0];
+		const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
+		const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
+		margin.left = longestStringWidth < step ? longestStringWidth : step;
+
 		axesFilters = dimensions.map((dim: string, i: number) => ({
 			pixels: {
 				start: 0,
@@ -525,7 +542,7 @@
 
 <svg
 	id="parcoord-canvas-axes"
-	width={newWidth}
+	{width}
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2;"
 />

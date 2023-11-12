@@ -24,7 +24,7 @@
 	let linesComponent: LinesThree; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 
-	const margin = { top: 40, right: 50, bottom: 10, left: 50 }; // Parallel coordinates margin
+	let margin = { top: 40, right: 20, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	// Tooltip data
 	let tooltip: TooltipType = {
@@ -49,9 +49,10 @@
 			dimensions = Object.keys(dataset[0]);
 			dimensionsInitial = dimensions;
 
-			calculateYScales(); // Calculate new yScales
+			calculateYScales();
+			calculateXScales();
 
-			brushedArray.set(new Set<number>()); // Reset brusing
+			brushedArray.set(new Set<number>());
 		}
 	});
 
@@ -59,6 +60,11 @@
 	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
 		dimensionTypes = value;
 	});
+
+	$: width =
+		width < 100 * dimensions.length + margin.left + margin.right
+			? 100 * dimensions.length + margin.left + margin.right
+			: width;
 
 	$: {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
@@ -68,17 +74,8 @@
 
 	// Update xScale when dimensions change
 	$: {
-		if (width > 0 && dimensions) {
-			xScales = dimensions.map((_, i) =>
-				scaleLinear()
-					.domain([0, dimensions.length - 1])
-					.range([
-						margin.left,
-						width < 100 * dimensions.length
-							? dimensions.length * 100 - margin.right
-							: width - margin.right
-					])(i)
-			);
+		if (margin && width > 0 && dataset?.length > 0 && dimensions) {
+			calculateXScales();
 		}
 	}
 
@@ -101,6 +98,15 @@
 				return acc;
 			}, {});
 		}
+	}
+
+	// Update yScales
+	function calculateXScales() {
+		xScales = dimensions.map((_, i) =>
+			scaleLinear()
+				.domain([0, dimensions.length - 1])
+				.range([margin.left, width - margin.right])(i)
+		);
 	}
 
 	// Get dimensions that have data as numbers
@@ -195,7 +201,6 @@
 	onMount(() => {
 		initialHeight = height;
 		calculateYScales();
-
 		isBrowser = true;
 		window.addEventListener('call-save-svg-parcoord', saveSVG);
 	});
@@ -217,13 +222,13 @@
 >
 	{#if dataset?.length === 0}
 		<span>No data available.</span>
-	{:else if yScales && Object.keys(yScales).length !== 0}
+	{:else if yScales && Object.keys(yScales).length !== 0 && xScales && Object.keys(xScales).length !== 0}
 		<Axes
 			bind:this={axesComponent}
-			{width}
+			bind:width
 			{height}
 			{dimensions}
-			{margin}
+			bind:margin
 			{handleAxesSwapped}
 			{handleInvertAxis}
 			{setTooltipAxisTitleData}
@@ -236,11 +241,11 @@
 
 		<LinesThree
 			bind:this={linesComponent}
-			{width}
+			bind:width
 			{height}
 			{dataset}
 			initialDimensions={dimensions}
-			{margin}
+			bind:margin
 			{xScales}
 			{yScales}
 			{setTooltipData}

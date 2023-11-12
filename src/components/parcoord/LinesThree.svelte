@@ -23,8 +23,6 @@
 	export let yScales: any; // Scales for all of the Y-axes
 	export let setTooltipData: Function; // Callback function for tooltip
 
-	$: newWidth = width < 100 * initialDimensions.length ? initialDimensions.length * 100 : width;
-
 	// ThreeJS elements
 	let canvasEl: HTMLCanvasElement;
 	let camera: THREE.OrthographicCamera;
@@ -91,13 +89,13 @@
 		scene = new THREE.Scene();
 
 		// Create a camera
-		camera = new THREE.OrthographicCamera(0, newWidth, 0, height, 0.1, 1000);
+		camera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
 		camera.position.set(0, 0, 5);
 
 		// Create a renderer and append the canvas to the specified element
 		renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
 		renderer.setClearColor(0xffffff);
-		renderer.setSize(newWidth, height);
+		renderer.setSize(width, height);
 		const parcoordDiv = document.getElementById('parcoord-canvas');
 		if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
 
@@ -378,7 +376,7 @@
 		const tempContainer = document.createElement('div');
 		const svgContainer = select(tempContainer)
 			.append('svg')
-			.attr('viewBox', `0 0 ${newWidth} ${height}`);
+			.attr('viewBox', `0 0 ${width} ${height}`);
 
 		const lineGenerator = lineD3()
 			.x((d: any) => d[0])
