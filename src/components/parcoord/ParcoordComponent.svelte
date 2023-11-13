@@ -13,6 +13,7 @@
 	let isBrowser = false; // Flag to see if we are in browser
 
 	let width: number; // Container width
+	let originalWidth: number; // Container original width
 	let height: number; // Container height
 	let dimensions: string[] = []; // Dataset dimensions
 	let dimensionsInitial: string[] = []; // Dataset initial dimensions
@@ -62,9 +63,9 @@
 	});
 
 	$: width =
-		width < 100 * dimensions.length + margin.left + margin.right
+		originalWidth < 100 * dimensions.length + margin.left + margin.right
 			? 100 * dimensions.length + margin.left + margin.right
-			: width;
+			: originalWidth;
 
 	$: {
 		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
@@ -122,6 +123,16 @@
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
 		linesComponent.swapPoints(fromIndex, toIndex);
 		dimensions = reorderArray(dimensions, fromIndex, toIndex);
+	}
+
+	function handleMarginChanged() {
+		setTimeout(() => {
+			axesComponent.clearSVG();
+			axesComponent.renderAxes();
+
+			linesComponent.initScene();
+			linesComponent.drawLines();
+		}, 10);
 	}
 
 	// Handle inverting axes
@@ -217,7 +228,7 @@
 	id="parcoord-canvas"
 	class="w-full h-full overflow-scroll-x"
 	style="overflow-x: scroll !important;"
-	bind:clientWidth={width}
+	bind:clientWidth={originalWidth}
 	bind:clientHeight={height}
 >
 	{#if dataset?.length === 0}
@@ -231,6 +242,7 @@
 			bind:margin
 			{handleAxesSwapped}
 			{handleInvertAxis}
+			{handleMarginChanged}
 			{setTooltipAxisTitleData}
 			{xScales}
 			{yScales}

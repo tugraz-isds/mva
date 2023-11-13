@@ -84,7 +84,7 @@
 	});
 
 	// Function to initialize ThreeJS scene
-	function initScene() {
+	export function initScene() {
 		// Create a scene
 		scene = new THREE.Scene();
 
@@ -104,7 +104,7 @@
 		mouse = new THREE.Vector2();
 	}
 
-	function drawLines() {
+	export function drawLines() {
 		lines = [];
 		dataset.forEach((dataRow: any, idx: number) => {
 			drawLine(dataRow, idx);

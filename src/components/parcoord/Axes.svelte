@@ -13,6 +13,7 @@
 	export let margin: any; // Margin object
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
+	export let handleMarginChanged: Function; // Callback function when margin changes
 	export let setTooltipAxisTitleData: Function; // Callback function for tooltip
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
@@ -38,7 +39,7 @@
 	});
 
 	// Remove all axes elements and drag handlers
-	function clearSVG() {
+	export function clearSVG() {
 		axisLines = [];
 		axisTitles = [];
 		axisInvertIcons = [];
@@ -56,7 +57,7 @@
 	}
 
 	// Draw axes elements
-	function renderAxes() {
+	export function renderAxes() {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
 		const svg = select('#parcoord-canvas-axes');
@@ -478,15 +479,17 @@
 		return result;
 	}
 
-	// Function to initialize axis filter values
-	function initAxesFilters() {
-		// Calculate new margin left
-		console.log(width, xScales);
+	// Function to calculate new margin left
+	function calculateMarginLeft() {
 		const step = xScales[1] - xScales[0];
 		const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
 		const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
 		margin.left = longestStringWidth < step ? longestStringWidth : step;
+		handleMarginChanged();
+	}
 
+	// Function to initialize axis filter values
+	function initAxesFilters() {
 		axesFilters = dimensions.map((dim: string, i: number) => ({
 			pixels: {
 				start: 0,
@@ -524,11 +527,13 @@
 
 	onMount(() => {
 		initAxesFilters();
+		calculateMarginLeft();
 	});
 
 	afterUpdate(() => {
 		if (axesFilters.length !== dimensions.length) {
 			initAxesFilters();
+			calculateMarginLeft();
 		}
 		clearSVG();
 		renderAxes();
