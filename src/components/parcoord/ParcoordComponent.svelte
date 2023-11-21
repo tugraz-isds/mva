@@ -3,6 +3,7 @@
 	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
 	import { scaleLinear, scaleBand, extent } from 'd3';
+	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
 	import Tooltip from './Tooltip.svelte';
@@ -167,36 +168,35 @@
 	}
 
 	export function saveSVG() {
-		let axesStringSvg = axesComponent.saveSVG();
 		let linesStringSvg = linesComponent.saveSVG();
-
+		let axesStringSvg = axesComponent.saveSVG();
 		if (!axesStringSvg || !linesStringSvg) return;
 
-		// Add new lines before and after tags
-		axesStringSvg = axesStringSvg.replaceAll(/<[^\/].*?>/g, (match) => `${match}\n`);
-		linesStringSvg = linesStringSvg.replaceAll(/<[^\/].*?>/g, (match) => `${match}\n`);
-		axesStringSvg = axesStringSvg.replaceAll(/<\/.*?>/g, (match) => `\n${match}\n`);
-		linesStringSvg = linesStringSvg.replaceAll(/<\/.*?>/g, (match) => `\n${match}`);
-		// Remove empty spaces at start of line
-		axesStringSvg = axesStringSvg.replace(/^\s+/gm, '');
-		linesStringSvg = linesStringSvg.replace(/^\s+/gm, '');
+		linesStringSvg = linesStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
+		axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
+
 		// Trim decimal points to 6 decimals
 		axesStringSvg = axesStringSvg.replace(/\d+\.\d{7,}/g, (match) => `${Number(match).toFixed(6)}`);
 		linesStringSvg = linesStringSvg.replace(
 			/\d+\.\d{7,}/g,
 			(match) => `${Number(match).toFixed(6)}`
 		);
-		// Replace width and height with viewBox for axes
-		axesStringSvg = axesStringSvg.replace(/width="(\d+)" height="(\d+)"/, 'viewBox="0 0 $1 $2"');
 
 		const stringSvg =
-			`<svg viewBox="0 0 ${width} ${height}">` +
+			`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
+			'\n<!-- Lines -->\n' +
+			linesStringSvg +
 			'\n<!-- Axes -->\n' +
 			axesStringSvg +
-			'\n\n<!-- Lines -->\n' +
-			linesStringSvg +
 			'\n</svg>';
-		const svgBlob = new Blob([stringSvg], {
+
+		const stringSvgFormatted = xmlFormat(stringSvg, {
+			indentation: '  ',
+			collapseContent: true,
+			lineSeparator: '\n'
+		});
+
+		const svgBlob = new Blob([stringSvgFormatted], {
 			type: 'image/svg+xml;charset=utf-8'
 		});
 		const svgUrl = URL.createObjectURL(svgBlob);

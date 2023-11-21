@@ -52,6 +52,7 @@
 		"svelte-window-system": "^0.1.0",
 		"tailwind-merge": "^1.13.2",
 		"three": "^0.156.1",
-		"winbox": "^0.2.6"
+		"winbox": "^0.2.6",
+		"xml-formatter": "^3.6.0"
 	}
 }

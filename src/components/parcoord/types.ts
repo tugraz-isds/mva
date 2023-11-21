@@ -24,3 +24,8 @@ export type TooltipAxisTitleType = {
 	yPos: number; // Y position
 	text: string; // Text rows as array
 };
+
+export type LineDataType = {
+	color: number; // Line color
+	position: number; // Line z-index position
+};

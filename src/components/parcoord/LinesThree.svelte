@@ -12,7 +12,8 @@
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
-	import type { AxesFilterType } from './types';
+	import type { AxesFilterType, LineDataType } from './types';
+	import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 
 	export let width: number;
 	export let height: number;
@@ -34,8 +35,7 @@
 
 	let lines: THREE.Line[] = []; // Array to store all line objects
 	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
-	let lineColors: number[] = []; // Array of number colors for all lines
-	let linePositions: number[] = []; // Array of number positions for all lines
+	let lineData: LineDataType[] = []; // Array of line data for all lines
 
 	let dimensions: string[]; // Dimensions used for swapping
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
@@ -127,13 +127,13 @@
 				new THREE.Vector3(
 					xScales[i],
 					isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top,
-					linePositions[idx]
+					lineData[idx].position
 				)
 			);
 		}
 
 		const material = new THREE.LineBasicMaterial({
-			color: lineColors[idx],
+			color: lineData[idx].color,
 			linewidth: 1,
 			transparent: true,
 			opacity: 0.75
@@ -148,7 +148,12 @@
 	function drawHoveredLines() {
 		hoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 1 });
+			line.material = new THREE.LineBasicMaterial({
+				color: COLOR_HOVERED,
+				linewidth: 1,
+				transparent: true,
+				opacity: 1
+			});
 			changeLinePosition(line, 2);
 		});
 		render();
@@ -157,10 +162,17 @@
 	function drawBrushedLines() {
 		brushedLinesIndices.forEach((i) => {
 			const line = lines[i];
-			lineColors[i] = 0xfb923c;
-			linePositions[i] = 1;
-			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
-			changeLinePosition(line, linePositions[i]);
+			lineData[i] = {
+				color: COLOR_BRUSHED,
+				position: 1
+			};
+			line.material = new THREE.LineBasicMaterial({
+				color: lineData[i].color,
+				linewidth: 1,
+				transparent: true,
+				opacity: 1
+			});
+			changeLinePosition(line, lineData[i].position);
 		});
 		render();
 	}
@@ -168,8 +180,13 @@
 	function removeHoveredLines() {
 		previouslyHoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
-			changeLinePosition(line, linePositions[i]);
+			line.material = new THREE.LineBasicMaterial({
+				color: lineData[i].color,
+				linewidth: 1,
+				transparent: true,
+				opacity: brushedLinesIndices.has(i) ? 1 : 0.75
+			});
+			changeLinePosition(line, lineData[i].position);
 		});
 		render();
 	}
@@ -177,10 +194,17 @@
 	function removeBrushedLines() {
 		previouslyBrushedLinesIndices.forEach((i) => {
 			const line = lines[i];
-			lineColors[i] = lineShow[i] ? 0x4169e1 : 0xcbd5e0;
-			linePositions[i] = lineShow[i] ? 0 : -1;
-			line.material = new THREE.LineBasicMaterial({ color: lineColors[i], linewidth: 1 });
-			changeLinePosition(line, linePositions[i]);
+			lineData[i] = {
+				color: lineShow[i] ? COLOR_ACTIVE : COLOR_FILTERED,
+				position: lineShow[i] ? 0 : -1
+			};
+			line.material = new THREE.LineBasicMaterial({
+				color: lineData[i].color,
+				linewidth: 1,
+				transparent: true,
+				opacity: 0.75
+			});
+			changeLinePosition(line, lineData[i].position);
 		});
 		render();
 	}
@@ -279,21 +303,30 @@
 			});
 			if (brushedLinesIndices.has(idx)) {
 				if (!lineShow[idx]) brushedLinesIndices.delete(idx);
-				else {
-					lineColors[idx] = 0xfb923c;
-					linePositions[idx] = 1;
-				}
+				else
+					lineData[idx] = {
+						color: COLOR_BRUSHED,
+						position: 1
+					};
 			} else {
-				if (lineShow[idx]) {
-					lineColors[idx] = 0x4169e1;
-					linePositions[idx] = 0;
-				} else {
-					lineColors[idx] = 0xcbd5e0;
-					linePositions[idx] = -1;
-				}
+				if (lineShow[idx])
+					lineData[idx] = {
+						color: COLOR_ACTIVE,
+						position: 0
+					};
+				else
+					lineData[idx] = {
+						color: COLOR_FILTERED,
+						position: -1
+					};
 			}
-			lines[idx].material = new THREE.LineBasicMaterial({ color: lineColors[idx], linewidth: 1 });
-			changeLinePosition(lines[idx], linePositions[idx]);
+			lines[idx].material = new THREE.LineBasicMaterial({
+				color: lineData[idx].color,
+				linewidth: 1,
+				transparent: true,
+				opacity: brushedLinesIndices.has(idx) ? 1 : 0.75
+			});
+			changeLinePosition(lines[idx], lineData[idx].position);
 		});
 
 		brushedArray.set(brushedLinesIndices);
@@ -363,8 +396,10 @@
 	function initialzeArrays() {
 		dimensions = initialDimensions;
 		lineShow = Array(dataset.length).fill(true);
-		lineColors = Array(dataset.length).fill(0x4169e1);
-		linePositions = Array(dataset.length).fill(0);
+		lineData = Array(dataset.length).fill({
+			color: COLOR_ACTIVE,
+			position: 0
+		});
 		linkingArray.set(lineShow);
 	}
 
@@ -382,15 +417,48 @@
 			.x((d: any) => d[0])
 			.y((d: any) => d[1]);
 
-		dataset.forEach((dataRow: any) => {
-			const lineSvg = drawLineSVG(dataRow);
+		const filteredIndices: number[] = [],
+			activeIndices: number[] = [];
+		lineShow.forEach((value: boolean, i: number) => {
+			value ? activeIndices.push(i) : filteredIndices.push(i);
+		});
+
+		const drawLineSVG = (dataRow: any[], color: number, opacity: number) => {
+			const linePoints = [];
+			for (let i = 0; i < dimensions.length; i++) {
+				const dim = dimensions[i];
+
+				let yPos;
+				if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
+				else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
+
+				linePoints.push([
+					xScales[i],
+					isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
+				]);
+			}
+
 			svgContainer
 				.append('path')
-				.datum(lineSvg)
+				.datum(linePoints)
 				.attr('fill', 'none')
-				.attr('stroke', 'blue')
+				.attr('stroke', `#${color.toString(16).replace(/^0x/, '')}`)
 				.attr('stroke-width', 1)
+				.attr('stroke-opacity', opacity)
 				.attr('d', lineGenerator as any);
+		};
+
+		filteredIndices.forEach((i) => {
+			drawLineSVG(dataset[i], COLOR_FILTERED, 0.75);
+		});
+
+		activeIndices.forEach((i) => {
+			if (lineData[i].color === COLOR_BRUSHED) return;
+			drawLineSVG(dataset[i], COLOR_ACTIVE, 0.75);
+		});
+
+		brushedLinesIndices.forEach((i) => {
+			drawLineSVG(dataset[i], COLOR_BRUSHED, 1);
 		});
 
 		const serializer = new XMLSerializer();
@@ -398,24 +466,6 @@
 		tempContainer.remove();
 		return svgString;
 	};
-
-	function drawLineSVG(dataRow: any[]) {
-		const linePoints = [];
-		for (let i = 0; i < dimensions.length; i++) {
-			const dim = dimensions[i];
-
-			let yPos;
-			if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
-			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
-
-			linePoints.push([
-				xScales[i],
-				isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
-			]);
-		}
-
-		return linePoints;
-	}
 
 	onMount(() => {
 		initialzeArrays();
