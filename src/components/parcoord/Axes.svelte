@@ -67,7 +67,7 @@
 			const step = xScales[1] - xScales[0];
 			// Format ticks so they dont overflow
 			const longestString = getLongestStringLen(yScales[dim].domain());
-			const maxTickLength = calculateMaxLength(longestString, 12, 'Roboto', step);
+			const maxTickLength = calculateMaxLength(longestString, 12, 'Roboto', i === 0 ? 100 : step);
 			const tickFormatter = (d: any) => {
 				let formattedTick = d.toString();
 				formattedTick =
@@ -253,18 +253,6 @@
 
 					// Handle swapping axes
 					if (newIndex !== draggingIndex) {
-						// Calculate new margin left
-						if (
-							(newIndex === 0 && draggingIndex === 1) ||
-							(newIndex === 1 && draggingIndex === 0)
-						) {
-							console.log(width, xScales);
-							const step = xScales[1] - xScales[0];
-							const longestString = getLongestStringLen(yScales[dimensions[1]].domain());
-							const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
-							margin.left = longestStringWidth < step ? longestStringWidth + 15 : step;
-						}
-
 						handleAxesSwapped(draggingIndex, newIndex);
 						axisLines[newIndex].attr(
 							'transform',
@@ -301,6 +289,11 @@
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
 						invertedAxes = reorderArray(invertedAxes, draggingIndex, newIndex);
+
+						// Calculate new margin left
+						if ((newIndex === 0 && draggingIndex === 1) || (newIndex === 1 && draggingIndex === 0))
+							calculateMarginLeft();
+
 						draggingIndex = newIndex;
 					}
 				})
@@ -484,7 +477,8 @@
 		const step = xScales[1] - xScales[0];
 		const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
 		const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
-		margin.left = longestStringWidth < step ? longestStringWidth : step;
+		margin.left =
+			longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
 		handleMarginChanged();
 	}
 

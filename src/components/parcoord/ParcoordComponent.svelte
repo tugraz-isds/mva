@@ -249,7 +249,7 @@
 		/>
 
 		<Tooltip data={tooltip} />
-		<TooltipAxisTitle data={tooltipAxisTitle} />
+		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
 
 		<LinesThree
 			bind:this={linesComponent}

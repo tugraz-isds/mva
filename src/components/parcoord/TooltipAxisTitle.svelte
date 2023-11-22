@@ -4,6 +4,7 @@
 	import { getTextWidth } from '../../util/text';
 	import type { TooltipAxisTitleType } from './types';
 
+	export let width: number; // Container width
 	export let data: TooltipAxisTitleType;
 
 	let tooltip: any; // Tooltip SVG element
@@ -29,7 +30,7 @@
 			.style('rx', 5)
 			.style('ry', 5)
 			.style('display', data.visible ? 'block' : 'none')
-			.attr('x', data.xPos - 5)
+			.attr('x', data.xPos + tooltipWidth < width ? data.xPos - 5 : width - tooltipWidth - 28)
 			.attr('y', data.yPos - 5)
 			.attr('width', tooltipWidth + 10)
 			.attr('height', 15);
@@ -38,7 +39,7 @@
 		tooltip = svg
 			.append('text')
 			.attr('id', 'tooltip-axis-title')
-			.attr('x', data.xPos)
+			.attr('x', data.xPos + tooltipWidth < width ? data.xPos : width - tooltipWidth - 23)
 			.attr('y', data.yPos + 5)
 			.style('display', data.visible ? 'block' : 'none')
 			.style('text-anchor', 'start')
