@@ -252,7 +252,7 @@
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
-		<ContextMenuAxes bind:this={contextMenuAxes} bind:axesComponent />
+		<ContextMenuAxes bind:this={contextMenuAxes} bind:axesComponent {yScales} {dimensions} />
 
 		<LinesThree
 			bind:this={linesComponent}
