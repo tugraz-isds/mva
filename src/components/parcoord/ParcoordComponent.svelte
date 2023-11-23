@@ -8,6 +8,7 @@
 	import LinesThree from './LinesThree.svelte';
 	import Tooltip from './Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
+	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
 	import type { TooltipType, TooltipAxisTitleType } from './types';
 
@@ -25,6 +26,7 @@
 
 	let linesComponent: LinesThree; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
+	let contextMenuAxes: ContextMenuAxes;
 
 	let margin = { top: 40, right: 20, bottom: 10, left: 50 }; // Parallel coordinates margin
 
@@ -223,7 +225,6 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	id="parcoord-canvas"
 	class="w-full h-full overflow-scroll-x"
@@ -236,6 +237,7 @@
 	{:else if yScales && Object.keys(yScales).length !== 0 && xScales && Object.keys(xScales).length !== 0}
 		<Axes
 			bind:this={axesComponent}
+			bind:contextMenuAxes
 			bind:width
 			{height}
 			{dimensions}
@@ -250,6 +252,7 @@
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
+		<ContextMenuAxes bind:this={contextMenuAxes} bind:axesComponent />
 
 		<LinesThree
 			bind:this={linesComponent}

@@ -5,9 +5,11 @@
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
+	import type ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { AxesFilterType } from './types';
 
 	export let width: number; // Container width
+	export let contextMenuAxes: ContextMenuAxes;
 	export let height: number; // Container height
 	export let dimensions: string[] = []; // Initial order of dimensions
 	export let margin: any; // Margin object
@@ -111,6 +113,7 @@
 					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
 					.on('mousedown', hideCustomTooltip)
+					.on('contextmenu', (e) => contextMenuAxes.showContextMenu(e, i))
 			);
 
 			// Create axis invert icons SVG
@@ -124,7 +127,7 @@
 						'cursor',
 						`url(${invertedAxes[i] ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'}) 9 9, auto`
 					)
-					.on('click', () => handleOnInvertAxesClick(dim, i))
+					.on('click', () => handleOnInvertAxesClick(i))
 			);
 
 			// Create axis upper filter
@@ -439,7 +442,7 @@
 	}
 
 	// Handle click on invert
-	function handleOnInvertAxesClick(dim: string, i: number) {
+	export function handleOnInvertAxesClick(i: number) {
 		handleInvertAxis(i); // Handle inverting axes in parent component
 
 		// Swap filter rectangle start and end

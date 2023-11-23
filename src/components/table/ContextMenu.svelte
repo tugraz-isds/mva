@@ -7,8 +7,8 @@
 	let menuStyle = ''; // Menu style string
 	let dim = ''; // Current dimension
 	let labelDim: string; // Dataset label dimension
-	let activeClass = 'font-medium py-1 px-1 text-sm hover:bg-gray-100';
-	let disabledClass =
+	const activeClass = 'font-medium py-1 px-1 text-sm hover:bg-gray-100';
+	const disabledClass =
 		'font-medium py-1 px-1 text-sm hover:bg-gray-100 text-gray-400 cursor-not-allowed';
 
 	const unsubscribeLabelDim = labelDimension.subscribe((value: string) => {
@@ -17,8 +17,9 @@
 
 	export function showContextMenu(event: MouseEvent, dimension: string) {
 		event.preventDefault();
-		const { clientX, clientY } = event;
 		showMenu = true;
+
+		const { clientX, clientY } = event;
 		menuStyle = `left: ${clientX}px; top: ${clientY}px;`;
 		dim = dimension;
 	}
