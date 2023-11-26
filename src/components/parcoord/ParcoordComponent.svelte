@@ -2,6 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
+	import { parcoordCustomAxisRanges, parcoordInvertedAxes } from '../../stores/parcoord';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
@@ -10,7 +11,7 @@
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipType, TooltipAxisTitleType } from './types';
+	import type { TooltipType, TooltipAxisTitleType, CustomRangeType } from './types';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
@@ -65,6 +66,14 @@
 		dimensionTypes = value;
 	});
 
+	let customRanges: Map<string, CustomRangeType>;
+	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
+		(value: Map<string, CustomRangeType>) => {
+			customRanges = value;
+			calculateYScales();
+		}
+	);
+
 	$: width =
 		originalWidth < 100 * dimensions.length + margin.left + margin.right
 			? 100 * dimensions.length + margin.left + margin.right
@@ -85,14 +94,26 @@
 
 	// Update yScales
 	function calculateYScales(init: boolean = false) {
-		if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
-			yScales = dimensions.reduce((acc: any, dim: string) => {
+		console.log('Calculating yScales');
+		if (height > 0 && dataset?.length > 0) {
+			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
 				if (dimensionTypes.get(dim) === 'numerical') {
-					const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-					acc[dim] = scaleLinear()
-						.domain(dimExtent)
-						.range([height - margin.top - margin.bottom, 0])
-						.nice();
+					if (customRanges.get(dim) === null) {
+						const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
+						acc[dim] = scaleLinear()
+							.domain(dimExtent)
+							.range([height - margin.top - margin.bottom, 0])
+							.nice();
+						if ($parcoordInvertedAxes.get(dim)) acc[dim].domain(acc[dim].domain().reverse());
+					} else {
+						acc[dim] = scaleLinear()
+							.domain([
+								customRanges.get(dim)?.start as number,
+								customRanges.get(dim)?.end as number
+							])
+							.range([height - margin.top - margin.bottom, 0])
+							.nice();
+					}
 				} else {
 					const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
 					acc[dim] = scaleBand()
@@ -216,11 +237,17 @@
 		calculateYScales();
 		isBrowser = true;
 		window.addEventListener('call-save-svg-parcoord', saveSVG);
+
+		dimensions.forEach((dim) => {
+			customRanges.set(dim, null);
+			$parcoordInvertedAxes.set(dim, false);
+		});
 	});
 
 	onDestroy(() => {
 		unsubscribeDataset();
 		unsubscribeDimTypes();
+		unsubscribeCustomRanges();
 		isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
 	});
 </script>
@@ -247,12 +274,18 @@
 			{handleMarginChanged}
 			{setTooltipAxisTitleData}
 			{xScales}
-			{yScales}
+			bind:yScales
 		/>
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
-		<ContextMenuAxes bind:this={contextMenuAxes} bind:axesComponent {yScales} {dimensions} />
+		<ContextMenuAxes
+			bind:this={contextMenuAxes}
+			bind:axesComponent
+			bind:yScales
+			{dimensions}
+			{dataset}
+		/>
 
 		<LinesThree
 			bind:this={linesComponent}

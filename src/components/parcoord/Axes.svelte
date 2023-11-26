@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag } from 'd3';
-	import { filtersArray } from '../../stores/parcoord';
+	import { filtersArray, parcoordInvertedAxes } from '../../stores/parcoord';
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
@@ -31,13 +31,19 @@
 
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false; // Is user currently filtering flag
-	let invertedAxes: boolean[] = []; // Filter of inverted axes, needed to display correct icons
 
 	$: axisHeight = height - margin.top - margin.bottom;
 
 	let dimensionTypes: Map<string, string>;
 	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
 		dimensionTypes = value;
+	});
+
+	let invertedAxes: Map<string, boolean>;
+	const unsubscribeInvertedAxes = parcoordInvertedAxes.subscribe((value: Map<string, boolean>) => {
+		if (axesFilters.length > 0) {
+			invertedAxes = value;
+		}
 	});
 
 	// Remove all axes elements and drag handlers
@@ -121,11 +127,13 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(invertedAxes[i] ? arrowDown : arrowUp)
+					.html(invertedAxes.get(dim) ? arrowDown : arrowUp)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style(
 						'cursor',
-						`url(${invertedAxes[i] ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'}) 9 9, auto`
+						`url(${
+							invertedAxes.get(dim) ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'
+						}) 9 9, auto`
 					)
 					.on('click', () => handleOnInvertAxesClick(i))
 			);
@@ -291,7 +299,6 @@
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
-						invertedAxes = reorderArray(invertedAxes, draggingIndex, newIndex);
 
 						// Calculate new margin left
 						if ((newIndex === 0 && draggingIndex === 1) || (newIndex === 1 && draggingIndex === 0))
@@ -443,28 +450,19 @@
 
 	// Handle click on invert
 	export function handleOnInvertAxesClick(i: number) {
-		handleInvertAxis(i); // Handle inverting axes in parent component
+		handleInvertAxis(i);
 
-		// Swap filter rectangle start and end
+		const dim = dimensions[i];
+		invertedAxes.set(dim, !invertedAxes.get(dim));
+
 		const temp = axesFilters[i].pixels.end;
 		axesFilters[i].pixels.end = axisHeight - axesFilters[i].pixels.start;
 		axesFilters[i].pixels.start = axisHeight - temp;
 		axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
 		axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
 
-		// Set timeout for correct rendering
-		setTimeout(() => {
-			axisFilterRectangles[i].attr('y', margin.top + axesFilters[i].pixels.start); // Update the filter rectangle
-
-			// Rotate arrow
-			invertedAxes[i] = !invertedAxes[i];
-			axisInvertIcons[i]
-				.html(invertedAxes[i] ? arrowDown : arrowUp)
-				.style(
-					'cursor',
-					`url(${invertedAxes[i] ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'}) 9 9, auto`
-				);
-		}, 10);
+		parcoordInvertedAxes.set(invertedAxes);
+		filtersArray.set(axesFilters);
 	}
 
 	// Helper function to reorder an array
@@ -477,7 +475,6 @@
 
 	// Function to calculate new margin left
 	function calculateMarginLeft() {
-		const step = xScales[1] - xScales[0];
 		const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
 		const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
 		margin.left =
@@ -500,7 +497,7 @@
 
 		filtersArray.set(axesFilters);
 
-		invertedAxes = Array(dimensions.length).fill(false);
+		invertedAxes = new Map(dimensions.map((dim) => [dim, false]));
 	}
 
 	// Function to resize axes filters
@@ -512,6 +509,8 @@
 				end: axesFilters[i].percentages.end * axisHeight
 			};
 		});
+
+		filtersArray.set(axesFilters);
 	}
 
 	// Save axes to SVG
@@ -532,13 +531,14 @@
 			initAxesFilters();
 			calculateMarginLeft();
 		}
+		resizeFilters();
 		clearSVG();
 		renderAxes();
-		resizeFilters();
 	});
 
 	onDestroy(() => {
 		unsubscribeDimTypes();
+		unsubscribeInvertedAxes();
 	});
 </script>
 

@@ -29,3 +29,8 @@ export type LineDataType = {
 	color: number; // Line color
 	position: number; // Line z-index position
 };
+
+export type CustomRangeType = {
+	start: number;
+	end: number;
+} | null;

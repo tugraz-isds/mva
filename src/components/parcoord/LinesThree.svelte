@@ -9,7 +9,7 @@
 		previouslyBrushedArray
 	} from '../../stores/brushing';
 	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
-	import { filtersArray } from '../../stores/parcoord';
+	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
 	import type { AxesFilterType, LineDataType } from './types';
@@ -223,7 +223,8 @@
 				event.clientY <= canvasRect.bottom &&
 				event.clientX >= canvasRect.left &&
 				event.clientX <= canvasRect.right
-			)
+			) ||
+			!$parcoordIsInteractable
 		)
 			return;
 
