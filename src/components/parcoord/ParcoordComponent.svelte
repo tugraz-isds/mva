@@ -4,6 +4,7 @@
 	import { brushedArray } from '../../stores/brushing';
 	import { parcoordCustomAxisRanges, parcoordInvertedAxes } from '../../stores/parcoord';
 	import { scaleLinear, scaleBand, extent } from 'd3';
+	import { reorderArray } from '../../util/util';
 	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
 	import LinesThree from './LinesThree.svelte';
@@ -134,15 +135,6 @@
 		);
 	}
 
-	// Get dimensions that have data as numbers
-	function filterDimensions(dimensions: string[]) {
-		const newDimensions: string[] = [];
-		dimensions.forEach((dim: string) => {
-			if (isNumber(dataset[0][dim])) newDimensions.push(dim);
-		});
-		return newDimensions;
-	}
-
 	// Handle swapped axis from Axes component
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
 		linesComponent.swapPoints(fromIndex, toIndex);
@@ -173,21 +165,6 @@
 
 	function setTooltipAxisTitleData(data: TooltipAxisTitleType) {
 		tooltipAxisTitle = data;
-	}
-
-	// Helper function to reorder an array
-	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
-		const result = [...arr];
-		const [removed] = result.splice(fromIndex, 1);
-		result.splice(toIndex, 0, removed);
-		return result;
-	}
-
-	// Helper function that returns whether item is a number
-	function isNumber(item: any) {
-		if (typeof item === 'number') return true;
-		if (typeof item === 'string') return !isNaN(+item);
-		return false;
 	}
 
 	export function saveSVG() {

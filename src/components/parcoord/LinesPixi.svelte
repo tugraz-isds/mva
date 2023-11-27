@@ -7,6 +7,7 @@
 	import { hoveredItem } from '../../stores/brushing';
 	import { filtersArray } from '../../stores/parcoord';
 	import { linkingArray } from '../../stores/linking';
+	import { reorderArray } from '../../util/util';
 	import type { DSVParsedArray } from 'd3';
 	import type { AxesFilterType } from './types
 
@@ -172,14 +173,6 @@
 		app.stage.removeChildren();
 		drawLines(); // Redraw lines using updated data
 	};
-
-	// Helper function to reorder an array
-	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
-		const result = [...arr];
-		const [removed] = result.splice(fromIndex, 1);
-		result.splice(toIndex, 0, removed);
-		return result;
-	}
 
 	onMount(() => {
 		dimensions = initialDimensions;

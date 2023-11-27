@@ -10,10 +10,11 @@
 	} from '../../stores/brushing';
 	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
+	import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
+	import { reorderArray } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
 	import type { AxesFilterType, LineDataType } from './types';
-	import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 
 	export let width: number;
 	export let height: number;
@@ -162,10 +163,7 @@
 	function drawBrushedLines() {
 		brushedLinesIndices.forEach((i) => {
 			const line = lines[i];
-			lineData[i] = {
-				color: COLOR_BRUSHED,
-				position: 1
-			};
+			lineData[i] = { color: COLOR_BRUSHED, position: 1 };
 			line.material = new THREE.LineBasicMaterial({
 				color: lineData[i].color,
 				linewidth: 1,
@@ -304,22 +302,10 @@
 			});
 			if (brushedLinesIndices.has(idx)) {
 				if (!lineShow[idx]) brushedLinesIndices.delete(idx);
-				else
-					lineData[idx] = {
-						color: COLOR_BRUSHED,
-						position: 1
-					};
+				else lineData[idx] = { color: COLOR_BRUSHED, position: 1 };
 			} else {
-				if (lineShow[idx])
-					lineData[idx] = {
-						color: COLOR_ACTIVE,
-						position: 0
-					};
-				else
-					lineData[idx] = {
-						color: COLOR_FILTERED,
-						position: -1
-					};
+				if (lineShow[idx]) lineData[idx] = { color: COLOR_ACTIVE, position: 0 };
+				else lineData[idx] = { color: COLOR_FILTERED, position: -1 };
 			}
 			lines[idx].material = new THREE.LineBasicMaterial({
 				color: lineData[idx].color,
@@ -337,23 +323,13 @@
 
 	function setTooltip(hoveredLinesSet: Set<number>, x: number, y: number) {
 		if (hoveredLinesSet.size === 0) {
-			setTooltipData({
-				visible: false,
-				xPos: 0,
-				yPos: 0,
-				text: []
-			});
+			setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
 		} else {
 			let tooltipText: string[] = [];
 			hoveredLinesSet.forEach((i) => {
 				tooltipText.push(`${dataset[i][labelDim]}`);
 			});
-			setTooltipData({
-				visible: true,
-				xPos: x + 25,
-				yPos: y,
-				text: tooltipText
-			});
+			setTooltipData({ visible: true, xPos: x + 25, yPos: y, text: tooltipText });
 		}
 	}
 
@@ -386,21 +362,10 @@
 		renderer.render(scene, camera);
 	}
 
-	// Helper function to reorder an array
-	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
-		const result = [...arr];
-		const [removed] = result.splice(fromIndex, 1);
-		result.splice(toIndex, 0, removed);
-		return result;
-	}
-
 	function initialzeArrays() {
 		dimensions = initialDimensions;
 		lineShow = Array(dataset.length).fill(true);
-		lineData = Array(dataset.length).fill({
-			color: COLOR_ACTIVE,
-			position: 0
-		});
+		lineData = Array(dataset.length).fill({ color: COLOR_ACTIVE, position: 0 });
 		linkingArray.set(lineShow);
 	}
 

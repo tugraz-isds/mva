@@ -5,6 +5,7 @@
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
+	import { reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { AxesFilterType } from './types';
 
@@ -463,14 +464,6 @@
 
 		parcoordInvertedAxes.set(invertedAxes);
 		filtersArray.set(axesFilters);
-	}
-
-	// Helper function to reorder an array
-	function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
-		const result = [...arr];
-		const [removed] = result.splice(fromIndex, 1);
-		result.splice(toIndex, 0, removed);
-		return result;
 	}
 
 	// Function to calculate new margin left
