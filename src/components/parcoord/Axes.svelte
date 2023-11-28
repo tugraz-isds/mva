@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag } from 'd3';
-	import { filtersArray, parcoordInvertedAxes } from '../../stores/parcoord';
+	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import { reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
-	import type { AxesFilterType } from './types';
+	import type { AxesFilterType, DimensionType } from './types';
 
 	export let width: number; // Container width
 	export let contextMenuAxes: ContextMenuAxes;
@@ -40,8 +40,8 @@
 		dimensionTypes = value;
 	});
 
-	let invertedAxes: Map<string, boolean>;
-	const unsubscribeInvertedAxes = parcoordInvertedAxes.subscribe((value: Map<string, boolean>) => {
+	let invertedAxes: Map<string, DimensionType>;
+	const unsubscribeInvertedAxes = parcoordDimData.subscribe((value: Map<string, DimensionType>) => {
 		if (axesFilters.length > 0) {
 			invertedAxes = value;
 		}
@@ -128,12 +128,12 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(invertedAxes.get(dim) ? arrowDown : arrowUp)
+					.html(invertedAxes.get(dim)?.inverted ? arrowDown : arrowUp)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style(
 						'cursor',
 						`url(${
-							invertedAxes.get(dim) ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'
+							invertedAxes.get(dim)?.inverted ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'
 						}) 9 9, auto`
 					)
 					.on('click', () => handleOnInvertAxesClick(i))
@@ -454,7 +454,7 @@
 		handleInvertAxis(i);
 
 		const dim = dimensions[i];
-		invertedAxes.set(dim, !invertedAxes.get(dim));
+		invertedAxes.set(dim, { inverted: !invertedAxes.get(dim)?.inverted });
 
 		const temp = axesFilters[i].pixels.end;
 		axesFilters[i].pixels.end = axisHeight - axesFilters[i].pixels.start;
@@ -462,7 +462,7 @@
 		axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
 		axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
 
-		parcoordInvertedAxes.set(invertedAxes);
+		parcoordDimData.set(invertedAxes);
 		filtersArray.set(axesFilters);
 	}
 
@@ -490,7 +490,7 @@
 
 		filtersArray.set(axesFilters);
 
-		invertedAxes = new Map(dimensions.map((dim) => [dim, false]));
+		invertedAxes = new Map(dimensions.map((dim) => [dim, { inverted: false }]));
 	}
 
 	// Function to resize axes filters

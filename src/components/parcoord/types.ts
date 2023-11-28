@@ -1,3 +1,7 @@
+export type DimensionType = {
+	inverted: boolean;
+};
+
 export type AxesFilterType = {
 	pixels: {
 		// Actual pixel values of filters start/end

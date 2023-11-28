@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
-	import { parcoordCustomAxisRanges, parcoordInvertedAxes } from '../../stores/parcoord';
+	import { parcoordCustomAxisRanges, parcoordDimData } from '../../stores/parcoord';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import { reorderArray } from '../../util/util';
 	import xmlFormat from 'xml-formatter';
@@ -95,7 +95,6 @@
 
 	// Update yScales
 	function calculateYScales(init: boolean = false) {
-		console.log('Calculating yScales');
 		if (height > 0 && dataset?.length > 0) {
 			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
 				if (dimensionTypes.get(dim) === 'numerical') {
@@ -105,7 +104,7 @@
 							.domain(dimExtent)
 							.range([height - margin.top - margin.bottom, 0])
 							.nice();
-						if ($parcoordInvertedAxes.get(dim)) acc[dim].domain(acc[dim].domain().reverse());
+						if ($parcoordDimData.get(dim)?.inverted) acc[dim].domain(acc[dim].domain().reverse());
 					} else {
 						acc[dim] = scaleLinear()
 							.domain([
@@ -135,7 +134,6 @@
 		);
 	}
 
-	// Handle swapped axis from Axes component
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
 		linesComponent.swapPoints(fromIndex, toIndex);
 		dimensions = reorderArray(dimensions, fromIndex, toIndex);
@@ -157,6 +155,10 @@
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
 		linesComponent.handleInvertAxis();
+	}
+
+	function handleHideDImension(idx: number) {
+		dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
 	}
 
 	function setTooltipData(data: TooltipType) {
@@ -217,7 +219,9 @@
 
 		dimensions.forEach((dim) => {
 			customRanges.set(dim, null);
-			$parcoordInvertedAxes.set(dim, false);
+			$parcoordDimData.set(dim, {
+				inverted: false
+			});
 		});
 	});
 
@@ -260,7 +264,7 @@
 			bind:this={contextMenuAxes}
 			bind:axesComponent
 			bind:yScales
-			{dimensions}
+			bind:dimensions
 			{dataset}
 		/>
 

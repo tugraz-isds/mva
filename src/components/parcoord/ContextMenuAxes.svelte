@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { DropdownItem, Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
 	import { dimensionTypeStore } from '../../stores/dataset';
-	import { filtersArray, parcoordInvertedAxes } from '../../stores/parcoord';
+	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
 	import { scaleLinear, extent } from 'd3';
 	import type Axes from './Axes.svelte';
@@ -53,7 +53,7 @@
 	}
 
 	function setAxisRange(reset: boolean = false) {
-		const isAxisInverted = $parcoordInvertedAxes.get(dimensions[dimIndex]);
+		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
 		const domain = extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number];
 		const domainStart = isAxisInverted ? domain[1] : domain[0],
 			domainEnd = isAxisInverted ? domain[0] : domain[1];
@@ -104,7 +104,7 @@
 					: [rangeStart, rangeEnd]
 			)
 			.range([0, 1]);
-		if (reset && $parcoordInvertedAxes.get(dimensions[dimIndex]))
+		if (reset && $parcoordDimData.get(dimensions[dimIndex])?.inverted)
 			newScale.domain(newScale.domain().reverse());
 		const originalStart = originalScale.invert(1 - filtersTemp.start);
 		const originalEnd = originalScale.invert(1 - filtersTemp.end);
@@ -114,6 +114,10 @@
 		};
 
 		$parcoordCustomAxisRanges = customRanges;
+	}
+
+	function handleHideDImension() {
+		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
 	}
 </script>
 
@@ -125,7 +129,9 @@
 		on:click={hideContextMenu}
 		on:mouseleave={hideContextMenu}
 	>
-		<DropdownItem defaultClass={activeClass}>Hide</DropdownItem>
+		<DropdownItem defaultClass={activeClass} on:click={() => handleHideDImension()}
+			>Hide</DropdownItem
+		>
 		<DropdownItem
 			defaultClass={activeClass}
 			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert</DropdownItem
