@@ -40,10 +40,13 @@
 		dimensionTypes = value;
 	});
 
-	let invertedAxes: Map<string, DimensionType>;
+	let dimensionsMetadata: Map<string, DimensionType>;
 	const unsubscribeInvertedAxes = parcoordDimData.subscribe((value: Map<string, DimensionType>) => {
 		if (axesFilters.length > 0) {
-			invertedAxes = value;
+			dimensionsMetadata = value;
+			clearSVG();
+			renderAxes();
+			calculateMarginLeft();
 		}
 	});
 
@@ -87,14 +90,17 @@
 
 			// Create axis objects
 			let axis;
-			if (dimensionTypes.get(dim) === 'numerical') axis = axisLeft(yScales[dim]).ticks(5);
+			if (dimensionTypes.get(dim) === 'numerical')
+				axis = axisLeft(yScales[dim]).ticks(dimensionsMetadata.get(dim)?.showLabels ? 5 : 0);
 			else {
 				axis = axisLeft(yScales[dim]);
 				const domainValues = yScales[dim].domain();
 				const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
 				const step = Math.ceil(domainValues.length / tickNumber);
 				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
-				axis.tickValues(tickValues).tickFormat(tickFormatter);
+				axis
+					.tickValues(dimensionsMetadata.get(dim)?.showLabels ? tickValues : [])
+					.tickFormat(tickFormatter);
 			}
 
 			// Create axis lines SVG
@@ -128,72 +134,76 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(invertedAxes.get(dim)?.inverted ? arrowDown : arrowUp)
+					.html(dimensionsMetadata.get(dim)?.inverted ? arrowDown : arrowUp)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style(
 						'cursor',
 						`url(${
-							invertedAxes.get(dim)?.inverted ? 'arrow-curved-up.svg' : 'arrow-curved-down.svg'
+							dimensionsMetadata.get(dim)?.inverted
+								? 'arrow-curved-up.svg'
+								: 'arrow-curved-down.svg'
 						}) 9 9, auto`
 					)
 					.on('click', () => handleOnInvertAxesClick(i))
 			);
 
-			// Create axis upper filter
-			const trianglePoints = [
-				{ x: 0, y: 0 },
-				{ x: 8, y: 8 },
-				{ x: 16, y: 0 }
-			];
-			axisUpperFilters.push(
-				svg
-					.append('path')
-					.attr('class', 'axis-filter-upper')
-					.attr(
-						'd',
-						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
-					)
-					.attr(
-						'transform',
-						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
-					)
-					.attr('fill', 'black')
-					.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
-			);
+			if (dimensionsMetadata.get(dim)?.showFilter) {
+				// Create axis upper filter
+				const trianglePoints = [
+					{ x: 0, y: 0 },
+					{ x: 8, y: 8 },
+					{ x: 16, y: 0 }
+				];
+				axisUpperFilters.push(
+					svg
+						.append('path')
+						.attr('class', 'axis-filter-upper')
+						.attr(
+							'd',
+							`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
+						)
+						.attr(
+							'transform',
+							`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
+						)
+						.attr('fill', 'black')
+						.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
+				);
 
-			// Create axis lower filter
-			axisLowerFilters.push(
-				svg
-					.append('path')
-					.attr('class', 'axis-filter-lower')
-					.attr(
-						'd',
-						`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
-					)
-					.attr(
-						'transform',
-						`translate(${xScales[i] + 8}, ${
-							axesFilters[i].pixels.end + margin.top + 8
-						}) rotate(180)`
-					)
-					.attr('fill', 'black')
-					.style('cursor', `url("arrow-filter-up.svg") 9 9, auto`)
-			);
+				// Create axis lower filter
+				axisLowerFilters.push(
+					svg
+						.append('path')
+						.attr('class', 'axis-filter-lower')
+						.attr(
+							'd',
+							`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
+						)
+						.attr(
+							'transform',
+							`translate(${xScales[i] + 8}, ${
+								axesFilters[i].pixels.end + margin.top + 8
+							}) rotate(180)`
+						)
+						.attr('fill', 'black')
+						.style('cursor', `url("arrow-filter-up.svg") 9 9, auto`)
+				);
 
-			// Create filter rectangles SVG
-			axisFilterRectangles.push(
-				svg
-					.append('rect')
-					.attr('class', 'axis-filter-rect')
-					.attr('cursor', 'crosshair')
-					.attr('width', 12)
-					.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
-					.attr('y', margin.top + axesFilters[i].pixels.start)
-					.attr('fill', 'rgba(255, 255, 100, 0.2)')
-					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
-					.attr('transform', `translate(${xScales[i] - 6}, 0)`)
-					.style('cursor', `url("arrow-filter-up-down.svg") 9 9, auto`)
-			);
+				// Create filter rectangles SVG
+				axisFilterRectangles.push(
+					svg
+						.append('rect')
+						.attr('class', 'axis-filter-rect')
+						.attr('cursor', 'crosshair')
+						.attr('width', 12)
+						.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
+						.attr('y', margin.top + axesFilters[i].pixels.start)
+						.attr('fill', 'rgba(255, 255, 100, 0.2)')
+						.attr('stroke', 'rgba(0, 0, 0, 0.25)')
+						.attr('transform', `translate(${xScales[i] - 6}, 0)`)
+						.style('cursor', `url("arrow-filter-up-down.svg") 9 9, auto`)
+				);
+			}
 		});
 
 		handleAxesDragging();
@@ -246,17 +256,19 @@
 						'transform',
 						`translate(${newX - 8}, ${margin.top - 28})`
 					);
-					axisUpperFilters[draggingIndex].attr(
-						'transform',
-						`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
-					);
-					axisLowerFilters[draggingIndex].attr(
-						'transform',
-						`translate(${newX + 8}, ${
-							axesFilters[draggingIndex].pixels.end + margin.top + 8
-						}) rotate(180)`
-					);
-					axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
+					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
+						axisUpperFilters[draggingIndex].attr(
+							'transform',
+							`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
+						);
+						axisLowerFilters[draggingIndex].attr(
+							'transform',
+							`translate(${newX + 8}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top + 8
+							}) rotate(180)`
+						);
+						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
+					}
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -278,22 +290,24 @@
 							'transform',
 							`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
 						);
-						axisUpperFilters[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 8}, ${
-								axesFilters[draggingIndex].pixels.start + margin.top - 8
-							})`
-						);
-						axisLowerFilters[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] + 8}, ${
-								axesFilters[draggingIndex].pixels.end + margin.top + 8
-							}) rotate(180)`
-						);
-						axisFilterRectangles[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 6}, 0)`
-						);
+						if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
+							axisUpperFilters[newIndex].attr(
+								'transform',
+								`translate(${xScales[draggingIndex] - 8}, ${
+									axesFilters[draggingIndex].pixels.start + margin.top - 8
+								})`
+							);
+							axisLowerFilters[newIndex].attr(
+								'transform',
+								`translate(${xScales[draggingIndex] + 8}, ${
+									axesFilters[draggingIndex].pixels.end + margin.top + 8
+								}) rotate(180)`
+							);
+							axisFilterRectangles[newIndex].attr(
+								'transform',
+								`translate(${xScales[draggingIndex] - 6}, 0)`
+							);
+						}
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
 						axisLines = reorderArray(axisLines, draggingIndex, newIndex);
 						axisTitles = reorderArray(axisTitles, draggingIndex, newIndex);
@@ -322,27 +336,29 @@
 						'transform',
 						`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
 					);
-					axisUpperFilters[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] - 8}, ${
-							axesFilters[draggingIndex].pixels.start + margin.top - 8
-						})`
-					);
-					axisLowerFilters[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] + 8}, ${
-							axesFilters[draggingIndex].pixels.end + margin.top + 8
-						}) rotate(180)`
-					);
-					axisFilterRectangles[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] - 6}, 0)`
-					);
+					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
+						axisUpperFilters[draggingIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] - 8}, ${
+								axesFilters[draggingIndex].pixels.start + margin.top - 8
+							})`
+						);
+						axisLowerFilters[draggingIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] + 8}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top + 8
+							}) rotate(180)`
+						);
+						axisFilterRectangles[draggingIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] - 6}, 0)`
+						);
+					}
 					draggingIndex = -1;
 					isCurrentlyFiltering = false;
 				});
 
-			axisTitles[dimensions.indexOf(dim)].call(dragBehavior);
+			axisTitles[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
 	}
 
@@ -366,7 +382,7 @@
 				})
 				.on('end', () => {});
 
-			axisUpperFilters[dimensions.indexOf(dim)].call(dragBehavior);
+			axisUpperFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
 	}
 
@@ -394,7 +410,7 @@
 				})
 				.on('end', () => {});
 
-			axisLowerFilters[dimensions.indexOf(dim)].call(dragBehavior);
+			axisLowerFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
 	}
 
@@ -445,7 +461,7 @@
 					startY = 0;
 				});
 
-			axisFilterRectangles[dimensions.indexOf(dim)].call(dragBehavior);
+			axisFilterRectangles[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
 	}
 
@@ -454,7 +470,10 @@
 		handleInvertAxis(i);
 
 		const dim = dimensions[i];
-		invertedAxes.set(dim, { inverted: !invertedAxes.get(dim)?.inverted });
+		const axisData = dimensionsMetadata.get(dim);
+		if (!axisData) return;
+		axisData.inverted = !axisData.inverted;
+		dimensionsMetadata.set(dim, axisData);
 
 		const temp = axesFilters[i].pixels.end;
 		axesFilters[i].pixels.end = axisHeight - axesFilters[i].pixels.start;
@@ -462,17 +481,37 @@
 		axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
 		axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
 
-		parcoordDimData.set(invertedAxes);
+		parcoordDimData.set(dimensionsMetadata);
 		filtersArray.set(axesFilters);
 	}
 
 	// Function to calculate new margin left
 	function calculateMarginLeft() {
-		const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
-		const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
-		margin.left =
-			longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
+		if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
+			const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
+			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
+			margin.left =
+				longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
+		} else margin.left = 30;
+
 		handleMarginChanged();
+	}
+
+	export function resetAxisFilter(idx: number) {
+		axesFilters[idx] = {
+			pixels: {
+				start: 0,
+				end: axisHeight
+			},
+			percentages: {
+				start: 0,
+				end: 1
+			}
+		};
+
+		filtersArray.set(axesFilters);
+		clearSVG();
+		renderAxes();
 	}
 
 	// Function to initialize axis filter values
@@ -490,7 +529,9 @@
 
 		filtersArray.set(axesFilters);
 
-		invertedAxes = new Map(dimensions.map((dim) => [dim, { inverted: false }]));
+		dimensionsMetadata = new Map(
+			dimensions.map((dim) => [dim, { inverted: false, showLabels: true, showFilter: true }])
+		);
 	}
 
 	// Function to resize axes filters

@@ -1,5 +1,7 @@
 export type DimensionType = {
 	inverted: boolean;
+	showLabels: boolean;
+	showFilter: boolean;
 };
 
 export type AxesFilterType = {

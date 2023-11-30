@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { DropdownItem, Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
+	import {
+		DropdownItem,
+		DropdownDivider,
+		Button,
+		Modal,
+		Label,
+		Input,
+		Helper
+	} from 'flowbite-svelte';
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
@@ -21,7 +29,7 @@
 	let isContextMenuShown = false; // Flag if context menu is visible
 	let menuStyle = ''; // Menu style string
 	let dimIndex: number; // Dataset dimension index
-	const activeClass = 'font-medium py-1 px-1 text-sm hover:bg-gray-100';
+	const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
 
 	export function showContextMenu(event: MouseEvent, index: number) {
 		event.preventDefault();
@@ -119,6 +127,24 @@
 	function handleHideDImension() {
 		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
 	}
+
+	function handleShowLabels() {
+		const dimData = $parcoordDimData;
+		const currDimData = dimData.get(dimensions[dimIndex]);
+		if (!currDimData) return;
+		currDimData.showLabels = !currDimData.showLabels;
+		dimData.set(dimensions[dimIndex], currDimData);
+		parcoordDimData.set(dimData);
+	}
+
+	function handleShowFilter() {
+		const dimData = $parcoordDimData;
+		const currDimData = dimData.get(dimensions[dimIndex]);
+		if (!currDimData) return;
+		currDimData.showFilter = !currDimData.showFilter;
+		dimData.set(dimensions[dimIndex], currDimData);
+		parcoordDimData.set(dimData);
+	}
 </script>
 
 {#if isContextMenuShown}
@@ -130,22 +156,36 @@
 		on:mouseleave={hideContextMenu}
 	>
 		<DropdownItem defaultClass={activeClass} on:click={() => handleHideDImension()}
-			>Hide</DropdownItem
+			>Hide axis</DropdownItem
 		>
 		<DropdownItem
 			defaultClass={activeClass}
-			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert</DropdownItem
+			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert axis</DropdownItem
 		>
 		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical'}
+			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
 				>Set range</DropdownItem
 			>
 		{/if}
 		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
+			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => setAxisRange(true)}
 				>Reset range</DropdownItem
 			>
 		{/if}
+		<DropdownDivider />
+		<DropdownItem defaultClass={activeClass} on:click={handleShowLabels}
+			>{$parcoordDimData.get(dimensions[dimIndex])?.showLabels ? 'Hide' : 'Show'} labels</DropdownItem
+		>
+		<DropdownDivider />
+		<DropdownItem defaultClass={activeClass} on:click={handleShowFilter}
+			>{$parcoordDimData.get(dimensions[dimIndex])?.showFilter ? 'Hide' : 'Show'} filter</DropdownItem
+		>
+		<DropdownItem
+			defaultClass={activeClass}
+			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset filter</DropdownItem
+		>
 	</div>
 {/if}
 

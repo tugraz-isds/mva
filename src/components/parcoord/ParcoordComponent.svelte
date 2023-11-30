@@ -220,7 +220,9 @@
 		dimensions.forEach((dim) => {
 			customRanges.set(dim, null);
 			$parcoordDimData.set(dim, {
-				inverted: false
+				inverted: false,
+				showLabels: true,
+				showFilter: true
 			});
 		});
 	});
