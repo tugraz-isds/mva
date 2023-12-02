@@ -1,3 +1,5 @@
+import type { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
+
 export type DimensionType = {
 	inverted: boolean;
 	showLabels: boolean;
@@ -32,7 +34,7 @@ export type TooltipAxisTitleType = {
 };
 
 export type LineDataType = {
-	color: number; // Line color
+	color: ColorType; // Line color
 	position: number; // Line z-index position
 };
 
@@ -40,3 +42,9 @@ export type CustomRangeType = {
 	start: number;
 	end: number;
 } | null;
+
+export type ColorType =
+	| typeof COLOR_ACTIVE
+	| typeof COLOR_HOVERED
+	| typeof COLOR_BRUSHED
+	| typeof COLOR_FILTERED;

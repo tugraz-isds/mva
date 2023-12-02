@@ -10,7 +10,13 @@
 	} from '../../stores/brushing';
 	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
-	import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
+	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
+	import {
+		MATERIAL_MAP,
+		MATERIAL_HOVERED,
+		MATERIAL_BRUSHED,
+		MATERIAL_DRAGGING_RECT
+	} from '../../util/materials';
 	import { reorderArray, areSetsEqual } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
@@ -118,7 +124,6 @@
 		dataset.forEach((dataRow: any, idx: number) => {
 			drawLine(dataRow, idx);
 		});
-
 		render();
 	}
 
@@ -141,12 +146,8 @@
 			);
 		}
 
-		const material = new THREE.LineBasicMaterial({
-			color: lineData[idx].color,
-			linewidth: 1,
-			transparent: true,
-			opacity: 0.75
-		});
+		const material = MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
+		material.needsUpdate = false;
 		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
 		line = new THREE.Line(geometry, material);
 		line.index = idx; // Add custom property index to hovered line
@@ -157,13 +158,9 @@
 	function drawHoveredLines() {
 		hoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = new THREE.LineBasicMaterial({
-				color: COLOR_HOVERED,
-				linewidth: 1,
-				transparent: true,
-				opacity: 1
-			});
+			line.material = MATERIAL_HOVERED;
 			changeLinePosition(line, 2);
+			line.material.needsUpdate = true;
 		});
 		render();
 	}
@@ -172,13 +169,9 @@
 		brushedLinesIndices.forEach((i) => {
 			const line = lines[i];
 			lineData[i] = { color: COLOR_BRUSHED, position: 1 };
-			line.material = new THREE.LineBasicMaterial({
-				color: lineData[i].color,
-				linewidth: 1,
-				transparent: true,
-				opacity: 1
-			});
-			changeLinePosition(line, lineData[i].position);
+			line.material = MATERIAL_BRUSHED;
+			changeLinePosition(line, 1);
+			line.material.needsUpdate = true;
 		});
 		render();
 	}
@@ -186,15 +179,10 @@
 	function removeHoveredLines() {
 		previouslyHoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = new THREE.LineBasicMaterial({
-				color: lineData[i].color,
-				linewidth: 1,
-				transparent: true,
-				opacity: brushedLinesIndices.has(i) ? 1 : 0.75
-			});
+			line.material = MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
+			line.material.needsUpdate = false;
 			changeLinePosition(line, lineData[i].position);
 		});
-		render();
 	}
 
 	function removeBrushedLines() {
@@ -204,12 +192,8 @@
 				color: lineShow[i] ? COLOR_ACTIVE : COLOR_FILTERED,
 				position: lineShow[i] ? 0 : -1
 			};
-			line.material = new THREE.LineBasicMaterial({
-				color: lineData[i].color,
-				linewidth: 1,
-				transparent: true,
-				opacity: 0.75
-			});
+			line.material = MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
+			line.material.needsUpdate = false;
 			changeLinePosition(line, lineData[i].position);
 		});
 		render();
@@ -349,12 +333,7 @@
 			new THREE.Vector3(dragStart.x, dragStart.y, 3)
 		];
 
-		const material = new THREE.LineBasicMaterial({
-			color: 0x000000,
-			linewidth: 1,
-			transparent: true,
-			opacity: 1
-		});
+		const material = MATERIAL_DRAGGING_RECT;
 
 		const geometry = new THREE.BufferGeometry().setFromPoints(rectanglePoints);
 		draggingRectangle = new THREE.Line(geometry, material);
@@ -391,12 +370,7 @@
 				if (lineShow[idx]) lineData[idx] = { color: COLOR_ACTIVE, position: 0 };
 				else lineData[idx] = { color: COLOR_FILTERED, position: -1 };
 			}
-			lines[idx].material = new THREE.LineBasicMaterial({
-				color: lineData[idx].color,
-				linewidth: 1,
-				transparent: true,
-				opacity: brushedLinesIndices.has(idx) ? 1 : 0.75
-			});
+			lines[idx].material = MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
 			changeLinePosition(lines[idx], lineData[idx].position);
 		});
 
@@ -436,8 +410,7 @@
 			positions[i + 2] = newZPosition;
 		}
 
-		// Update the position attribute and tell Three.js to update the rendering
-		line.geometry.attributes.position.needsUpdate = true;
+		line.geometry.attributes.position.needsUpdate = true; // Update position and update the rendering
 	}
 
 	function render() {
