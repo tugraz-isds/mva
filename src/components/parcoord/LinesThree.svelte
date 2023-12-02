@@ -11,7 +11,7 @@
 	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
 	import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
-	import { reorderArray } from '../../util/util';
+	import { reorderArray, areSetsEqual } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
 	import type { AxesFilterType, LineDataType } from './types';
@@ -45,6 +45,14 @@
 	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
 	let previouslyBrushedLinesIndices = new Set<number>(); // Previously brushed lines
 	let labelDim: string; // Dataset label dimension
+
+	let isDragging: boolean = false; // Is user currently dragging
+	let dragStart: {
+		x: number;
+		y: number;
+	} | null = null;
+	let draggingRectangle: THREE.Line;
+	let intersectingLines: any[];
 
 	// Apply filters
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -213,7 +221,6 @@
 		const canvasRect = canvasEl.getBoundingClientRect();
 		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
 		mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-
 		// If mouse is not in parcoord, return
 		if (
 			!(
@@ -226,24 +233,52 @@
 		)
 			return;
 
+		// Check for intersections
 		raycaster.setFromCamera(mouse, camera); // Update the raycaster
-		const intersects = raycaster.intersectObjects(lines); // Check for intersections
+		if (isDragging) {
+			if (!dragStart) return;
+			const rectWidth = event.clientX - canvasRect.left - dragStart.x,
+				rectHeight = event.clientY - canvasRect.top - dragStart.y;
+			drawDraggingRectangle(rectWidth, rectHeight);
 
-		// Add hovered lines
-		const hoveredLinesSet: Set<number> = new Set();
-		intersects.forEach((intersection) => {
-			const line = intersection.object as any;
-			hoveredLinesSet.add(line.index);
-		});
+			previouslyBrushedArray.set(brushedLinesIndices);
+			intersectingLines.push(...raycaster.intersectObjects(lines));
+			// Add to brushed if Ctrl key is pressed
+			if (event.ctrlKey) {
+				intersectingLines.forEach((intersection) => {
+					const line = intersection.object as any;
+					brushedLinesIndices.add(line.index);
+				});
+			}
+			// Set brushed to lines in drawn rectangle
+			else {
+				const newBrushedLinesIndices = new Set<number>();
+				intersectingLines.forEach((intersection) => {
+					const line = intersection.object as any;
+					newBrushedLinesIndices.add(line.index);
+				});
+				brushedLinesIndices = newBrushedLinesIndices;
+			}
+			brushedLinesIndices.forEach((i) => {
+				if (!lineShow[i]) brushedLinesIndices.delete(i);
+			});
+			brushedArray.set(brushedLinesIndices);
+		} else {
+			// Add hovered lines
+			intersectingLines = raycaster.intersectObjects(lines);
+			const hoveredLinesSet: Set<number> = new Set();
+			intersectingLines.forEach((intersection) => {
+				const line = intersection.object as any;
+				hoveredLinesSet.add(line.index);
+			});
 
-		if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
-
-		setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
-
-		hoveredArray.set(hoveredLinesSet);
+			if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
+			setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+			hoveredArray.set(hoveredLinesSet);
+		}
 	}
 
-	function handleClick(event: MouseEvent) {
+	function handleMouseDown(event: MouseEvent) {
 		const canvasRect = canvasEl.getBoundingClientRect();
 		// If mouse is not in parcoord, return
 		if (
@@ -255,6 +290,11 @@
 			)
 		)
 			return;
+
+		isDragging = true;
+		dragStart = { x: event.clientX - canvasRect.left, y: event.clientY - canvasRect.top };
+		setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+		intersectingLines = [];
 
 		previouslyBrushedArray.set(brushedLinesIndices);
 
@@ -277,6 +317,50 @@
 			if (!lineShow[i]) brushedLinesIndices.delete(i);
 		});
 		brushedArray.set(brushedLinesIndices);
+	}
+
+	function handleMouseUp(event: MouseEvent) {
+		const canvasRect = canvasEl.getBoundingClientRect();
+		// If mouse is not in parcoord, return
+		if (
+			!(
+				event.clientY >= canvasRect.top + margin.top &&
+				event.clientY <= canvasRect.bottom &&
+				event.clientX >= canvasRect.left &&
+				event.clientX <= canvasRect.right
+			)
+		)
+			return;
+
+		isDragging = false;
+		dragStart = null;
+		scene.remove(draggingRectangle);
+		intersectingLines = [];
+	}
+
+	function drawDraggingRectangle(rectWidth: number, rectHeight: number) {
+		if (!dragStart) return;
+		scene.remove(draggingRectangle);
+		const rectanglePoints = [
+			new THREE.Vector3(dragStart.x, dragStart.y, 3),
+			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y, 3),
+			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y + rectHeight, 3),
+			new THREE.Vector3(dragStart.x, dragStart.y + rectHeight, 3),
+			new THREE.Vector3(dragStart.x, dragStart.y, 3)
+		];
+
+		const material = new THREE.LineBasicMaterial({
+			color: 0x000000,
+			linewidth: 1,
+			transparent: true,
+			opacity: 1
+		});
+
+		const geometry = new THREE.BufferGeometry().setFromPoints(rectanglePoints);
+		draggingRectangle = new THREE.Line(geometry, material);
+
+		scene.add(draggingRectangle);
+		render();
 	}
 
 	export const applyFilters = () => {
@@ -369,10 +453,6 @@
 		linkingArray.set(lineShow);
 	}
 
-	// Helper function to compare 2 sets
-	const areSetsEqual = (set1: Set<number>, set2: Set<number>) =>
-		set1.size === set2.size && [...set1].every((value) => set2.has(value));
-
 	export const saveSVG = () => {
 		const tempContainer = document.createElement('div');
 		const svgContainer = select(tempContainer)
@@ -438,7 +518,8 @@
 		initScene();
 		drawLines();
 		window.addEventListener('mousemove', handleMouseMove, false);
-		window.addEventListener('click', handleClick, false);
+		window.addEventListener('mousedown', handleMouseDown, false);
+		window.addEventListener('mouseup', handleMouseUp, false);
 	});
 
 	afterUpdate(() => {
