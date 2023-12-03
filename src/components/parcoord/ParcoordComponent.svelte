@@ -7,6 +7,7 @@
 	import { reorderArray } from '../../util/util';
 	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
+	import Barplots from './Barplots.svelte';
 	import LinesThree from './LinesThree.svelte';
 	import Tooltip from './Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
@@ -46,6 +47,8 @@
 		text: ''
 	};
 
+	let customRanges: Map<string, CustomRangeType>;
+
 	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;
 	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
@@ -58,6 +61,15 @@
 			calculateYScales();
 			calculateXScales();
 
+			dimensions.forEach((dim) => {
+				customRanges && customRanges.set(dim, null);
+				$parcoordDimData.set(dim, {
+					inverted: false,
+					showLabels: true,
+					showFilter: true
+				});
+			});
+
 			brushedArray.set(new Set<number>());
 		}
 	});
@@ -67,7 +79,6 @@
 		dimensionTypes = value;
 	});
 
-	let customRanges: Map<string, CustomRangeType>;
 	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
 		(value: Map<string, CustomRangeType>) => {
 			customRanges = value;
@@ -259,6 +270,8 @@
 			{xScales}
 			bind:yScales
 		/>
+
+		<Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
