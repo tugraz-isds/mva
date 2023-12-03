@@ -271,7 +271,7 @@
 			bind:yScales
 		/>
 
-		<Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
+		<!-- <Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} /> -->
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
