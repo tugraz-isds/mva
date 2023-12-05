@@ -107,6 +107,7 @@
 	// Update yScales
 	function calculateYScales(init: boolean = false) {
 		if (height > 0 && dataset?.length > 0) {
+			console.log('Calculating yScales');
 			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
 				if (dimensionTypes.get(dim) === 'numerical') {
 					if (customRanges.get(dim) === null) {

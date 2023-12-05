@@ -27,7 +27,7 @@
 				<span class="text-white hover:text-blue-200">Help</span>
 			</NavLi>
 			<Dropdown triggeredBy="#nav-file" class="w-44 z-20">
-				<DropdownItem on:click={toggleModal}>Import Dataset</DropdownItem>
+				<DropdownItem on:click={toggleModal}>Import Dataset...</DropdownItem>
 				<DropdownItem>Item 2</DropdownItem>
 				<DropdownItem>Item 3</DropdownItem>
 			</Dropdown>

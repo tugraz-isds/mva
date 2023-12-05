@@ -36,8 +36,13 @@
 		$parcoordIsInteractable = false;
 		isContextMenuShown = true;
 		dimIndex = index;
-		rangeStart = yScales[dimensions[dimIndex]].domain()[0];
-		rangeEnd = yScales[dimensions[dimIndex]].domain()[1];
+		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
+		rangeStart = isAxisInverted
+			? yScales[dimensions[dimIndex]].domain()[1]
+			: yScales[dimensions[dimIndex]].domain()[0];
+		rangeEnd = isAxisInverted
+			? yScales[dimensions[dimIndex]].domain()[0]
+			: yScales[dimensions[dimIndex]].domain()[1];
 
 		const { clientX, clientY } = event;
 		const clientXNew = clientX + 150 < window.innerWidth ? clientX : clientX - 150;
@@ -63,30 +68,15 @@
 	function setAxisRange(reset: boolean = false) {
 		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
 		const domain = extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number];
-		const domainStart = isAxisInverted ? domain[1] : domain[0],
-			domainEnd = isAxisInverted ? domain[0] : domain[1];
-		if (isAxisInverted) {
-			if (rangeEnd > domainEnd) {
-				validUpload = false;
-				errorMessage = 'Range end cannot be greater than current domain end.';
-				return;
-			}
-			if (rangeStart < domainStart) {
-				validUpload = false;
-				errorMessage = 'Range start cannot be lower than current domain start.';
-				return;
-			}
-		} else {
-			if (rangeEnd < domainEnd) {
-				validUpload = false;
-				errorMessage = 'Range end cannot be lower than current domain end.';
-				return;
-			}
-			if (rangeStart > domainStart) {
-				validUpload = false;
-				errorMessage = 'Range start cannot be greater than current domain start.';
-				return;
-			}
+		if (rangeEnd < domain[1]) {
+			validUpload = false;
+			errorMessage = `Highest value of dimension is ${domain[1]}. You cannot set the range lower than that.`;
+			return;
+		}
+		if (rangeStart > domain[0]) {
+			validUpload = false;
+			errorMessage = `Lowest value of dimension is ${domain[0]}. You cannot set the range higher than that.`;
+			return;
 		}
 
 		validUpload = true;
@@ -94,8 +84,8 @@
 		if (reset) customRanges.set(dimensions[dimIndex], null);
 		else {
 			customRanges.set(dimensions[dimIndex], {
-				start: rangeStart,
-				end: rangeEnd
+				start: isAxisInverted ? rangeEnd : rangeStart,
+				end: isAxisInverted ? rangeStart : rangeEnd
 			});
 			closeSetRangeModal();
 		}
@@ -109,6 +99,8 @@
 			.domain(
 				reset
 					? (extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number])
+					: isAxisInverted
+					? [rangeEnd, rangeStart]
 					: [rangeStart, rangeEnd]
 			)
 			.range([0, 1]);
@@ -156,35 +148,35 @@
 		on:mouseleave={hideContextMenu}
 	>
 		<DropdownItem defaultClass={activeClass} on:click={() => handleHideDImension()}
-			>Hide axis</DropdownItem
+			>Hide Axis</DropdownItem
 		>
 		<DropdownItem
 			defaultClass={activeClass}
-			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert axis</DropdownItem
+			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert Axis</DropdownItem
 		>
 		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical'}
 			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
-				>Set range</DropdownItem
+				>Set Range...</DropdownItem
 			>
 		{/if}
 		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
 			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => setAxisRange(true)}
-				>Reset range</DropdownItem
+				>Reset Range</DropdownItem
 			>
 		{/if}
 		<DropdownDivider />
 		<DropdownItem defaultClass={activeClass} on:click={handleShowLabels}
-			>{$parcoordDimData.get(dimensions[dimIndex])?.showLabels ? 'Hide' : 'Show'} labels</DropdownItem
+			>{$parcoordDimData.get(dimensions[dimIndex])?.showLabels ? 'Hide' : 'Show'} Labels</DropdownItem
 		>
 		<DropdownDivider />
 		<DropdownItem defaultClass={activeClass} on:click={handleShowFilter}
-			>{$parcoordDimData.get(dimensions[dimIndex])?.showFilter ? 'Hide' : 'Show'} filter</DropdownItem
+			>{$parcoordDimData.get(dimensions[dimIndex])?.showFilter ? 'Hide' : 'Show'} Filter</DropdownItem
 		>
 		<DropdownItem
 			defaultClass={activeClass}
-			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset filter</DropdownItem
+			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset Filter</DropdownItem
 		>
 	</div>
 {/if}
