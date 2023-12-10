@@ -27,6 +27,7 @@
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
 
+	let parcoordDiv: HTMLElement;
 	let linesComponent: LinesThree; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
@@ -71,6 +72,8 @@
 			});
 
 			brushedArray.set(new Set<number>());
+
+			if (parcoordDiv) parcoordDiv.scrollLeft = 0;
 		}
 	});
 
@@ -114,8 +117,7 @@
 						const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
 						acc[dim] = scaleLinear()
 							.domain(dimExtent)
-							.range([height - margin.top - margin.bottom, 0])
-							.nice();
+							.range([height - margin.top - margin.bottom, 0]);
 						if ($parcoordDimData.get(dim)?.inverted) acc[dim].domain(acc[dim].domain().reverse());
 					} else {
 						acc[dim] = scaleLinear()
@@ -123,8 +125,7 @@
 								customRanges.get(dim)?.start as number,
 								customRanges.get(dim)?.end as number
 							])
-							.range([height - margin.top - margin.bottom, 0])
-							.nice();
+							.range([height - margin.top - margin.bottom, 0]);
 					}
 				} else {
 					const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
@@ -251,6 +252,7 @@
 	id="parcoord-canvas"
 	class="w-full h-full overflow-scroll-x"
 	style="overflow-x: scroll !important;"
+	bind:this={parcoordDiv}
 	bind:clientWidth={originalWidth}
 	bind:clientHeight={height}
 >

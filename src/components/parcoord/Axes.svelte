@@ -90,11 +90,26 @@
 
 			// Create axis objects
 			let axis;
-			if (dimensionTypes.get(dim) === 'numerical')
-				axis = axisLeft(yScales[dim]).ticks(dimensionsMetadata.get(dim)?.showLabels ? 5 : 0);
-			else {
+			const domainValues = yScales[dim].domain();
+			if (dimensionTypes.get(dim) === 'numerical') {
+				const ticks = yScales[dim].ticks(dimensionsMetadata.get(dim)?.showLabels ? 5 : 0);
+				if (ticks.indexOf(domainValues[0]) === -1) {
+					if (((ticks[0] - domainValues[0]) * 100) / (domainValues[1] - domainValues[0]) < 10)
+						ticks[0] = domainValues[0];
+					else ticks.unshift(domainValues[0]);
+				}
+				if (ticks.indexOf(domainValues[1]) === -1) {
+					if (
+						((domainValues[1] - ticks[ticks.length - 1]) * 100) /
+							(domainValues[1] - domainValues[0]) <
+						10
+					)
+						ticks[ticks.length - 1] = domainValues[1];
+					else ticks.push(domainValues[1]);
+				}
+				axis = axisLeft(yScales[dim]).tickValues(ticks);
+			} else {
 				axis = axisLeft(yScales[dim]);
-				const domainValues = yScales[dim].domain();
 				const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
 				const step = Math.ceil(domainValues.length / tickNumber);
 				const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);

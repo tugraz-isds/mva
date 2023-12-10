@@ -253,7 +253,7 @@
 			const hoveredLinesSet: Set<number> = new Set();
 			intersectingLines.forEach((intersection) => {
 				const line = intersection.object as any;
-				hoveredLinesSet.add(line.index);
+				if (lineShow[line.index]) hoveredLinesSet.add(line.index);
 			});
 
 			if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;

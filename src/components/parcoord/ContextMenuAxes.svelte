@@ -65,7 +65,7 @@
 		$parcoordIsInteractable = true;
 	}
 
-	function setAxisRange(reset: boolean = false) {
+	function setAxisRange() {
 		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
 		const domain = extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number];
 		if (rangeEnd < domain[1]) {
@@ -81,14 +81,11 @@
 
 		validUpload = true;
 		const customRanges = $parcoordCustomAxisRanges;
-		if (reset) customRanges.set(dimensions[dimIndex], null);
-		else {
-			customRanges.set(dimensions[dimIndex], {
-				start: isAxisInverted ? rangeEnd : rangeStart,
-				end: isAxisInverted ? rangeStart : rangeEnd
-			});
-			closeSetRangeModal();
-		}
+		customRanges.set(dimensions[dimIndex], {
+			start: isAxisInverted ? rangeEnd : rangeStart,
+			end: isAxisInverted ? rangeStart : rangeEnd
+		});
+		closeSetRangeModal();
 
 		// Calculate new filter values
 		const filtersTemp = $filtersArray[dimIndex].percentages;
@@ -96,16 +93,8 @@
 			.domain(yScales[dimensions[dimIndex]].domain())
 			.range([0, 1]);
 		const newScale = scaleLinear()
-			.domain(
-				reset
-					? (extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number])
-					: isAxisInverted
-					? [rangeEnd, rangeStart]
-					: [rangeStart, rangeEnd]
-			)
+			.domain(isAxisInverted ? [rangeEnd, rangeStart] : [rangeStart, rangeEnd])
 			.range([0, 1]);
-		if (reset && $parcoordDimData.get(dimensions[dimIndex])?.inverted)
-			newScale.domain(newScale.domain().reverse());
 		const originalStart = originalScale.invert(1 - filtersTemp.start);
 		const originalEnd = originalScale.invert(1 - filtersTemp.end);
 		$filtersArray[dimIndex].percentages = {
@@ -114,6 +103,17 @@
 		};
 
 		$parcoordCustomAxisRanges = customRanges;
+	}
+
+	function resetAxisRange() {
+		const customRanges = $parcoordCustomAxisRanges;
+		customRanges.set(dimensions[dimIndex], null);
+		$parcoordCustomAxisRanges = customRanges;
+
+		$filtersArray[dimIndex].percentages = {
+			start: 0,
+			end: 1
+		};
 	}
 
 	function handleHideDImension() {
@@ -162,7 +162,7 @@
 		{/if}
 		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
 			<DropdownDivider />
-			<DropdownItem defaultClass={activeClass} on:click={() => setAxisRange(true)}
+			<DropdownItem defaultClass={activeClass} on:click={() => resetAxisRange()}
 				>Reset Range</DropdownItem
 			>
 		{/if}

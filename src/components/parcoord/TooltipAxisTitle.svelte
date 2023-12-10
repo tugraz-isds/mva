@@ -27,8 +27,6 @@
 			.style('fill', 'whitesmoke')
 			.style('stroke', '#ccc')
 			.style('stroke-width', 1)
-			.style('rx', 5)
-			.style('ry', 5)
 			.style('display', data.visible ? 'block' : 'none')
 			.attr('x', data.xPos + tooltipWidth < width ? data.xPos - 5 : width - tooltipWidth - 28)
 			.attr('y', data.yPos - 5)

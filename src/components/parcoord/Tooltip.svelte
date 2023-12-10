@@ -25,14 +25,12 @@
 		tooltipBackground = svg
 			.append('rect')
 			.attr('id', 'tooltip-background')
-			.style('fill', 'lightgrey') // Set the background color
-			.style('rx', 5) // Rounded corner
-			.style('ry', 5)
+			.style('fill', 'lightgrey')
 			.style('display', data.visible ? 'block' : 'none')
-			.attr('x', data.xPos - 5) // Adjust for padding
-			.attr('y', data.yPos - 5) // Adjust for padding
-			.attr('width', tooltipWidth + 10) // Adjust the width as needed
-			.attr('height', (data.text.length + 1) * 10); // Adjust the height as needed
+			.attr('x', data.xPos - 5)
+			.attr('y', data.yPos - 8)
+			.attr('width', tooltipWidth + 10)
+			.attr('height', (data.text.length + 1) * 10);
 
 		clipPath = svg.append('clipPath').attr('id', 'tooltip-clip');
 		clipPath
