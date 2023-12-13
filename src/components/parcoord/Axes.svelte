@@ -26,7 +26,9 @@
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
 	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
 	let axisUpperFilters: any = []; // Array of SVG elements for axis upper filters
+	let axisUpperFiltersValues: any = []; // Array of SVG elements for axis upper filters values
 	let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
+	let axisLowerFiltersValues: any = []; // Array of SVG elements for axis lower filters values
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
 	let axisHeight: number; // Actual axis height in pixels
 
@@ -56,7 +58,9 @@
 		axisTitles = [];
 		axisInvertIcons = [];
 		axisUpperFilters = [];
+		axisUpperFiltersValues = [];
 		axisLowerFilters = [];
+		axisLowerFiltersValues = [];
 		axisFilterRectangles = [];
 
 		const svg = select('#parcoord-canvas-axes');
@@ -64,7 +68,9 @@
 		svg.selectAll('.axis-title').remove();
 		svg.selectAll('.axis-invert').remove();
 		svg.selectAll('.axis-filter-upper').remove();
+		svg.selectAll('.axis-filter-upper-value').remove();
 		svg.selectAll('.axis-filter-lower').remove();
+		svg.selectAll('.axis-filter-lower-value').remove();
 		svg.selectAll('.axis-filter-rect').remove();
 	}
 
@@ -126,7 +132,10 @@
 					.attr('transform', `translate(${xScales[i]}, ${margin.top})`)
 					.call(axis)
 			);
+		});
 
+		dimensions.forEach((dim: string, i: number) => {
+			const step = xScales[1] - xScales[0];
 			// Create axis titles SVG
 			const maxTitleLength = calculateMaxLength(dim, 10, 'Roboto', step);
 			axisTitles.push(
@@ -184,6 +193,61 @@
 						.attr('fill', 'black')
 						.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
 				);
+				if ($dimensionTypeStore.get(dim) === 'numerical') {
+					const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start);
+					const groupUpper = svg
+						.append('g')
+						.attr('class', 'axis-filter-upper-value')
+						.attr(
+							'transform',
+							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
+						)
+						.attr('display', axesFilters[i].percentages.start <= 0 ? 'none' : 'block');
+					groupUpper
+						.append('rect')
+						.attr('class', 'axis-filter-upper-value')
+						.attr('width', getTextWidth(upperFilterValue, 10, 'Roboto') + 8)
+						.attr('height', 14)
+						.attr('fill', 'lightgrey')
+						.attr('stroke', 'black');
+					groupUpper
+						.append('text')
+						.style('font-size', '10')
+						.attr('text-anchor', 'start')
+						.attr('fill', 'black')
+						.attr('x', 4)
+						.attr('y', 10)
+						.text(upperFilterValue);
+					axisUpperFiltersValues.push(groupUpper);
+
+					const groupLower = svg
+						.append('g')
+						.attr('class', 'axis-filter-lower-value')
+						.attr(
+							'transform',
+							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
+						)
+						.attr('display', axesFilters[i].percentages.end >= 1 ? 'none' : 'block');
+					groupLower
+						.append('rect')
+						.attr('class', 'axis-filter-lower-value')
+						.attr('width', 30)
+						.attr('height', 14)
+						.attr('fill', 'lightgrey')
+						.attr('stroke', 'black');
+					groupLower
+						.append('text')
+						.style('font-size', '10')
+						.attr('text-anchor', 'start')
+						.attr('fill', 'black')
+						.attr('x', 4)
+						.attr('y', 10)
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.end));
+					axisLowerFiltersValues.push(groupLower);
+				} else {
+					axisUpperFiltersValues.push(null);
+					axisLowerFiltersValues.push(null);
+				}
 
 				// Create axis lower filter
 				axisLowerFilters.push(
@@ -276,11 +340,19 @@
 							'transform',
 							`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
 						);
+						axisUpperFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 10})`
+						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
 							`translate(${newX + 8}, ${
 								axesFilters[draggingIndex].pixels.end + margin.top + 8
 							}) rotate(180)`
+						);
+						axisLowerFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.end + margin.top - 4})`
 						);
 						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
 					}
@@ -312,11 +384,23 @@
 									axesFilters[draggingIndex].pixels.start + margin.top - 8
 								})`
 							);
+							axisUpperFiltersValues[draggingIndex]?.attr(
+								'transform',
+								`translate(${newX + 8}, ${
+									axesFilters[draggingIndex].pixels.start + margin.top - 10
+								})`
+							);
 							axisLowerFilters[newIndex].attr(
 								'transform',
 								`translate(${xScales[draggingIndex] + 8}, ${
 									axesFilters[draggingIndex].pixels.end + margin.top + 8
 								}) rotate(180)`
+							);
+							axisLowerFiltersValues[newIndex]?.attr(
+								'transform',
+								`translate(${xScales[draggingIndex] + 8}, ${
+									axesFilters[draggingIndex].pixels.end + margin.top - 4
+								})`
 							);
 							axisFilterRectangles[newIndex].attr(
 								'transform',
@@ -358,11 +442,23 @@
 								axesFilters[draggingIndex].pixels.start + margin.top - 8
 							})`
 						);
+						axisUpperFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${xScales[draggingIndex] + 8}, ${
+								axesFilters[draggingIndex].pixels.start + margin.top - 10
+							})`
+						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
 							`translate(${xScales[draggingIndex] + 8}, ${
 								axesFilters[draggingIndex].pixels.end + margin.top + 8
 							}) rotate(180)`
+						);
+						axisLowerFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${xScales[draggingIndex] + 8}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top - 4
+							})`
 						);
 						axisFilterRectangles[draggingIndex].attr(
 							'transform',
@@ -377,6 +473,12 @@
 		});
 	}
 
+	function getAxisDomainValue(i: number, percentage: number) {
+		const axisDomain = yScales[dimensions[i]].domain();
+		const axisRange = axisDomain[1] - axisDomain[0];
+		return (axisDomain[0] + (1 - percentage) * axisRange).toFixed(2);
+	}
+
 	function handleUpperFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
@@ -387,6 +489,12 @@
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 8}, ${newY})`); // Move upper filter
+					axisUpperFiltersValues[idx]
+						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 2})`)
+						.style('display', axesFilters[idx].percentages.start <= 0 ? 'none' : 'block');
+					axisUpperFiltersValues[idx]
+						?.select('text')
+						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.start));
 					axisFilterRectangles[idx]
 						.attr('y', `${newY + 8}`)
 						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
@@ -413,7 +521,13 @@
 					axisLowerFilters[idx].attr(
 						'transform',
 						`translate(${xScales[idx] + 8}, ${newY + 8}) rotate(180)`
-					); // Move upper filter
+					); // Move lower filter
+					axisLowerFiltersValues[idx]
+						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 4})`)
+						.style('display', axesFilters[idx].percentages.end >= 1 ? 'none' : 'block');
+					axisLowerFiltersValues[idx]
+						?.select('text')
+						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.end));
 					axisFilterRectangles[idx].attr(
 						'height',
 						`${newY - axesFilters[idx].pixels.start - margin.top}`
@@ -465,12 +579,30 @@
 						'transform',
 						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
 					);
+					axisUpperFiltersValues[i]
+						?.attr(
+							'transform',
+							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
+						)
+						.style('display', axesFilters[i].percentages.start <= 0 ? 'none' : 'block');
+					axisUpperFiltersValues[i]
+						.select('text')
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.start));
 					axisLowerFilters[i].attr(
 						'transform',
 						`translate(${xScales[i] + 8}, ${
 							axesFilters[i].pixels.end + margin.top + 8
 						}) rotate(180)`
 					);
+					axisLowerFiltersValues[i]
+						?.attr(
+							'transform',
+							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
+						)
+						.style('display', axesFilters[i].percentages.end >= 1 ? 'none' : 'block');
+					axisLowerFiltersValues[i]
+						.select('text')
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.end));
 				})
 				.on('end', () => {
 					startY = 0;

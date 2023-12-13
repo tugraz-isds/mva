@@ -32,7 +32,7 @@
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
 
-	let margin = { top: 40, right: 20, bottom: 10, left: 50 }; // Parallel coordinates margin
+	let margin = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	// Tooltip data
 	let tooltip: TooltipType = {
@@ -110,7 +110,6 @@
 	// Update yScales
 	function calculateYScales(init: boolean = false) {
 		if (height > 0 && dataset?.length > 0) {
-			console.log('Calculating yScales');
 			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
 				if (dimensionTypes.get(dim) === 'numerical') {
 					if (customRanges.get(dim) === null) {
@@ -274,7 +273,7 @@
 			bind:yScales
 		/>
 
-		<!-- <Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} /> -->
+		<Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
