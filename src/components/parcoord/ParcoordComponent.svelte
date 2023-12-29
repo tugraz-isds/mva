@@ -144,6 +144,9 @@
 				.domain([0, dimensions.length - 1])
 				.range([margin.left, width - margin.right])(i)
 		);
+
+		const step = xScales[1] - xScales[0];
+		if (step) margin.right = 10 + step / 2;
 	}
 
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
@@ -152,12 +155,16 @@
 	}
 
 	function handleMarginChanged() {
+		width =
+			originalWidth < 100 * dimensions.length + margin.left + margin.right
+				? 100 * dimensions.length + margin.left + margin.right
+				: originalWidth;
 		setTimeout(() => {
 			axesComponent.clearSVG();
-			axesComponent.renderAxes();
+			axesComponent.renderAxes(width);
 
 			linesComponent.initScene();
-			linesComponent.drawLines();
+			linesComponent.drawLines(width);
 		}, 10);
 	}
 

@@ -119,7 +119,9 @@
 		mouse = new THREE.Vector2();
 	}
 
-	export function drawLines() {
+	export function drawLines(newWidth: number | undefined = undefined) {
+		if (newWidth) width = newWidth;
+
 		lines = [];
 		dataset.forEach((dataRow: any, idx: number) => {
 			drawLine(dataRow, idx);

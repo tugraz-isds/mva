@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { select, scaleLinear, bin, max } from 'd3';
+	import { afterUpdate, onMount } from 'svelte';
+	import { select, group, bin } from 'd3';
+	import { dimensionTypeStore } from '../../stores/dataset';
+	import { parcoordDimData } from '../../stores/parcoord';
 	import type { DSVParsedArray } from 'd3';
 
 	export let dataset: DSVParsedArray<any>;
@@ -11,40 +13,67 @@
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
+	let axisHeight: number;
+	$: axisHeight = height - margin.top - margin.bottom;
+
+	export function clearSVG() {
+		const svg = select('#parcoord-canvas-barplots');
+		svg.selectAll('.axis-bins').remove();
+		svg.selectAll('.axis-bin').remove();
+	}
+
 	// Draw axes elements
 	export function renderBarplots() {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
-		console.log('Rendering barplots');
 
 		const svg = select('#parcoord-canvas-barplots');
 		const step = xScales[1] - xScales[0];
-		const bins = bin().domain(yScales[dimensions[0]].domain()).thresholds(10)(
-			dataset.map((row) => row[dimensions[0]])
-		);
-		const x = scaleLinear()
-			.domain(yScales[dimensions[0]].domain())
-			.range([0, height - margin.top - margin.bottom]);
-		const y = scaleLinear()
-			.domain([0, max(bins, (d: any) => d.length)])
-			.range([step, step / 2]);
-		svg
-			.selectAll('rect')
-			.data(bins)
-			.enter()
-			.append('rect')
-			.attr('x', (d: any) => x(d.x0))
-			.attr('y', (d: any) => y(d.length))
-			.attr('width', (d: any) => x(d.x1) - x(d.x0) - 1)
-			.attr('height', (d: any) => step - y(d.length))
-			.attr('transform', `translate(${xScales[1]}, ${margin.top}) rotate(90)`)
-			.attr('fill', 'grey')
-			.attr('stroke', 'black')
-			.attr('fill-opacity', '0.1')
-			.attr('stroke-opacity', '0.5');
+
+		dimensions.forEach((dim, i) => {
+			const binGroup = svg.append('g').attr('class', `axis-bins axis-bins-${i}`);
+			const bins =
+				$dimensionTypeStore.get(dim) === 'numerical'
+					? bin()(dataset.map((row) => row[dim]))
+					: Array.from(
+							group(dataset, (d) => d[dim]),
+							([_, values]) => values
+					  );
+			// console.log(i, bins);
+			const binWidth = axisHeight / bins.length;
+			const longestBinHeight = bins.reduce((max, array) => Math.max(max, array.length), 0);
+			bins.forEach((bin, j) => {
+				binGroup
+					.append('rect')
+					.attr('class', 'axis-bin axis-bins-0-bin')
+					.attr('width', (bin.length / longestBinHeight) * (step / 2))
+					.attr('height', binWidth)
+					.attr(
+						'transform',
+						`translate(${xScales[i] + 8}, ${
+							margin.top +
+							binWidth * ($parcoordDimData.get(dim)?.inverted ? j : bins.length - j - 1)
+						})`
+					)
+					.attr('fill', 'grey')
+					.attr('stroke', 'black')
+					.attr('fill-opacity', '0.2')
+					.attr('stroke-opacity', '0.3');
+			});
+		});
 	}
 
 	onMount(() => {
-		renderBarplots();
+		setTimeout(() => {
+			clearSVG();
+			renderBarplots();
+		}, 10);
+	});
+
+	afterUpdate(() => {
+		setTimeout(() => {
+			clearSVG();
+			renderBarplots();
+		}, 10);
 	});
 </script>
 

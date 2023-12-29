@@ -75,8 +75,10 @@
 	}
 
 	// Draw axes elements
-	export function renderAxes() {
+	export function renderAxes(newWidth: number | undefined = undefined) {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
+
+		if (newWidth) width = newWidth;
 
 		const svg = select('#parcoord-canvas-axes');
 
