@@ -7,13 +7,13 @@
 	import { reorderArray } from '../../util/util';
 	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
-	import Barplots from './Barplots.svelte';
+	import Histograms from './Histograms.svelte';
 	import LinesThree from './LinesThree.svelte';
 	import Tooltip from './Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipType, TooltipAxisTitleType, CustomRangeType } from './types';
+	import type { TooltipType, TooltipAxisTitleType, CustomRangeType, MarginType } from './types';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
@@ -32,7 +32,7 @@
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
 
-	let margin = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
+	let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
 	// Tooltip data
 	let tooltip: TooltipType = {
@@ -67,6 +67,7 @@
 				$parcoordDimData.set(dim, {
 					inverted: false,
 					showLabels: true,
+					showHistograms: true,
 					showFilter: true
 				});
 			});
@@ -146,7 +147,8 @@
 		);
 
 		const step = xScales[1] - xScales[0];
-		if (step) margin.right = 10 + step / 2;
+		if (step && $parcoordDimData.get(dimensions[dimensions.length - 1])?.showHistograms)
+			margin.right = 10 + step / 2;
 	}
 
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
@@ -241,6 +243,7 @@
 			$parcoordDimData.set(dim, {
 				inverted: false,
 				showLabels: true,
+				showHistograms: true,
 				showFilter: true
 			});
 		});
@@ -280,15 +283,17 @@
 			bind:yScales
 		/>
 
-		<Barplots {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
+		<Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
 
 		<Tooltip data={tooltip} />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
 		<ContextMenuAxes
 			bind:this={contextMenuAxes}
 			bind:axesComponent
+			{xScales}
 			bind:yScales
 			bind:dimensions
+			bind:margin
 			{dataset}
 		/>
 

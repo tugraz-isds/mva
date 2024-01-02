@@ -23,13 +23,15 @@
 	}
 
 	// Draw axes elements
-	export function renderBarplots() {
+	export function renderHistograms(initialRender: boolean = false) {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
 		const svg = select('#parcoord-canvas-barplots');
 		const step = xScales[1] - xScales[0];
 
 		dimensions.forEach((dim, i) => {
+			if (!$parcoordDimData.get(dimensions[i])?.showHistograms) return;
+
 			const binGroup = svg.append('g').attr('class', `axis-bins axis-bins-${i}`);
 			const bins =
 				$dimensionTypeStore.get(dim) === 'numerical'
@@ -38,8 +40,19 @@
 							group(dataset, (d) => d[dim]),
 							([_, values]) => values
 					  );
-			// console.log(i, bins);
 			const binWidth = axisHeight / bins.length;
+
+			// If bin has width less than 10 hide histogram by default
+			if (initialRender && binWidth < 10) {
+				const dimData = $parcoordDimData;
+				const currDimData = dimData.get(dim);
+				if (!currDimData) return;
+				currDimData.showHistograms = false;
+				dimData.set(dim, currDimData);
+				parcoordDimData.set(dimData);
+				clearSVG();
+				return;
+			}
 			const longestBinHeight = bins.reduce((max, array) => Math.max(max, array.length), 0);
 			bins.forEach((bin, j) => {
 				binGroup
@@ -65,14 +78,14 @@
 	onMount(() => {
 		setTimeout(() => {
 			clearSVG();
-			renderBarplots();
+			renderHistograms(true);
 		}, 10);
 	});
 
 	afterUpdate(() => {
 		setTimeout(() => {
 			clearSVG();
-			renderBarplots();
+			renderHistograms();
 		}, 10);
 	});
 </script>

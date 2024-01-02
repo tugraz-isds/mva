@@ -1,5 +1,7 @@
 <script lang="ts">
 	import {
+		ChevronRight,
+		Dropdown,
 		DropdownItem,
 		DropdownDivider,
 		Button,
@@ -8,21 +10,26 @@
 		Input,
 		Helper
 	} from 'flowbite-svelte';
+	import { Check } from 'svelte-heros-v2';
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
 	import { scaleLinear, extent } from 'd3';
 	import type Axes from './Axes.svelte';
 	import type { DSVParsedArray } from 'd3';
+	import type { MarginType } from './types';
 
 	export let axesComponent: Axes;
 	export let dimensions: string[] = [];
+	export let xScales: any;
 	export let yScales: any;
+	export let margin: MarginType;
 	export let dataset: DSVParsedArray<any>;
 
 	let rangeStart: number;
 	let rangeEnd: number;
 
+	let debounceTimeout: number;
 	let isSetRangeModalOpen: boolean = false;
 	let validUpload: boolean = true; // If false show error message
 	let errorMessage: string = '';
@@ -120,22 +127,32 @@
 		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
 	}
 
-	function handleShowLabels() {
+	function handleShow(field: 'labels' | 'histograms' | 'filter') {
 		const dimData = $parcoordDimData;
 		const currDimData = dimData.get(dimensions[dimIndex]);
 		if (!currDimData) return;
-		currDimData.showLabels = !currDimData.showLabels;
+
+		if (field === 'labels') currDimData.showLabels = !currDimData.showLabels;
+		else if (field === 'histograms') {
+			currDimData.showHistograms = !currDimData.showHistograms;
+			const step = xScales[1] - xScales[0];
+			if (dimIndex === dimensions.length - 1)
+				margin.right = currDimData.showHistograms ? 10 + step / 2 : 40;
+		} else if (field === 'filter') currDimData.showFilter = !currDimData.showFilter;
+
 		dimData.set(dimensions[dimIndex], currDimData);
 		parcoordDimData.set(dimData);
+		hideContextMenu();
 	}
 
-	function handleShowFilter() {
-		const dimData = $parcoordDimData;
-		const currDimData = dimData.get(dimensions[dimIndex]);
-		if (!currDimData) return;
-		currDimData.showFilter = !currDimData.showFilter;
-		dimData.set(dimensions[dimIndex], currDimData);
-		parcoordDimData.set(dimData);
+	function handleMouseLeave() {
+		debounceTimeout = setTimeout(() => {
+			hideContextMenu();
+		}, 100);
+	}
+
+	function handleMouseEnter() {
+		clearTimeout(debounceTimeout);
 	}
 </script>
 
@@ -144,8 +161,8 @@
 	<div
 		class="context-menu"
 		style={menuStyle}
-		on:click={hideContextMenu}
-		on:mouseleave={hideContextMenu}
+		on:mouseenter={handleMouseEnter}
+		on:mouseleave={handleMouseLeave}
 	>
 		<DropdownItem defaultClass={activeClass} on:click={() => handleHideDImension()}
 			>Hide Axis</DropdownItem
@@ -167,13 +184,45 @@
 			>
 		{/if}
 		<DropdownDivider />
-		<DropdownItem defaultClass={activeClass} on:click={handleShowLabels}
-			>{$parcoordDimData.get(dimensions[dimIndex])?.showLabels ? 'Hide' : 'Show'} Labels</DropdownItem
-		>
+		<DropdownItem defaultClass="{activeClass} flex items-center justify-between">
+			Show<ChevronRight class="w-3 h-3 ms-2" />
+		</DropdownItem>
+		<Dropdown placement="right-start" style="padding: 5px; width: 120px;">
+			<DropdownItem
+				defaultClass="{activeClass} flex items-center"
+				style="width: 110px;"
+				on:click={() => handleShow('labels')}
+				><Check
+					class="w-3 h-3 ms-2 mr-2"
+					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showLabels
+						? 'visible'
+						: 'hidden'}"
+				/>Labels</DropdownItem
+			>
+			<DropdownItem
+				defaultClass="{activeClass} flex items-center"
+				style="width: 110px;"
+				on:click={() => handleShow('histograms')}
+				><Check
+					class="w-3 h-3 ms-2 mr-2"
+					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showHistograms
+						? 'visible'
+						: 'hidden'}"
+				/>Histogram</DropdownItem
+			>
+			<DropdownItem
+				defaultClass="{activeClass} flex items-center"
+				style="width: 110px;"
+				on:click={() => handleShow('filter')}
+				><Check
+					class="w-3 h-3 ms-2 mr-2"
+					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showFilter
+						? 'visible'
+						: 'hidden'}"
+				/>Filter</DropdownItem
+			>
+		</Dropdown>
 		<DropdownDivider />
-		<DropdownItem defaultClass={activeClass} on:click={handleShowFilter}
-			>{$parcoordDimData.get(dimensions[dimIndex])?.showFilter ? 'Hide' : 'Show'} Filter</DropdownItem
-		>
 		<DropdownItem
 			defaultClass={activeClass}
 			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset Filter</DropdownItem

@@ -203,6 +203,7 @@
 
 	// Function to handle mousemove events
 	function handleMouseMove(event: MouseEvent) {
+		if (!canvasEl) return;
 		// Calculate normalized mouse coordinates relative to the canvas
 		const canvasRect = canvasEl.getBoundingClientRect();
 		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
@@ -265,6 +266,7 @@
 	}
 
 	function handleMouseDown(event: MouseEvent) {
+		if (!canvasEl) return;
 		const canvasRect = canvasEl.getBoundingClientRect();
 		// If mouse is not in parcoord, return
 		if (
@@ -306,6 +308,7 @@
 	}
 
 	function handleMouseUp(event: MouseEvent) {
+		if (!canvasEl) return;
 		const canvasRect = canvasEl.getBoundingClientRect();
 		// If mouse is not in parcoord, return
 		if (

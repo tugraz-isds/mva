@@ -1,8 +1,11 @@
 import type { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 
+export type MarginType = { top: number; right: number; bottom: number; left: number };
+
 export type DimensionType = {
 	inverted: boolean;
 	showLabels: boolean;
+	showHistograms: boolean;
 	showFilter: boolean;
 };
 

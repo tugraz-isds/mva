@@ -679,7 +679,10 @@
 		filtersArray.set(axesFilters);
 
 		dimensionsMetadata = new Map(
-			dimensions.map((dim) => [dim, { inverted: false, showLabels: true, showFilter: true }])
+			dimensions.map((dim) => [
+				dim,
+				{ inverted: false, showLabels: true, showHistograms: true, showFilter: true }
+			])
 		);
 	}
 
