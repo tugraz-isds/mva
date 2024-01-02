@@ -204,6 +204,11 @@
 			/\d+\.\d{7,}/g,
 			(match) => `${Number(match).toFixed(6)}`
 		);
+		// Remove redundant fields
+		axesStringSvg = axesStringSvg
+			.replaceAll('px', '')
+			.replaceAll(' dy="0.32em"', '')
+			.replaceAll(' opacity="1"', '');
 
 		const stringSvg =
 			`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +

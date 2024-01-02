@@ -133,6 +133,8 @@
 					.attr('class', 'y-axis')
 					.attr('transform', `translate(${xScales[i]}, ${margin.top})`)
 					.call(axis)
+					.selectAll('text')
+					.style('font-size', '10px')
 			);
 		});
 
