@@ -5,15 +5,16 @@
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { arrowDown, arrowUp } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
-	import { reorderArray } from '../../util/util';
+	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { AxesFilterType, DimensionType } from './types';
+	import type { MarginType } from '../../util/types';
 
 	export let width: number; // Container width
 	export let contextMenuAxes: ContextMenuAxes;
 	export let height: number; // Container height
 	export let dimensions: string[] = []; // Initial order of dimensions
-	export let margin: any; // Margin object
+	export let margin: MarginType; // Margin object
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
 	export let handleMarginChanged: Function; // Callback function when margin changes
@@ -101,20 +102,7 @@
 			const domainValues = yScales[dim].domain();
 			if (dimensionTypes.get(dim) === 'numerical') {
 				const ticks = yScales[dim].ticks(dimensionsMetadata.get(dim)?.showLabels ? 5 : 0);
-				if (ticks.indexOf(domainValues[0]) === -1) {
-					if (((ticks[0] - domainValues[0]) * 100) / (domainValues[1] - domainValues[0]) < 10)
-						ticks[0] = domainValues[0];
-					else ticks.unshift(domainValues[0]);
-				}
-				if (ticks.indexOf(domainValues[1]) === -1) {
-					if (
-						((domainValues[1] - ticks[ticks.length - 1]) * 100) /
-							(domainValues[1] - domainValues[0]) <
-						10
-					)
-						ticks[ticks.length - 1] = domainValues[1];
-					else ticks.push(domainValues[1]);
-				}
+				const allTicks = getAllTicks(domainValues, ticks);
 				axis = axisLeft(yScales[dim]).tickValues(ticks);
 			} else {
 				axis = axisLeft(yScales[dim]);
@@ -735,7 +723,7 @@
 	{width}
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; user-select: none;"
-	on:contextmenu={(event) => {
-		event.preventDefault();
+	on:contextmenu={(e) => {
+		e.preventDefault();
 	}}
 />

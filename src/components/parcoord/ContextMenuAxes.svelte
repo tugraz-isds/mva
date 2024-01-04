@@ -17,7 +17,7 @@
 	import { scaleLinear, extent } from 'd3';
 	import type Axes from './Axes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { MarginType } from './types';
+	import type { MarginType } from '../../util/types';
 
 	export let axesComponent: Axes;
 	export let dimensions: string[] = [];

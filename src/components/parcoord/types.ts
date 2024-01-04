@@ -1,6 +1,4 @@
-import type { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
-
-export type MarginType = { top: number; right: number; bottom: number; left: number };
+import type { ColorType } from '../../util/types';
 
 export type DimensionType = {
 	inverted: boolean;
@@ -45,9 +43,3 @@ export type CustomRangeType = {
 	start: number;
 	end: number;
 } | null;
-
-export type ColorType =
-	| typeof COLOR_ACTIVE
-	| typeof COLOR_HOVERED
-	| typeof COLOR_BRUSHED
-	| typeof COLOR_FILTERED;

@@ -13,7 +13,8 @@
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipType, TooltipAxisTitleType, CustomRangeType, MarginType } from './types';
+	import type { TooltipType, TooltipAxisTitleType, CustomRangeType } from './types';
+	import type { MarginType } from '../../util/types';
 
 	let isBrowser = false; // Flag to see if we are in browser
 

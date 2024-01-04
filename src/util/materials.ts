@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED } from './colors';
-import type { ColorType } from '../components/parcoord/types';
+import type { ColorType } from './types';
 
 const MATERIAL_ACTIVE = new THREE.LineBasicMaterial({
 	color: COLOR_ACTIVE,
