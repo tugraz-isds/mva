@@ -12,47 +12,46 @@
 	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
 	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 	import {
-		MATERIAL_MAP,
-		MATERIAL_HOVERED,
-		MATERIAL_BRUSHED,
+		LINE_MATERIAL_MAP,
+		LINE_MATERIAL_HOVERED,
+		LINE_MATERIAL_BRUSHED,
 		MATERIAL_DRAGGING_RECT
 	} from '../../util/materials';
 	import { reorderArray, areSetsEqual } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
 	import type { DSVParsedArray } from 'd3';
-	import type { AxesFilterType, LineDataType } from './types';
+	import type { AxesFilterType } from './types';
+	import type { RecordDataType } from '../../util/types';
 
 	export let width: number;
 	export let height: number;
 	export let dataset: DSVParsedArray<any>;
-	export let initialDimensions: string[] = []; // Initial order of dimensions
+	export let initialDimensions: string[] = [];
 	export let margin: any;
-	export let xScales: any[]; // Scales for all of the X-axes
-	export let yScales: any; // Scales for all of the Y-axes
-	export let setTooltipData: Function; // Callback function for tooltip
+	export let xScales: any[];
+	export let yScales: any;
+	export let setTooltipData: Function;
 
-	// ThreeJS elements
 	let canvasEl: HTMLCanvasElement;
 	let camera: THREE.OrthographicCamera;
 	let scene: THREE.Scene;
 	let renderer: THREE.WebGLRenderer;
-	let line: any;
+	let line: THREE.Line & { index?: number };
 	let raycaster: THREE.Raycaster;
 	let mouse: THREE.Vector2;
 
-	let lines: THREE.Line[] = []; // Array to store all line objects
-	let lineShow: boolean[] = []; // Array of booleans that store info if each line should be drawn
-	let lineData: LineDataType[] = []; // Array of line data for all lines
+	let lines: THREE.Line[] = [];
+	let lineShow: boolean[] = [];
+	let lineData: RecordDataType[] = [];
 
-	let dimensions: string[]; // Dimensions used for swapping
-	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
-	let hoveredLinesIndices = new Set<number>(); // Currently hovered lines
-	let previouslyHoveredLinesIndices = new Set<number>(); // Previously hovered lines
-	let brushedLinesIndices = new Set<number>(); // Currently brushed lines
-	let previouslyBrushedLinesIndices = new Set<number>(); // Previously brushed lines
-	let labelDim: string; // Dataset label dimension
+	let dimensions: string[];
+	let axesFilters: AxesFilterType[] = [];
+	let hoveredLinesIndices = new Set<number>();
+	let previouslyHoveredLinesIndices = new Set<number>();
+	let brushedLinesIndices = new Set<number>();
+	let previouslyBrushedLinesIndices = new Set<number>();
 
-	let isDragging: boolean = false; // Is user currently dragging
+	let isDragging: boolean = false;
 	let dragStart: {
 		x: number;
 		y: number;
@@ -60,7 +59,6 @@
 	let draggingRectangle: THREE.Line;
 	let intersectingLines: any[];
 
-	// Apply filters
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
@@ -94,27 +92,15 @@
 		removeBrushedLines();
 	});
 
-	const unsubscribeLabelDim = labelDimension.subscribe((value: string) => {
-		labelDim = value;
-	});
-
-	// Function to initialize ThreeJS scene
 	export function initScene() {
-		// Create a scene
 		scene = new THREE.Scene();
-
-		// Create a camera
 		camera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
 		camera.position.set(0, 0, 5);
-
-		// Create a renderer and append the canvas to the specified element
 		renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
 		renderer.setClearColor(0xffffff);
 		renderer.setSize(width, height);
 		const parcoordDiv = document.getElementById('parcoord-canvas');
 		if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
-
-		// Initialize raycaster and mouse
 		raycaster = new THREE.Raycaster();
 		mouse = new THREE.Vector2();
 	}
@@ -129,7 +115,6 @@
 		render();
 	}
 
-	// Function to draw a single line from array
 	function drawLine(dataRow: any[], idx: number) {
 		const linePoints = [];
 		for (let i = 0; i < dimensions.length; i++) {
@@ -148,11 +133,11 @@
 			);
 		}
 
-		const material = MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
+		const material = LINE_MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
 		material.needsUpdate = false;
 		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
 		line = new THREE.Line(geometry, material);
-		line.index = idx; // Add custom property index to hovered line
+		line.index = idx;
 		lines.push(line);
 		scene.add(line);
 	}
@@ -160,7 +145,7 @@
 	function drawHoveredLines() {
 		hoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = MATERIAL_HOVERED;
+			line.material = LINE_MATERIAL_HOVERED;
 			changeLinePosition(line, 2);
 			line.material.needsUpdate = true;
 		});
@@ -171,7 +156,7 @@
 		brushedLinesIndices.forEach((i) => {
 			const line = lines[i];
 			lineData[i] = { color: COLOR_BRUSHED, position: 1 };
-			line.material = MATERIAL_BRUSHED;
+			line.material = LINE_MATERIAL_BRUSHED;
 			changeLinePosition(line, 1);
 			line.material.needsUpdate = true;
 		});
@@ -181,7 +166,7 @@
 	function removeHoveredLines() {
 		previouslyHoveredLinesIndices.forEach((i) => {
 			const line = lines[i];
-			line.material = MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
+			line.material = LINE_MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
 			line.material.needsUpdate = false;
 			changeLinePosition(line, lineData[i].position);
 		});
@@ -194,21 +179,20 @@
 				color: lineShow[i] ? COLOR_ACTIVE : COLOR_FILTERED,
 				position: lineShow[i] ? 0 : -1
 			};
-			line.material = MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
+			line.material = LINE_MATERIAL_MAP.get(lineData[i].color) ?? new THREE.LineBasicMaterial();
 			line.material.needsUpdate = false;
 			changeLinePosition(line, lineData[i].position);
 		});
 		render();
 	}
 
-	// Function to handle mousemove events
 	function handleMouseMove(event: MouseEvent) {
 		if (!canvasEl) return;
 		// Calculate normalized mouse coordinates relative to the canvas
 		const canvasRect = canvasEl.getBoundingClientRect();
 		mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
 		mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-		// If mouse is not in parcoord, return
+		// If mouse is not in canvas, return
 		if (
 			!(
 				event.clientY >= canvasRect.top &&
@@ -221,7 +205,7 @@
 			return;
 
 		// Check for intersections
-		raycaster.setFromCamera(mouse, camera); // Update the raycaster
+		raycaster.setFromCamera(mouse, camera);
 		if (isDragging) {
 			if (!dragStart) return;
 			const rectWidth = event.clientX - canvasRect.left - dragStart.x,
@@ -279,7 +263,8 @@
 		)
 			return;
 
-		isDragging = true;
+		// isDragging = true;
+		isDragging = false;
 		dragStart = { x: event.clientX - canvasRect.left, y: event.clientY - canvasRect.top };
 		setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
 		intersectingLines = [];
@@ -375,7 +360,8 @@
 				if (lineShow[idx]) lineData[idx] = { color: COLOR_ACTIVE, position: 0 };
 				else lineData[idx] = { color: COLOR_FILTERED, position: -1 };
 			}
-			lines[idx].material = MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
+			lines[idx].material =
+				LINE_MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
 			changeLinePosition(lines[idx], lineData[idx].position);
 		});
 
@@ -390,7 +376,7 @@
 		} else {
 			let tooltipText: string[] = [];
 			hoveredLinesSet.forEach((i) => {
-				tooltipText.push(`${dataset[i][labelDim]}`);
+				tooltipText.push(`${dataset[i][$labelDimension]}`);
 			});
 			setTooltipData({ visible: true, xPos: x + 25, yPos: y, text: tooltipText });
 		}
@@ -400,7 +386,6 @@
 		drawLines();
 	};
 
-	// Function to swap points when axes are reordered
 	export const swapPoints = (fromIndex: number, toIndex: number) => {
 		dimensions = reorderArray(dimensions, fromIndex, toIndex);
 		axesFilters = reorderArray(axesFilters, fromIndex, toIndex);
@@ -517,7 +502,6 @@
 		unsubscribeHovered();
 		unsubscribePrevHovered();
 		unsubscribePrevBrushed();
-		unsubscribeLabelDim();
 	});
 </script>
 
