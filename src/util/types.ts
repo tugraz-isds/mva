@@ -7,3 +7,15 @@ export type ColorType =
 	| typeof COLOR_HOVERED
 	| typeof COLOR_BRUSHED
 	| typeof COLOR_FILTERED;
+
+export type RecordDataType = {
+	color: ColorType; // Record color
+	position: number; // Record z-index position
+};
+
+export type TooltipType = {
+	visible: boolean; // Is tooltip visible
+	xPos: number; // X position
+	yPos: number; // Y position
+	text: string[]; // Text rows as array
+};

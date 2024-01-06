@@ -9,12 +9,12 @@
 	import Axes from './Axes.svelte';
 	import Histograms from './Histograms.svelte';
 	import LinesThree from './LinesThree.svelte';
-	import Tooltip from './Tooltip.svelte';
+	import Tooltip from '../tooltip/Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipType, TooltipAxisTitleType, CustomRangeType } from './types';
-	import type { MarginType } from '../../util/types';
+	import type { TooltipAxisTitleType, CustomRangeType } from './types';
+	import type { MarginType, TooltipType } from '../../util/types';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
@@ -35,7 +35,6 @@
 
 	let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
-	// Tooltip data
 	let tooltip: TooltipType = {
 		visible: false,
 		xPos: 0,
@@ -291,7 +290,7 @@
 
 		<Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
 
-		<Tooltip data={tooltip} />
+		<Tooltip data={tooltip} view="parcoord" />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
 		<ContextMenuAxes
 			bind:this={contextMenuAxes}

@@ -61,7 +61,7 @@
 					size="16"
 					class="text-grey-900 cursor-pointer hover:bg-sky-100"
 				/>
-				<Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 3;">
+				<Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 1000;">
 					<div slot="header" class="py-1 px-2">
 						<span class="font-medium block text-sm text-gray-900">Swap view with</span>
 					</div>

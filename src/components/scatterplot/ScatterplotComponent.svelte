@@ -3,9 +3,11 @@
 	import { Select } from 'flowbite-svelte';
 	import { extent, scaleLinear } from 'd3';
 	import Axes from './Axes.svelte';
-	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
+	import Points from './Points.svelte';
+	import Tooltip from '../tooltip/Tooltip.svelte';
+	import { datasetStore, dimensionTypeStore, labelDimension } from '../../stores/dataset';
 	import type { DSVParsedArray } from 'd3';
-	import type { MarginType } from '../../util/types';
+	import type { MarginType, TooltipType } from '../../util/types';
 
 	let width: number;
 	let height: number;
@@ -15,6 +17,13 @@
 	let xScale: any, yScale: any;
 
 	let margin: MarginType = { top: 20, right: 10, bottom: 20, left: 30 };
+
+	let tooltip: TooltipType = {
+		visible: false,
+		xPos: 0,
+		yPos: 0,
+		text: []
+	};
 
 	$: {
 		if (height > 0 && dataset?.length > 0) {
@@ -53,6 +62,10 @@
 			.range([height * 0.9 - margin.top - margin.bottom, 0]);
 	}
 
+	function setTooltipData(data: TooltipType) {
+		tooltip = data;
+	}
+
 	onDestroy(() => {
 		unsubscribeDataset();
 	});
@@ -62,12 +75,28 @@
 	<div><span>Not enough numerical dimensions.</span></div>
 {:else}
 	<div
-		id="scatterplot-canvas"
-		class="w-full h-full flex items-end"
+		id="scatterplot-canvas-container"
+		class="w-full h-full flex flex-col items-end"
 		bind:clientWidth={width}
 		bind:clientHeight={height}
 	>
 		<Axes {width} height={height * 0.9} {xScale} {yScale} {margin} />
+
+		<Tooltip data={tooltip} view="scatterplot" />
+
+		<Points
+			{width}
+			height={height * 0.9}
+			{xScale}
+			{yScale}
+			xData={dataset.map((row) => row[xDim])}
+			yData={dataset.map((row) => row[yDim])}
+			labelData={dataset.map((row) => row[$labelDimension])}
+			{margin}
+			{setTooltipData}
+		/>
+
+		<div class="w-full scatterplot-canvas" style="height: {height * 0.9}px;" />
 		<div class="flex w-full justify-evenly" style="height: {height * 0.1}px">
 			<div class="flex items-center w-1/3">
 				<span class="mr-1/2" style="font-size: 0.75em;">Y:</span>

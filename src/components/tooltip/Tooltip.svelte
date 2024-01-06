@@ -2,16 +2,17 @@
 	import { afterUpdate } from 'svelte';
 	import { select } from 'd3';
 	import { getTextWidthArray } from '../../util/text';
-	import type { TooltipType } from './types';
+	import type { TooltipType } from '../../util/types';
 
 	export let data: TooltipType;
+	export let view: string;
 
 	let tooltip: any; // Tooltip SVG element
 	let tooltipBackground: any; // Background rect element
 	let clipPath: any; // SVG clip path element
 
 	afterUpdate(() => {
-		const svg = select('#parcoord-canvas-axes');
+		const svg = select(`#${view}-canvas-axes`);
 
 		svg.select('#tooltip').remove();
 		svg.select('#tooltip-background').remove();
