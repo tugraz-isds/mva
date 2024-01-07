@@ -290,7 +290,7 @@
 
 		<Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
 
-		<Tooltip data={tooltip} view="parcoord" />
+		<Tooltip data={tooltip} viewTitle="parcoord" />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />
 		<ContextMenuAxes
 			bind:this={contextMenuAxes}

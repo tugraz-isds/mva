@@ -2,7 +2,6 @@
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
 	import {
-		POINT_MATERIAL_ACTIVE,
 		POINT_MATERIAL_BRUSHED,
 		POINT_MATERIAL_HOVERED,
 		POINT_MATERIAL_MAP
@@ -26,6 +25,7 @@
 	export let labelData: any;
 	export let margin: MarginType;
 	export let setTooltipData: Function;
+	export let viewTitle: string;
 
 	let canvasEl: HTMLCanvasElement;
 	let camera: THREE.OrthographicCamera;
@@ -75,8 +75,8 @@
 		renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
 		renderer.setClearColor(0xffffff);
 		renderer.setSize(width, height);
-		const scatterplotDiv = document.getElementById('scatterplot-canvas');
-		if (scatterplotDiv instanceof HTMLElement) scatterplotDiv.appendChild(renderer.domElement);
+		const canvasDiv = document.getElementById(`${viewTitle}-canvas`);
+		if (canvasDiv instanceof HTMLElement) canvasDiv.appendChild(renderer.domElement);
 		raycaster = new THREE.Raycaster();
 		mouse = new THREE.Vector2();
 	}
@@ -261,6 +261,8 @@
 	onDestroy(() => {
 		unsubscribeHovered();
 		unsubscribePrevHovered();
+		unsubscribeBrushing();
+		unsubscribePrevBrushed();
 		window.removeEventListener('mousemove', handleMouseMove);
 		window.removeEventListener('mousedown', handleMouseDown);
 	});

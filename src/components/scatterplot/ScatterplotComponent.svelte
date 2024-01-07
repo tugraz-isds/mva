@@ -80,9 +80,9 @@
 		bind:clientWidth={width}
 		bind:clientHeight={height}
 	>
-		<Axes {width} height={height * 0.9} {xScale} {yScale} {margin} />
+		<Axes {width} height={height * 0.9} {xScale} {yScale} {margin} viewTitle="scatterplot" />
 
-		<Tooltip data={tooltip} view="scatterplot" />
+		<Tooltip data={tooltip} viewTitle="scatterplot" />
 
 		<Points
 			{width}
@@ -94,6 +94,7 @@
 			labelData={dataset.map((row) => row[$labelDimension])}
 			{margin}
 			{setTooltipData}
+			viewTitle="scatterplot"
 		/>
 
 		<div class="w-full scatterplot-canvas" style="height: {height * 0.9}px;" />

@@ -5,14 +5,14 @@
 	import type { TooltipType } from '../../util/types';
 
 	export let data: TooltipType;
-	export let view: string;
+	export let viewTitle: string;
 
 	let tooltip: any; // Tooltip SVG element
 	let tooltipBackground: any; // Background rect element
 	let clipPath: any; // SVG clip path element
 
 	afterUpdate(() => {
-		const svg = select(`#${view}-canvas-axes`);
+		const svg = select(`#${viewTitle}-canvas-axes`);
 
 		svg.select('#tooltip').remove();
 		svg.select('#tooltip-background').remove();
