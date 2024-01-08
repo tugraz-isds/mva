@@ -51,7 +51,7 @@
 			);
 			matrix = dataset.map((d) => numericalDimensions.map((dim) => d[dim]));
 
-			calculatePCA();
+			// calculatePCA();
 		}
 	});
 
