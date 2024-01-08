@@ -84,7 +84,7 @@
 
 		<Tooltip data={tooltip} viewTitle="scatterplot" />
 
-		<Points
+		<!-- <Points
 			{width}
 			height={height * 0.9}
 			{xScale}
@@ -95,7 +95,7 @@
 			{margin}
 			{setTooltipData}
 			viewTitle="scatterplot"
-		/>
+		/> -->
 
 		<div class="w-full scatterplot-canvas" style="height: {height * 0.9}px;" />
 		<div class="flex w-full justify-evenly" style="height: {height * 0.1}px">

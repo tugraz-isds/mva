@@ -102,7 +102,7 @@
 
 		<Tooltip data={tooltip} viewTitle="simmap" />
 
-		<Points
+		<!-- <Points
 			{width}
 			height={height * 0.9}
 			{xScale}
@@ -113,7 +113,7 @@
 			{margin}
 			{setTooltipData}
 			viewTitle="simmap"
-		/>
+		/> -->
 
 		<div class="w-full simmap-canvas" style="height: {height * 0.9}px;" />
 		<div class="flex w-full justify-evenly" style="height: {height * 0.1}px">
