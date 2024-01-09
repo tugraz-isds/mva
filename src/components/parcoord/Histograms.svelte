@@ -13,11 +13,13 @@
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
+	let binGroupsCount = 0;
+
 	let axisHeight: number;
 	$: axisHeight = height - margin.top - margin.bottom;
 
 	export function clearSVG() {
-		const svg = select('#parcoord-canvas-barplots');
+		const svg = select('#parcoord-canvas-histograms');
 		svg.selectAll('.axis-bins').remove();
 		svg.selectAll('.axis-bin').remove();
 	}
@@ -26,8 +28,10 @@
 	export function renderHistograms(initialRender: boolean = false) {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
-		const svg = select('#parcoord-canvas-barplots');
+		const svg = select('#parcoord-canvas-histograms');
 		const step = xScales[1] - xScales[0];
+
+		binGroupsCount = dimensions.length;
 
 		dimensions.forEach((dim, i) => {
 			if (!$parcoordDimData.get(dimensions[i])?.showHistograms) return;
@@ -85,13 +89,13 @@
 	afterUpdate(() => {
 		setTimeout(() => {
 			clearSVG();
-			renderHistograms();
+			renderHistograms(dimensions.length !== binGroupsCount);
 		}, 10);
 	});
 </script>
 
 <svg
-	id="parcoord-canvas-barplots"
+	id="parcoord-canvas-histograms"
 	{width}
 	{height}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2; user-select: none;"

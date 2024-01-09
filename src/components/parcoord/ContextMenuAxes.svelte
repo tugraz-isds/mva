@@ -127,7 +127,7 @@
 		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
 	}
 
-	function handleShow(field: 'labels' | 'histograms' | 'filter') {
+	function handleShow(field: 'labels' | 'histograms' | 'filter' | 'filterValues') {
 		const dimData = $parcoordDimData;
 		const currDimData = dimData.get(dimensions[dimIndex]);
 		if (!currDimData) return;
@@ -139,6 +139,7 @@
 			if (dimIndex === dimensions.length - 1)
 				margin.right = currDimData.showHistograms ? 10 + step / 2 : 40;
 		} else if (field === 'filter') currDimData.showFilter = !currDimData.showFilter;
+		else if (field === 'filterValues') currDimData.showFilterValues = !currDimData.showFilterValues;
 
 		dimData.set(dimensions[dimIndex], currDimData);
 		parcoordDimData.set(dimData);
@@ -221,6 +222,18 @@
 						: 'hidden'}"
 				/>Filter</DropdownItem
 			>
+			{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical'}
+				<DropdownItem
+					defaultClass="{activeClass} flex items-center"
+					style="width: 110px;"
+					on:click={() => handleShow('filterValues')}
+					><Check
+						class="w-3 h-3 ms-2 mr-2"
+						style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showFilterValues
+							? 'visible'
+							: 'hidden'}"
+					/>Filter Values</DropdownItem
+				>{/if}
 		</Dropdown>
 		<DropdownDivider />
 		<DropdownItem

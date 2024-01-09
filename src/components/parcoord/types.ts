@@ -5,6 +5,7 @@ export type DimensionType = {
 	showLabels: boolean;
 	showHistograms: boolean;
 	showFilter: boolean;
+	showFilterValues: boolean;
 };
 
 export type AxesFilterType = {

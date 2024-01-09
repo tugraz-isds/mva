@@ -68,7 +68,8 @@
 					inverted: false,
 					showLabels: true,
 					showHistograms: true,
-					showFilter: true
+					showFilter: true,
+					showFilterValues: true
 				});
 			});
 
@@ -249,7 +250,8 @@
 				inverted: false,
 				showLabels: true,
 				showHistograms: true,
-				showFilter: true
+				showFilter: true,
+				showFilterValues: true
 			});
 		});
 	});

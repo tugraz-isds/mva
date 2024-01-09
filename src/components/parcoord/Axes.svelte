@@ -185,7 +185,10 @@
 						.attr('fill', 'black')
 						.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
 				);
-				if ($dimensionTypeStore.get(dim) === 'numerical') {
+				if (
+					$dimensionTypeStore.get(dim) === 'numerical' &&
+					dimensionsMetadata.get(dim)?.showFilterValues
+				) {
 					const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start);
 					const groupUpper = svg
 						.append('g')
@@ -332,21 +335,23 @@
 							'transform',
 							`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
 						);
-						axisUpperFiltersValues[draggingIndex]?.attr(
-							'transform',
-							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 10})`
-						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
 							`translate(${newX + 8}, ${
 								axesFilters[draggingIndex].pixels.end + margin.top + 8
 							}) rotate(180)`
 						);
+						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
+					}
+					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+						axisUpperFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 10})`
+						);
 						axisLowerFiltersValues[draggingIndex]?.attr(
 							'transform',
 							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.end + margin.top - 4})`
 						);
-						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
 					}
 
 					// Set new index for swapping if needed
@@ -376,27 +381,29 @@
 									axesFilters[draggingIndex].pixels.start + margin.top - 8
 								})`
 							);
-							axisUpperFiltersValues[draggingIndex]?.attr(
-								'transform',
-								`translate(${newX + 8}, ${
-									axesFilters[draggingIndex].pixels.start + margin.top - 10
-								})`
-							);
 							axisLowerFilters[newIndex].attr(
 								'transform',
 								`translate(${xScales[draggingIndex] + 8}, ${
 									axesFilters[draggingIndex].pixels.end + margin.top + 8
 								}) rotate(180)`
 							);
+							axisFilterRectangles[newIndex].attr(
+								'transform',
+								`translate(${xScales[draggingIndex] - 6}, 0)`
+							);
+						}
+						if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+							axisUpperFiltersValues[draggingIndex]?.attr(
+								'transform',
+								`translate(${newX + 8}, ${
+									axesFilters[draggingIndex].pixels.start + margin.top - 10
+								})`
+							);
 							axisLowerFiltersValues[newIndex]?.attr(
 								'transform',
 								`translate(${xScales[draggingIndex] + 8}, ${
 									axesFilters[draggingIndex].pixels.end + margin.top - 4
 								})`
-							);
-							axisFilterRectangles[newIndex].attr(
-								'transform',
-								`translate(${xScales[draggingIndex] - 6}, 0)`
 							);
 						}
 						dimensions = reorderArray(dimensions, draggingIndex, newIndex);
@@ -434,27 +441,29 @@
 								axesFilters[draggingIndex].pixels.start + margin.top - 8
 							})`
 						);
-						axisUpperFiltersValues[draggingIndex]?.attr(
-							'transform',
-							`translate(${xScales[draggingIndex] + 8}, ${
-								axesFilters[draggingIndex].pixels.start + margin.top - 10
-							})`
-						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
 							`translate(${xScales[draggingIndex] + 8}, ${
 								axesFilters[draggingIndex].pixels.end + margin.top + 8
 							}) rotate(180)`
 						);
+						axisFilterRectangles[draggingIndex].attr(
+							'transform',
+							`translate(${xScales[draggingIndex] - 6}, 0)`
+						);
+					}
+					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+						axisUpperFiltersValues[draggingIndex]?.attr(
+							'transform',
+							`translate(${xScales[draggingIndex] + 8}, ${
+								axesFilters[draggingIndex].pixels.start + margin.top - 10
+							})`
+						);
 						axisLowerFiltersValues[draggingIndex]?.attr(
 							'transform',
 							`translate(${xScales[draggingIndex] + 8}, ${
 								axesFilters[draggingIndex].pixels.end + margin.top - 4
 							})`
-						);
-						axisFilterRectangles[draggingIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 6}, 0)`
 						);
 					}
 					draggingIndex = -1;
@@ -671,7 +680,13 @@
 		dimensionsMetadata = new Map(
 			dimensions.map((dim) => [
 				dim,
-				{ inverted: false, showLabels: true, showHistograms: true, showFilter: true }
+				{
+					inverted: false,
+					showLabels: true,
+					showHistograms: true,
+					showFilter: true,
+					showFilterValues: true
+				}
 			])
 		);
 	}
