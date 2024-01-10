@@ -101,9 +101,11 @@
 			let axis;
 			const domainValues = yScales[dim].domain();
 			if (dimensionTypes.get(dim) === 'numerical') {
-				const ticks = yScales[dim].ticks(dimensionsMetadata.get(dim)?.showLabels ? 5 : 0);
-				const allTicks = getAllTicks(domainValues, ticks);
-				axis = axisLeft(yScales[dim]).tickValues(ticks);
+				const ticks = yScales[dim].ticks(5);
+				getAllTicks(domainValues, ticks);
+				axis = axisLeft(yScales[dim]).tickValues(
+					dimensionsMetadata.get(dim)?.showLabels ? ticks : []
+				);
 			} else {
 				axis = axisLeft(yScales[dim]);
 				const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
@@ -121,8 +123,6 @@
 					.attr('class', 'y-axis')
 					.attr('transform', `translate(${xScales[i]}, ${margin.top})`)
 					.call(axis)
-					.selectAll('text')
-					.style('font-size', '10px')
 			);
 		});
 
