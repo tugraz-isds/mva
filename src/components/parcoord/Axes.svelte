@@ -3,7 +3,7 @@
 	import { axisLeft, select, drag } from 'd3';
 	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { dimensionTypeStore } from '../../stores/dataset';
-	import { arrowDown, arrowUp } from './ArrowIcons';
+	import { invertArrowDown, invertArrowUp, filterArrow } from './ArrowIcons';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
@@ -150,7 +150,7 @@
 				svg
 					.append('g')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(dimensionsMetadata.get(dim)?.inverted ? arrowDown : arrowUp)
+					.html(dimensionsMetadata.get(dim)?.inverted ? invertArrowDown : invertArrowUp)
 					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
 					.style(
 						'cursor',
@@ -164,26 +164,16 @@
 			);
 
 			if (dimensionsMetadata.get(dim)?.showFilter) {
-				// Create axis upper filter
-				const trianglePoints = [
-					{ x: 0, y: 0 },
-					{ x: 8, y: 8 },
-					{ x: 16, y: 0 }
-				];
 				axisUpperFilters.push(
 					svg
-						.append('path')
+						.append('g')
 						.attr('class', 'axis-filter-upper')
-						.attr(
-							'd',
-							`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
-						)
+						.html(filterArrow)
 						.attr(
 							'transform',
-							`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
+							`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.start + margin.top - 12})`
 						)
-						.attr('fill', 'black')
-						.style('cursor', `url("arrow-filter-down.svg") 9 9, auto`)
+						.style('cursor', `url("arrow-filter-down-hover.svg") 9 9, auto`)
 				);
 				if (
 					$dimensionTypeStore.get(dim) === 'numerical' &&
@@ -247,20 +237,16 @@
 				// Create axis lower filter
 				axisLowerFilters.push(
 					svg
-						.append('path')
+						.append('g')
 						.attr('class', 'axis-filter-lower')
-						.attr(
-							'd',
-							`M${trianglePoints[0].x},${trianglePoints[0].y} L${trianglePoints[1].x},${trianglePoints[1].y} L${trianglePoints[2].x},${trianglePoints[2].y} Z`
-						)
+						.html(filterArrow)
 						.attr(
 							'transform',
-							`translate(${xScales[i] + 8}, ${
-								axesFilters[i].pixels.end + margin.top + 8
+							`translate(${xScales[i] + 6}, ${
+								axesFilters[i].pixels.end + margin.top + 12
 							}) rotate(180)`
 						)
-						.attr('fill', 'black')
-						.style('cursor', `url("arrow-filter-up.svg") 9 9, auto`)
+						.style('cursor', `url("arrow-filter-up-hover.svg") 9 9, auto`)
 				);
 
 				// Create filter rectangles SVG
@@ -333,12 +319,12 @@
 					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
 						axisUpperFilters[draggingIndex].attr(
 							'transform',
-							`translate(${newX - 8}, ${axesFilters[draggingIndex].pixels.start + margin.top - 8})`
+							`translate(${newX - 6}, ${axesFilters[draggingIndex].pixels.start + margin.top - 12})`
 						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
-							`translate(${newX + 8}, ${
-								axesFilters[draggingIndex].pixels.end + margin.top + 8
+							`translate(${newX + 6}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top + 12
 							}) rotate(180)`
 						);
 						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
@@ -377,14 +363,14 @@
 						if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
 							axisUpperFilters[newIndex].attr(
 								'transform',
-								`translate(${xScales[draggingIndex] - 8}, ${
-									axesFilters[draggingIndex].pixels.start + margin.top - 8
+								`translate(${xScales[draggingIndex] - 6}, ${
+									axesFilters[draggingIndex].pixels.start + margin.top - 12
 								})`
 							);
 							axisLowerFilters[newIndex].attr(
 								'transform',
-								`translate(${xScales[draggingIndex] + 8}, ${
-									axesFilters[draggingIndex].pixels.end + margin.top + 8
+								`translate(${xScales[draggingIndex] + 6}, ${
+									axesFilters[draggingIndex].pixels.end + margin.top + 12
 								}) rotate(180)`
 							);
 							axisFilterRectangles[newIndex].attr(
@@ -437,14 +423,14 @@
 					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
 						axisUpperFilters[draggingIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex] - 8}, ${
-								axesFilters[draggingIndex].pixels.start + margin.top - 8
+							`translate(${xScales[draggingIndex] - 6}, ${
+								axesFilters[draggingIndex].pixels.start + margin.top - 12
 							})`
 						);
 						axisLowerFilters[draggingIndex].attr(
 							'transform',
-							`translate(${xScales[draggingIndex] + 8}, ${
-								axesFilters[draggingIndex].pixels.end + margin.top + 8
+							`translate(${xScales[draggingIndex] + 6}, ${
+								axesFilters[draggingIndex].pixels.end + margin.top + 12
 							}) rotate(180)`
 						);
 						axisFilterRectangles[draggingIndex].attr(
@@ -489,7 +475,7 @@
 					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
-					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 8}, ${newY})`); // Move upper filter
+					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY - 4})`); // Move upper filter
 					axisUpperFiltersValues[idx]
 						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 2})`)
 						.style('display', axesFilters[idx].percentages.start <= 0 ? 'none' : 'block');
@@ -521,7 +507,7 @@
 
 					axisLowerFilters[idx].attr(
 						'transform',
-						`translate(${xScales[idx] + 8}, ${newY + 8}) rotate(180)`
+						`translate(${xScales[idx] + 6}, ${newY + 12}) rotate(180)`
 					); // Move lower filter
 					axisLowerFiltersValues[idx]
 						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 4})`)
@@ -578,7 +564,7 @@
 					// Update axis upper and lower filters
 					axisUpperFilters[i].attr(
 						'transform',
-						`translate(${xScales[i] - 8}, ${axesFilters[i].pixels.start + margin.top - 8})`
+						`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.start + margin.top - 12})`
 					);
 					axisUpperFiltersValues[i]
 						?.attr(
@@ -591,8 +577,8 @@
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.start));
 					axisLowerFilters[i].attr(
 						'transform',
-						`translate(${xScales[i] + 8}, ${
-							axesFilters[i].pixels.end + margin.top + 8
+						`translate(${xScales[i] + 6}, ${
+							axesFilters[i].pixels.end + margin.top + 12
 						}) rotate(180)`
 					);
 					axisLowerFiltersValues[i]
