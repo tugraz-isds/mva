@@ -15,10 +15,6 @@
 		accept: '.csv' //'.csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
 	};
 
-	function closeModal() {
-		isOpen = false;
-	}
-
 	// Imports CSV files, parses and stores data into Svelte store
 	async function importDataset() {
 		if (files && files.length > 0) {
@@ -29,8 +25,8 @@
 			let dataset: DSVParsedArray<any> = csvParse(text, autoType);
 
 			const dimensions = Object.keys(dataset[0]);
-			const dimensionTypeMap = new Map<string, string>(new Map());
-			dimensions.forEach((dim: string, i: number) => {
+			const dimensionTypeMap = new Map<string, 'numerical' | 'categorical'>(new Map());
+			dimensions.forEach((dim: string) => {
 				if (isNumber(dataset[0][dim])) dimensionTypeMap.set(dim, 'numerical');
 				else dimensionTypeMap.set(dim, 'categorical');
 			});
@@ -49,7 +45,7 @@
 			localStorage.setItem('labelDimension', labelDim);
 
 			validUpload = true;
-			closeModal();
+			isOpen = false;
 		} else validUpload = false;
 	}
 
@@ -61,7 +57,7 @@
 	}
 </script>
 
-<Modal bind:open={isOpen} on:closed={closeModal} size="xs" class="w-full">
+<Modal bind:open={isOpen} size="xs" class="w-full">
 	<form class="flex flex-col space-y-6" action="#">
 		<h3 class="mb-4 text-xl font-medium text-gray-900">Import Dataset</h3>
 		<div class="mb-6 flex items-center">

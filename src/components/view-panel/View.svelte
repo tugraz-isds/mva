@@ -4,6 +4,7 @@
 	import { openWindow } from 'svelte-window-system';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
+	import HistogramSettings from '../parcoord/HistogramSettings.svelte';
 	import type { View } from './ViewType';
 
 	export let otherViews: View[];
@@ -54,6 +55,11 @@
 <div class="w-full h-full p-1 {showView ? 'block' : 'hidden'}">
 	<div class="flex flex-row justify-between" style="height: 18px; font-size: 14px;">
 		<span>{currView.title}</span>
+		<div>
+			{#if currView.id === 'parcoord'}
+				<HistogramSettings />
+			{/if}
+		</div>
 		<div id="{currView.id}-expand-container">
 			<div class="flex flex-row gap-1">
 				<ArrowsRightLeft

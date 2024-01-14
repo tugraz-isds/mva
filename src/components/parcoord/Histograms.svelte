@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
-	import { select, group, bin } from 'd3';
+	import { select, group, bin, range } from 'd3';
 	import { dimensionTypeStore } from '../../stores/dataset';
-	import { parcoordDimData } from '../../stores/parcoord';
+	import { parcoordDimData, parcoordHistogramData } from '../../stores/parcoord';
 	import type { DSVParsedArray } from 'd3';
 
 	export let dataset: DSVParsedArray<any>;
@@ -62,7 +62,10 @@
 				binGroup
 					.append('rect')
 					.attr('class', 'axis-bin axis-bins-0-bin')
-					.attr('width', (bin.length / longestBinHeight) * (step / 2))
+					.attr(
+						'width',
+						(bin.length / longestBinHeight) * ((step - 16) * $parcoordHistogramData.scale)
+					)
 					.attr('height', binWidth)
 					.attr(
 						'transform',
@@ -73,8 +76,8 @@
 					)
 					.attr('fill', 'grey')
 					.attr('stroke', 'black')
-					.attr('fill-opacity', '0.2')
-					.attr('stroke-opacity', '0.3');
+					.attr('fill-opacity', $parcoordHistogramData.fillOpacity)
+					.attr('stroke-opacity', $parcoordHistogramData.strokeOpacity);
 			});
 		});
 	}

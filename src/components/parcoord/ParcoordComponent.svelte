@@ -2,7 +2,11 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
-	import { parcoordCustomAxisRanges, parcoordDimData } from '../../stores/parcoord';
+	import {
+		parcoordCustomAxisRanges,
+		parcoordDimData,
+		parcoordHistogramData
+	} from '../../stores/parcoord';
 	import { scaleLinear, scaleBand, extent } from 'd3';
 	import { reorderArray } from '../../util/util';
 	import xmlFormat from 'xml-formatter';
@@ -13,7 +17,7 @@
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
-	import type { TooltipAxisTitleType, CustomRangeType } from './types';
+	import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
 	import type { MarginType, TooltipType } from '../../util/types';
 
 	let isBrowser = false; // Flag to see if we are in browser
@@ -75,6 +79,8 @@
 
 			brushedArray.set(new Set<number>());
 
+			setMarginRight($parcoordHistogramData.visible);
+
 			if (parcoordDiv) parcoordDiv.scrollLeft = 0;
 		}
 	});
@@ -82,6 +88,12 @@
 	let dimensionTypes: Map<string, string>;
 	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
 		dimensionTypes = value;
+	});
+
+	let histogramsVisible: boolean;
+	const unsubscribeHistograms = parcoordHistogramData.subscribe((value: HistogramsType) => {
+		histogramsVisible = value.visible;
+		setMarginRight(histogramsVisible);
 	});
 
 	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
@@ -191,6 +203,12 @@
 		tooltipAxisTitle = data;
 	}
 
+	function setMarginRight(histogramsVisible: boolean) {
+		const step = xScales[1] - xScales[0];
+		if (!step) return;
+		margin.right = histogramsVisible ? 10 + (step - 16) * $parcoordHistogramData.scale : 40;
+	}
+
 	export function saveSVG() {
 		let linesStringSvg = linesComponent.saveSVG();
 		let axesStringSvg = axesComponent.saveSVG();
@@ -254,12 +272,20 @@
 				showFilterValues: true
 			});
 		});
+
+		parcoordHistogramData.set({
+			visible: true,
+			fillOpacity: 0.2,
+			strokeOpacity: 0.3,
+			scale: 0.5
+		});
 	});
 
 	onDestroy(() => {
 		unsubscribeDataset();
 		unsubscribeDimTypes();
 		unsubscribeCustomRanges();
+		unsubscribeHistograms();
 		isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
 	});
 </script>
@@ -290,7 +316,9 @@
 			bind:yScales
 		/>
 
-		<Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
+		{#if histogramsVisible}
+			<Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
+		{/if}
 
 		<Tooltip data={tooltip} viewTitle="parcoord" />
 		<TooltipAxisTitle {width} data={tooltipAxisTitle} />

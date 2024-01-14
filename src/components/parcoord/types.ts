@@ -22,13 +22,20 @@ export type AxesFilterType = {
 };
 
 export type TooltipAxisTitleType = {
-	visible: boolean; // Is tooltip visible
-	xPos: number; // X position
-	yPos: number; // Y position
-	text: string; // Text rows as array
+	visible: boolean;
+	xPos: number;
+	yPos: number;
+	text: string;
 };
 
 export type CustomRangeType = {
 	start: number;
 	end: number;
 } | null;
+
+export type HistogramsType = {
+	visible: boolean;
+	fillOpacity: number;
+	strokeOpacity: number;
+	scale: number;
+};
