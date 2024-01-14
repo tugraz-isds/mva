@@ -73,7 +73,8 @@
 					showLabels: true,
 					showHistograms: true,
 					showFilter: true,
-					showFilterValues: true
+					showFilterValues: true,
+					binNo: null
 				});
 			});
 
@@ -269,7 +270,8 @@
 				showLabels: true,
 				showHistograms: true,
 				showFilter: true,
-				showFilterValues: true
+				showFilterValues: true,
+				binNo: null
 			});
 		});
 

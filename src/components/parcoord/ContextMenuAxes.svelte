@@ -1,20 +1,11 @@
 <script lang="ts">
-	import {
-		ChevronRight,
-		Dropdown,
-		DropdownItem,
-		DropdownDivider,
-		Button,
-		Modal,
-		Label,
-		Input,
-		Helper
-	} from 'flowbite-svelte';
+	import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { Check } from 'svelte-heros-v2';
 	import { dimensionTypeStore } from '../../stores/dataset';
 	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
-	import { scaleLinear, extent } from 'd3';
+	import SetRangeModal from './SetRangeModal.svelte';
+	import SetBinNoModal from './SetBinNoModal.svelte';
 	import type Axes from './Axes.svelte';
 	import type { DSVParsedArray } from 'd3';
 	import type { MarginType } from '../../util/types';
@@ -26,13 +17,9 @@
 	export let margin: MarginType;
 	export let dataset: DSVParsedArray<any>;
 
-	let rangeStart: number;
-	let rangeEnd: number;
-
 	let debounceTimeout: number;
 	let isSetRangeModalOpen: boolean = false;
-	let validUpload: boolean = true; // If false show error message
-	let errorMessage: string = '';
+	let isSetBinNoModalOpen: boolean = false;
 	let isContextMenuShown = false; // Flag if context menu is visible
 	let menuStyle = ''; // Menu style string
 	let dimIndex: number; // Dataset dimension index
@@ -43,14 +30,6 @@
 		$parcoordIsInteractable = false;
 		isContextMenuShown = true;
 		dimIndex = index;
-		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
-		rangeStart = isAxisInverted
-			? yScales[dimensions[dimIndex]].domain()[1]
-			: yScales[dimensions[dimIndex]].domain()[0];
-		rangeEnd = isAxisInverted
-			? yScales[dimensions[dimIndex]].domain()[0]
-			: yScales[dimensions[dimIndex]].domain()[1];
-
 		const { clientX, clientY } = event;
 		const clientXNew = clientX + 150 < window.innerWidth ? clientX : clientX - 150;
 		menuStyle = `left: ${clientXNew}px; top: ${clientY}px;`;
@@ -63,53 +42,16 @@
 
 	function openSetRangeModal() {
 		hideContextMenu();
+		isSetRangeModalOpen = false;
 		isSetRangeModalOpen = true;
 		$parcoordIsInteractable = false;
 	}
 
-	function closeSetRangeModal() {
-		isSetRangeModalOpen = false;
-		$parcoordIsInteractable = true;
-	}
-
-	function setAxisRange() {
-		const isAxisInverted = $parcoordDimData.get(dimensions[dimIndex])?.inverted;
-		const domain = extent(dataset, (d: any) => +d[dimensions[dimIndex]]) as [number, number];
-		if (rangeEnd < domain[1]) {
-			validUpload = false;
-			errorMessage = `Highest value of dimension is ${domain[1]}. You cannot set the range lower than that.`;
-			return;
-		}
-		if (rangeStart > domain[0]) {
-			validUpload = false;
-			errorMessage = `Lowest value of dimension is ${domain[0]}. You cannot set the range higher than that.`;
-			return;
-		}
-
-		validUpload = true;
-		const customRanges = $parcoordCustomAxisRanges;
-		customRanges.set(dimensions[dimIndex], {
-			start: isAxisInverted ? rangeEnd : rangeStart,
-			end: isAxisInverted ? rangeStart : rangeEnd
-		});
-		closeSetRangeModal();
-
-		// Calculate new filter values
-		const filtersTemp = $filtersArray[dimIndex].percentages;
-		const originalScale = scaleLinear()
-			.domain(yScales[dimensions[dimIndex]].domain())
-			.range([0, 1]);
-		const newScale = scaleLinear()
-			.domain(isAxisInverted ? [rangeEnd, rangeStart] : [rangeStart, rangeEnd])
-			.range([0, 1]);
-		const originalStart = originalScale.invert(1 - filtersTemp.start);
-		const originalEnd = originalScale.invert(1 - filtersTemp.end);
-		$filtersArray[dimIndex].percentages = {
-			start: 1 - newScale(originalStart),
-			end: 1 - newScale(originalEnd)
-		};
-
-		$parcoordCustomAxisRanges = customRanges;
+	function openSetBinNoModal() {
+		hideContextMenu();
+		isSetBinNoModalOpen = false;
+		isSetBinNoModalOpen = true;
+		$parcoordIsInteractable = false;
 	}
 
 	function resetAxisRange() {
@@ -185,6 +127,10 @@
 			>
 		{/if}
 		<DropdownDivider />
+		<DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
+			>Set Bin Num...</DropdownItem
+		>
+		<DropdownDivider />
 		<DropdownItem defaultClass="{activeClass} flex items-center justify-between">
 			Show<ChevronRight class="w-3 h-3 ms-2" />
 		</DropdownItem>
@@ -243,25 +189,15 @@
 	</div>
 {/if}
 
-<Modal bind:open={isSetRangeModalOpen} on:closed={closeSetRangeModal} size="xs" class="w-full">
-	<form class="flex flex-col space-y-6" action="#">
-		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Axis Range</h3>
-		<div class="mb-6 flex items-center">
-			<div class="flex flex-row items-center">
-				<Label for="range-min" class="mr-2">Start:</Label>
-				<Input bind:value={rangeStart} id="range-min" defaultClass="block w-1/2" size="sm" />
-			</div>
-			<div class="flex flex-row items-center">
-				<Label for="range-max" class="mr-2">End:</Label>
-				<Input bind:value={rangeEnd} id="range-max" defaultClass="block w-1/2" size="sm" />
-			</div>
-		</div>
-		{#if !validUpload}
-			<Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
-		{/if}
-		<Button type="submit" class="w-full" on:click={() => setAxisRange()}>Set Range</Button>
-	</form>
-</Modal>
+<SetRangeModal
+	isOpen={isSetRangeModalOpen}
+	dimension={dimensions[dimIndex]}
+	{yScales}
+	{dataset}
+	{dimIndex}
+/>
+
+<SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
 
 <style>
 	.context-menu {

@@ -24,9 +24,17 @@
 		svg.selectAll('.axis-bin').remove();
 	}
 
+	function generateEvenlySpacedNumbers(min: number, max: number, n: number, isInverted: boolean) {
+		return isInverted
+			? range(0, n).map((i) => max + (i / n) * (min - max))
+			: range(0, n).map((i) => min + (i / n) * (max - min));
+	}
+
 	// Draw axes elements
 	export function renderHistograms(initialRender: boolean = false) {
+		console.log('Rendering histograms');
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
+		console.log('Rendering histograms');
 
 		const svg = select('#parcoord-canvas-histograms');
 		const step = xScales[1] - xScales[0];
@@ -35,21 +43,39 @@
 
 		dimensions.forEach((dim, i) => {
 			if (!$parcoordDimData.get(dimensions[i])?.showHistograms) return;
+			const dimData = $parcoordDimData;
+			const currDimData = $parcoordDimData.get(dim);
 
 			const binGroup = svg.append('g').attr('class', `axis-bins axis-bins-${i}`);
-			const bins =
-				$dimensionTypeStore.get(dim) === 'numerical'
-					? bin()(dataset.map((row) => row[dim]))
-					: Array.from(
-							group(dataset, (d) => d[dim]),
-							([_, values]) => values
-					  );
-			const binWidth = axisHeight / bins.length;
 
+			let bins: any[] = [];
+			if ($dimensionTypeStore.get(dim) === 'numerical') {
+				if (currDimData?.binNo === null) {
+					bins = bin()(dataset.map((row) => row[dim]));
+					currDimData.binNo = bins.length;
+					dimData.set(dim, currDimData);
+					parcoordDimData.set(dimData);
+				} else {
+					const domain = yScales[dim].domain();
+					bins = bin().thresholds(
+						generateEvenlySpacedNumbers(
+							domain[0],
+							domain[1],
+							currDimData?.binNo as number,
+							currDimData?.inverted as boolean
+						)
+					)(dataset.map((row) => row[dim]));
+				}
+			} else {
+				Array.from(
+					group(dataset, (d) => d[dim]),
+					([_, values]) => values
+				);
+			}
+
+			const binWidth = axisHeight / bins.length;
 			// If bin has width less than 10 hide histogram by default
 			if (initialRender && binWidth < 10) {
-				const dimData = $parcoordDimData;
-				const currDimData = dimData.get(dim);
 				if (!currDimData) return;
 				currDimData.showHistograms = false;
 				dimData.set(dim, currDimData);

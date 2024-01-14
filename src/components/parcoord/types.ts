@@ -6,6 +6,7 @@ export type DimensionType = {
 	showHistograms: boolean;
 	showFilter: boolean;
 	showFilterValues: boolean;
+	binNo: number | null;
 };
 
 export type AxesFilterType = {
