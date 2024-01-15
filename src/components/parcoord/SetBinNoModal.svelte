@@ -1,23 +1,26 @@
 <script lang="ts">
 	import { Button, Modal, Label, NumberInput } from 'flowbite-svelte';
-	import { parcoordDimData, parcoordIsInteractable } from '../../stores/parcoord';
-	import type { DimensionType } from './types';
+	import { parcoordDimMetadata, parcoordIsInteractable } from '../../stores/parcoord';
+	import type { DimensionMetadataType } from './types';
 
 	export let isOpen: boolean;
 	export let dimension: string;
 
-	let currDimData: DimensionType;
+	let dimData: Map<string, DimensionMetadataType>;
+	let currDimData: DimensionMetadataType;
 	let binNo: number = 0;
 
 	function loadData() {
-		currDimData = $parcoordDimData.get(dimension) as DimensionType;
+		dimData = $parcoordDimMetadata;
+		currDimData = dimData.get(dimension) as DimensionMetadataType;
 		binNo = currDimData.binNo ?? 0;
 	}
 
 	function saveData() {
 		currDimData.binNo = binNo;
-		$parcoordDimData.set(dimension, currDimData);
-		console.log($parcoordDimData.get(dimension));
+		dimData.set(dimension, currDimData);
+		parcoordDimMetadata.set(dimData);
+		console.log('Setting hist data');
 		isOpen = false;
 	}
 

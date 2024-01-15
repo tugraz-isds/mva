@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import { select, group, bin, range } from 'd3';
-	import { dimensionTypeStore } from '../../stores/dataset';
-	import { parcoordDimData, parcoordHistogramData } from '../../stores/parcoord';
+	import { dimensionDataStore } from '../../stores/dataset';
+	import { parcoordDimMetadata, parcoordHistogramData } from '../../stores/parcoord';
 	import type { DSVParsedArray } from 'd3';
 
 	export let dataset: DSVParsedArray<any>;
@@ -32,29 +32,27 @@
 
 	// Draw axes elements
 	export function renderHistograms(initialRender: boolean = false) {
-		console.log('Rendering histograms');
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
-		console.log('Rendering histograms');
 
 		const svg = select('#parcoord-canvas-histograms');
 		const step = xScales[1] - xScales[0];
 
 		binGroupsCount = dimensions.length;
 
+		const dimData = $parcoordDimMetadata;
 		dimensions.forEach((dim, i) => {
-			if (!$parcoordDimData.get(dimensions[i])?.showHistograms) return;
-			const dimData = $parcoordDimData;
-			const currDimData = $parcoordDimData.get(dim);
+			if (!$parcoordDimMetadata.get(dimensions[i])?.showHistograms) return;
+			const currDimData = $parcoordDimMetadata.get(dim);
 
 			const binGroup = svg.append('g').attr('class', `axis-bins axis-bins-${i}`);
 
 			let bins: any[] = [];
-			if ($dimensionTypeStore.get(dim) === 'numerical') {
+			if ($dimensionDataStore.get(dim)?.type === 'numerical') {
 				if (currDimData?.binNo === null) {
 					bins = bin()(dataset.map((row) => row[dim]));
 					currDimData.binNo = bins.length;
 					dimData.set(dim, currDimData);
-					parcoordDimData.set(dimData);
+					parcoordDimMetadata.set(dimData);
 				} else {
 					const domain = yScales[dim].domain();
 					bins = bin().thresholds(
@@ -67,7 +65,7 @@
 					)(dataset.map((row) => row[dim]));
 				}
 			} else {
-				Array.from(
+				bins = Array.from(
 					group(dataset, (d) => d[dim]),
 					([_, values]) => values
 				);
@@ -79,7 +77,7 @@
 				if (!currDimData) return;
 				currDimData.showHistograms = false;
 				dimData.set(dim, currDimData);
-				parcoordDimData.set(dimData);
+				parcoordDimMetadata.set(dimData);
 				clearSVG();
 				return;
 			}
@@ -97,7 +95,7 @@
 						'transform',
 						`translate(${xScales[i] + 8}, ${
 							margin.top +
-							binWidth * ($parcoordDimData.get(dim)?.inverted ? j : bins.length - j - 1)
+							binWidth * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
 						})`
 					)
 					.attr('fill', 'grey')

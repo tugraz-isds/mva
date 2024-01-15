@@ -8,7 +8,7 @@
 		previouslyHoveredArray,
 		previouslyBrushedArray
 	} from '../../stores/brushing';
-	import { labelDimension, dimensionTypeStore } from '../../stores/dataset';
+	import { labelDimension, dimensionDataStore } from '../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
 	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 	import {
@@ -66,11 +66,6 @@
 		}
 	});
 
-	let dimensionTypes: Map<string, string>;
-	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
-		dimensionTypes = value;
-	});
-
 	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
 		removeHoveredLines();
 		hoveredLinesIndices = value;
@@ -121,7 +116,8 @@
 			const dim = dimensions[i];
 
 			let yPos;
-			if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
+			if ($dimensionDataStore.get(dim)?.type === 'numerical')
+				yPos = yScales[dim](dataRow[dim as any]);
 			else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
 
 			linePoints.push(
@@ -342,11 +338,11 @@
 				const originalYValue = line[dim as any];
 				const scaledYValue = yScales[dim](originalYValue);
 				const filterValueStart =
-					dimensionTypes.get(dim) === 'numerical'
+					$dimensionDataStore.get(dim)?.type === 'numerical'
 						? axesFilters[j].pixels.start
 						: axesFilters[j].pixels.start - yScales[dim].step() / 2;
 				const filterValueEnd =
-					dimensionTypes.get(dim) === 'numerical'
+					$dimensionDataStore.get(dim)?.type === 'numerical'
 						? axesFilters[j].pixels.end
 						: axesFilters[j].pixels.end - yScales[dim].step() / 2;
 				if (scaledYValue < filterValueStart || scaledYValue > filterValueEnd) {
@@ -438,7 +434,8 @@
 				const dim = dimensions[i];
 
 				let yPos;
-				if (dimensionTypes.get(dim) === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
+				if ($dimensionDataStore.get(dim)?.type === 'numerical')
+					yPos = yScales[dim](dataRow[dim as any]);
 				else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
 
 				linePoints.push([
@@ -497,7 +494,6 @@
 	onDestroy(() => {
 		window.removeEventListener('mousemove', handleMouseMove);
 		unsubscribeFilters();
-		unsubscribeDimTypes();
 		unsubscribeBrushing();
 		unsubscribeHovered();
 		unsubscribePrevHovered();

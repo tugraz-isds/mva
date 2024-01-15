@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag, text } from 'd3';
-	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
-	import { dimensionTypeStore } from '../../stores/dataset';
+	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
+	import { dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
-	import type { AxesFilterType, DimensionType } from './types';
-	import type { MarginType } from '../../util/types';
+	import type { AxesFilterType, DimensionMetadataType } from './types';
+	import type { DimensionDataType, MarginType } from '../../util/types';
 
 	export let width: number; // Container width
 	export let contextMenuAxes: ContextMenuAxes;
@@ -42,20 +42,17 @@
 
 	$: axisHeight = height - margin.top - margin.bottom;
 
-	let dimensionTypes: Map<string, string>;
-	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
-		dimensionTypes = value;
-	});
-
-	let dimensionsMetadata: Map<string, DimensionType>;
-	const unsubscribeInvertedAxes = parcoordDimData.subscribe((value: Map<string, DimensionType>) => {
-		if (axesFilters.length > 0) {
-			dimensionsMetadata = value;
-			clearSVG();
-			renderAxes();
-			calculateMarginLeft();
+	let dimensionsMetadata: Map<string, DimensionMetadataType>;
+	const unsubscribeDimData = parcoordDimMetadata.subscribe(
+		(value: Map<string, DimensionMetadataType>) => {
+			if (axesFilters.length > 0) {
+				dimensionsMetadata = value;
+				clearSVG();
+				renderAxes();
+				calculateMarginLeft();
+			}
 		}
-	});
+	);
 
 	// Remove all axes elements and drag handlers
 	export function clearSVG() {
@@ -104,7 +101,7 @@
 			// Create axis objects
 			let axis;
 			const domainValues = yScales[dim].domain();
-			if (dimensionTypes.get(dim) === 'numerical') {
+			if ($dimensionDataStore.get(dim)?.type === 'numerical') {
 				const ticks = yScales[dim].ticks(5);
 				getAllTicks(domainValues, ticks);
 				axis = axisLeft(yScales[dim]).tickValues(
@@ -180,7 +177,7 @@
 						.style('cursor', `url("arrow-filter-down-hover.svg") 9 9, auto`)
 				);
 				if (
-					$dimensionTypeStore.get(dim) === 'numerical' &&
+					$dimensionDataStore.get(dim)?.type === 'numerical' &&
 					dimensionsMetadata.get(dim)?.showFilterValues
 				) {
 					const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start);
@@ -610,7 +607,7 @@
 		axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
 		axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
 
-		parcoordDimData.set(dimensionsMetadata);
+		parcoordDimMetadata.set(dimensionsMetadata);
 		filtersArray.set(axesFilters);
 	}
 
@@ -720,8 +717,7 @@
 	});
 
 	onDestroy(() => {
-		unsubscribeDimTypes();
-		unsubscribeInvertedAxes();
+		unsubscribeDimData();
 	});
 </script>
 

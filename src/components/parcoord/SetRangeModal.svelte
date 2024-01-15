@@ -2,12 +2,12 @@
 	import { Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
 	import {
 		parcoordCustomAxisRanges,
-		parcoordDimData,
+		parcoordDimMetadata,
 		parcoordIsInteractable,
 		filtersArray
 	} from '../../stores/parcoord';
-	import { scaleLinear, extent } from 'd3';
-	import type { DSVParsedArray } from 'd3';
+	import { dimensionDataStore } from '../../stores/dataset';
+	import { scaleLinear, type DSVParsedArray } from 'd3';
 
 	export let isOpen: boolean;
 	export let dimension: string;
@@ -21,22 +21,23 @@
 	let errorMessage: string = '';
 
 	function loadData() {
-		const isAxisInverted = $parcoordDimData.get(dimension)?.inverted;
+		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
 		rangeStart = isAxisInverted ? yScales[dimension].domain()[1] : yScales[dimension].domain()[0];
 		rangeEnd = isAxisInverted ? yScales[dimension].domain()[0] : yScales[dimension].domain()[1];
 	}
 
 	function setAxisRange() {
-		const isAxisInverted = $parcoordDimData.get(dimension)?.inverted;
-		const domain = extent(dataset, (d: any) => +d[dimension]) as [number, number];
-		if (rangeEnd < domain[1]) {
+		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
+		const min: number = $dimensionDataStore.get(dimension)?.min as number;
+		const max: number = $dimensionDataStore.get(dimension)?.max as number;
+		if (rangeEnd < min) {
 			validUpload = false;
-			errorMessage = `Highest value of dimension is ${domain[1]}. You cannot set the range lower than that.`;
+			errorMessage = `Highest value of dimension is ${min}. You cannot set the range lower than that.`;
 			return;
 		}
-		if (rangeStart > domain[0]) {
+		if (rangeStart > max) {
 			validUpload = false;
-			errorMessage = `Lowest value of dimension is ${domain[0]}. You cannot set the range higher than that.`;
+			errorMessage = `Lowest value of dimension is ${max}. You cannot set the range higher than that.`;
 			return;
 		}
 

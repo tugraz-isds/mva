@@ -3,7 +3,7 @@
 	import { PCA } from 'ml-pca';
 	import { scaleLinear } from 'd3';
 	import { Select } from 'flowbite-svelte';
-	import { datasetStore, dimensionTypeStore, labelDimension } from '../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import Axes from '../scatterplot/Axes.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import Points from '../scatterplot/Points.svelte';
@@ -47,7 +47,7 @@
 		if (dataset?.length > 0) {
 			dimensions = Object.keys(dataset[0]);
 			numericalDimensions = dimensions.filter(
-				(dim) => $dimensionTypeStore.get(dim) === 'numerical'
+				(dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
 			);
 			matrix = dataset.map((d) => numericalDimensions.map((dim) => d[dim]));
 

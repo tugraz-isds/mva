@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { datasetStore, dimensionTypeStore } from '../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
 	import {
 		parcoordCustomAxisRanges,
-		parcoordDimData,
+		parcoordDimMetadata,
 		parcoordHistogramData
 	} from '../../stores/parcoord';
 	import { scaleLinear, scaleBand, extent } from 'd3';
@@ -68,7 +68,7 @@
 
 			dimensions.forEach((dim) => {
 				customRanges && customRanges.set(dim, null);
-				$parcoordDimData.set(dim, {
+				$parcoordDimMetadata.set(dim, {
 					inverted: false,
 					showLabels: true,
 					showHistograms: true,
@@ -84,11 +84,6 @@
 
 			if (parcoordDiv) parcoordDiv.scrollLeft = 0;
 		}
-	});
-
-	let dimensionTypes: Map<string, string>;
-	const unsubscribeDimTypes = dimensionTypeStore.subscribe((value: Map<string, string>) => {
-		dimensionTypes = value;
 	});
 
 	let histogramsVisible: boolean;
@@ -126,13 +121,16 @@
 	function calculateYScales(init: boolean = false) {
 		if (height > 0 && dataset?.length > 0) {
 			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
-				if (dimensionTypes.get(dim) === 'numerical') {
+				if ($dimensionDataStore.get(dim)?.type === 'numerical') {
 					if (customRanges.get(dim) === null) {
-						const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
 						acc[dim] = scaleLinear()
-							.domain(dimExtent)
+							.domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [
+								number,
+								number
+							])
 							.range([height - margin.top - margin.bottom, 0]);
-						if ($parcoordDimData.get(dim)?.inverted) acc[dim].domain(acc[dim].domain().reverse());
+						if ($parcoordDimMetadata.get(dim)?.inverted)
+							acc[dim].domain(acc[dim].domain().reverse());
 					} else {
 						acc[dim] = scaleLinear()
 							.domain([
@@ -161,7 +159,7 @@
 		);
 
 		const step = xScales[1] - xScales[0];
-		if (step && $parcoordDimData.get(dimensions[dimensions.length - 1])?.showHistograms)
+		if (step && $parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms)
 			margin.right = 10 + step / 2;
 	}
 
@@ -265,7 +263,7 @@
 
 		dimensions.forEach((dim) => {
 			customRanges.set(dim, null);
-			$parcoordDimData.set(dim, {
+			$parcoordDimMetadata.set(dim, {
 				inverted: false,
 				showLabels: true,
 				showHistograms: true,
@@ -285,7 +283,6 @@
 
 	onDestroy(() => {
 		unsubscribeDataset();
-		unsubscribeDimTypes();
 		unsubscribeCustomRanges();
 		unsubscribeHistograms();
 		isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);

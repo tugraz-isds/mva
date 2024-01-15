@@ -1,6 +1,6 @@
 import type { ColorType } from '../../util/types';
 
-export type DimensionType = {
+export type DimensionMetadataType = {
 	inverted: boolean;
 	showLabels: boolean;
 	showHistograms: boolean;

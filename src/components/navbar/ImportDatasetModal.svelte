@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
-	import { csvParse, autoType, type DSVParsedArray } from 'd3';
-	import { datasetStore, labelDimension, dimensionTypeStore } from '../../stores/dataset';
+	import { csvParse, autoType, extent, type DSVParsedArray } from 'd3';
+	import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
+	import type { DimensionDataType } from '../../util/types';
 
 	export let isOpen: boolean;
 
@@ -25,12 +26,14 @@
 			let dataset: DSVParsedArray<any> = csvParse(text, autoType);
 
 			const dimensions = Object.keys(dataset[0]);
-			const dimensionTypeMap = new Map<string, 'numerical' | 'categorical'>(new Map());
+			const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
 			dimensions.forEach((dim: string) => {
-				if (isNumber(dataset[0][dim])) dimensionTypeMap.set(dim, 'numerical');
-				else dimensionTypeMap.set(dim, 'categorical');
+				if (isNumber(dataset[0][dim])) {
+					const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
+					dimensionTypeMap.set(dim, { type: 'numerical', min: dimExtent[0], max: dimExtent[1] });
+				} else dimensionTypeMap.set(dim, { type: 'categorical', min: null, max: null });
 			});
-			dimensionTypeStore.set(dimensionTypeMap);
+			dimensionDataStore.set(dimensionTypeMap);
 			localStorage.setItem(
 				'dimensionTypes',
 				JSON.stringify(Array.from(dimensionTypeMap.entries()))

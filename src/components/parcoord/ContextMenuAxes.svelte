@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { Check } from 'svelte-heros-v2';
-	import { dimensionTypeStore } from '../../stores/dataset';
-	import { filtersArray, parcoordDimData } from '../../stores/parcoord';
+	import { dimensionDataStore } from '../../stores/dataset';
+	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
 	import SetRangeModal from './SetRangeModal.svelte';
 	import SetBinNoModal from './SetBinNoModal.svelte';
@@ -70,7 +70,7 @@
 	}
 
 	function handleShow(field: 'labels' | 'histograms' | 'filter' | 'filterValues') {
-		const dimData = $parcoordDimData;
+		const dimData = $parcoordDimMetadata;
 		const currDimData = dimData.get(dimensions[dimIndex]);
 		if (!currDimData) return;
 
@@ -84,7 +84,7 @@
 		else if (field === 'filterValues') currDimData.showFilterValues = !currDimData.showFilterValues;
 
 		dimData.set(dimensions[dimIndex], currDimData);
-		parcoordDimData.set(dimData);
+		parcoordDimMetadata.set(dimData);
 		hideContextMenu();
 	}
 
@@ -114,22 +114,24 @@
 			defaultClass={activeClass}
 			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert Axis</DropdownItem
 		>
-		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical'}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
 			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
 				>Set Range...</DropdownItem
 			>
 		{/if}
-		{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
 			<DropdownDivider />
 			<DropdownItem defaultClass={activeClass} on:click={() => resetAxisRange()}
 				>Reset Range</DropdownItem
 			>
 		{/if}
-		<DropdownDivider />
-		<DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
-			>Set Bin Num...</DropdownItem
-		>
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+			<DropdownDivider />
+			<DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
+				>Set Bin Num...</DropdownItem
+			>
+		{/if}
 		<DropdownDivider />
 		<DropdownItem defaultClass="{activeClass} flex items-center justify-between">
 			Show<ChevronRight class="w-3 h-3 ms-2" />
@@ -141,7 +143,7 @@
 				on:click={() => handleShow('labels')}
 				><Check
 					class="w-3 h-3 ms-2 mr-2"
-					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showLabels
+					style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showLabels
 						? 'visible'
 						: 'hidden'}"
 				/>Labels</DropdownItem
@@ -152,7 +154,7 @@
 				on:click={() => handleShow('histograms')}
 				><Check
 					class="w-3 h-3 ms-2 mr-2"
-					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showHistograms
+					style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showHistograms
 						? 'visible'
 						: 'hidden'}"
 				/>Histogram</DropdownItem
@@ -163,19 +165,19 @@
 				on:click={() => handleShow('filter')}
 				><Check
 					class="w-3 h-3 ms-2 mr-2"
-					style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showFilter
+					style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilter
 						? 'visible'
 						: 'hidden'}"
 				/>Filter</DropdownItem
 			>
-			{#if $dimensionTypeStore.get(dimensions[dimIndex]) === 'numerical'}
+			{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
 				<DropdownItem
 					defaultClass="{activeClass} flex items-center"
 					style="width: 110px;"
 					on:click={() => handleShow('filterValues')}
 					><Check
 						class="w-3 h-3 ms-2 mr-2"
-						style="visibility: {$parcoordDimData.get(dimensions[dimIndex])?.showFilterValues
+						style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilterValues
 							? 'visible'
 							: 'hidden'}"
 					/>Filter Values</DropdownItem

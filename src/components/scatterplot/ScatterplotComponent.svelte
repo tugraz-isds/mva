@@ -5,7 +5,7 @@
 	import Axes from './Axes.svelte';
 	import Points from './Points.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
-	import { datasetStore, dimensionTypeStore, labelDimension } from '../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import type { DSVParsedArray } from 'd3';
 	import type { MarginType, TooltipType } from '../../util/types';
 
@@ -39,7 +39,7 @@
 		if (dataset?.length > 0) {
 			dimensions = Object.keys(dataset[0]);
 			numericalDimensions = dimensions.filter(
-				(dim) => $dimensionTypeStore.get(dim) === 'numerical'
+				(dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
 			);
 			if (numericalDimensions.length >= 2) {
 				yDim = numericalDimensions[0];
@@ -49,16 +49,20 @@
 	});
 
 	function calculateXScale() {
-		const xDimExtent = extent(dataset, (d: any) => +d[xDim]);
 		xScale = scaleLinear()
-			.domain(xDimExtent as [number, number])
+			.domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
+				number,
+				number
+			])
 			.range([0, width - margin.right - margin.left]);
 	}
 
 	function calculateYScale() {
-		const yDimExtent = extent(dataset, (d: any) => +d[yDim]);
 		yScale = scaleLinear()
-			.domain(yDimExtent as [number, number])
+			.domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
+				number,
+				number
+			])
 			.range([height * 0.9 - margin.top - margin.bottom, 0]);
 	}
 

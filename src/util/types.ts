@@ -19,3 +19,9 @@ export type TooltipType = {
 	yPos: number; // Y position
 	text: string[]; // Text rows as array
 };
+
+export type DimensionDataType = {
+	type: 'numerical' | 'categorical';
+	min: number | null;
+	max: number | null;
+};
