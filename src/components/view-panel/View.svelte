@@ -5,6 +5,7 @@
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
 	import HistogramSettings from '../parcoord/HistogramSettings.svelte';
+	import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
 	import type { View } from './ViewType';
 
 	export let otherViews: View[];
@@ -18,6 +19,7 @@
 	});
 
 	let showView: boolean = true;
+	let isSvgExportModalOpen: boolean = false;
 
 	$: otherViews = otherViews?.filter((view: View) => view.title !== currView.title);
 
@@ -45,6 +47,8 @@
 	function saveSVG() {
 		const event = new Event(`call-save-svg-${currView.id}`);
 		window.dispatchEvent(event);
+		isSvgExportModalOpen = false;
+		isSvgExportModalOpen = true;
 	}
 
 	onDestroy(() => {

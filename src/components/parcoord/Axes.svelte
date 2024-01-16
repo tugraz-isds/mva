@@ -7,7 +7,7 @@
 	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { AxesFilterType, DimensionMetadataType } from './types';
-	import type { DimensionDataType, MarginType } from '../../util/types';
+	import type { MarginType } from '../../util/types';
 
 	export let width: number; // Container width
 	export let contextMenuAxes: ContextMenuAxes;

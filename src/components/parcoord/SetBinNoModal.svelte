@@ -20,7 +20,6 @@
 		currDimData.binNo = binNo;
 		dimData.set(dimension, currDimData);
 		parcoordDimMetadata.set(dimData);
-		console.log('Setting hist data');
 		isOpen = false;
 	}
 

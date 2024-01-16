@@ -47,18 +47,23 @@
 			const binGroup = svg.append('g').attr('class', `axis-bins axis-bins-${i}`);
 
 			let bins: any[] = [];
+			let binsStart: number;
+			let binsEnd: number;
 			if ($dimensionDataStore.get(dim)?.type === 'numerical') {
+				const min: number = $dimensionDataStore.get(dim)?.min as number;
+				const max: number = $dimensionDataStore.get(dim)?.max as number;
+				binsStart = yScales[dim](currDimData?.inverted ? max : min);
+				binsEnd = yScales[dim](currDimData?.inverted ? min : max);
 				if (currDimData?.binNo === null) {
 					bins = bin()(dataset.map((row) => row[dim]));
 					currDimData.binNo = bins.length;
 					dimData.set(dim, currDimData);
 					parcoordDimMetadata.set(dimData);
 				} else {
-					const domain = yScales[dim].domain();
 					bins = bin().thresholds(
 						generateEvenlySpacedNumbers(
-							domain[0],
-							domain[1],
+							currDimData?.inverted ? max : min,
+							currDimData?.inverted ? min : max,
 							currDimData?.binNo as number,
 							currDimData?.inverted as boolean
 						)
@@ -69,9 +74,11 @@
 					group(dataset, (d) => d[dim]),
 					([_, values]) => values
 				);
+				binsStart = axisHeight;
+				binsEnd = 0;
 			}
 
-			const binWidth = axisHeight / bins.length;
+			const binWidth = Math.abs(binsStart - binsEnd) / bins.length;
 			// If bin has width less than 10 hide histogram by default
 			if (initialRender && binWidth < 10) {
 				if (!currDimData) return;
@@ -95,6 +102,7 @@
 						'transform',
 						`translate(${xScales[i] + 8}, ${
 							margin.top +
+							binsEnd +
 							binWidth * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
 						})`
 					)

@@ -7,9 +7,8 @@
 		parcoordDimMetadata,
 		parcoordHistogramData
 	} from '../../stores/parcoord';
-	import { scaleLinear, scaleBand, extent } from 'd3';
+	import { scaleLinear, scaleBand } from 'd3';
 	import { reorderArray } from '../../util/util';
-	import xmlFormat from 'xml-formatter';
 	import Axes from './Axes.svelte';
 	import Histograms from './Histograms.svelte';
 	import LinesThree from './LinesThree.svelte';
@@ -19,9 +18,11 @@
 	import type { DSVParsedArray } from 'd3';
 	import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
 	import type { MarginType, TooltipType } from '../../util/types';
+	import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
+	let isSvgExportModalOpen: boolean = false;
 	let width: number; // Container width
 	let originalWidth: number; // Container original width
 	let height: number; // Container height
@@ -36,6 +37,7 @@
 	let linesComponent: LinesThree; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
+	let svgExportModal: SvgExportModal;
 
 	let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
@@ -213,22 +215,13 @@
 		let axesStringSvg = axesComponent.saveSVG();
 		if (!axesStringSvg || !linesStringSvg) return;
 
+		isSvgExportModalOpen = false;
+		isSvgExportModalOpen = true;
+
 		linesStringSvg = linesStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
 		axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
 
-		// Trim decimal points to 6 decimals
-		axesStringSvg = axesStringSvg.replace(/\d+\.\d{7,}/g, (match) => `${Number(match).toFixed(6)}`);
-		linesStringSvg = linesStringSvg.replace(
-			/\d+\.\d{7,}/g,
-			(match) => `${Number(match).toFixed(6)}`
-		);
-		// Remove redundant fields
-		axesStringSvg = axesStringSvg
-			.replaceAll('px', '')
-			.replaceAll(' dy="0.32em"', '')
-			.replaceAll(' opacity="1"', '');
-
-		const stringSvg =
+		const svgString =
 			`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
 			'\n<!-- Lines -->\n' +
 			linesStringSvg +
@@ -236,23 +229,7 @@
 			axesStringSvg +
 			'\n</svg>';
 
-		const stringSvgFormatted = xmlFormat(stringSvg, {
-			indentation: '  ',
-			collapseContent: true,
-			lineSeparator: '\n'
-		});
-
-		const svgBlob = new Blob([stringSvgFormatted], {
-			type: 'image/svg+xml;charset=utf-8'
-		});
-		const svgUrl = URL.createObjectURL(svgBlob);
-		const downloadLink = document.createElement('a');
-
-		downloadLink.href = svgUrl;
-		downloadLink.download = 'parcoord.svg';
-		document.body.appendChild(downloadLink);
-		downloadLink.click();
-		document.body.removeChild(downloadLink);
+		svgExportModal.setSvgString(svgString);
 	}
 
 	onMount(() => {
@@ -344,3 +321,5 @@
 		/>
 	{/if}
 </div>
+
+<SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
