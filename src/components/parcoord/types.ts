@@ -20,6 +20,11 @@ export type AxesFilterType = {
 		start: number;
 		end: number;
 	};
+	mouse: {
+		// Percentages on plot of filters start/end
+		x: number;
+		y: number;
+	} | null;
 };
 
 export type TooltipAxisTitleType = {

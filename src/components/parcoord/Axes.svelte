@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag, text } from 'd3';
+	import * as THREE from 'three';
 	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
 	import { dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
@@ -22,6 +23,7 @@
 	export let yScales: any; // Scales for all of the Y-axes
 
 	// SVG elements
+	let svgEl: SVGElement;
 	let axisLines: any[] = []; // Array of SVG elements for axis groups
 	let axisTitles: any[] = []; // Array of SVG elements for axis titles
 	let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
@@ -303,7 +305,7 @@
 					event.subject.x = xScales[dimensions.indexOf(dim)];
 					isCurrentlyFiltering = true;
 				})
-				.on('drag', (event) => {
+				.on('drag', (event: MouseEvent) => {
 					const minX = margin.left; // Minimum x position
 					const maxX = width - margin.right; // Maximum x position
 					const newX = Math.max(minX, Math.min(maxX, event.x)); // Clamp the x position within the valid range
@@ -467,10 +469,20 @@
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {})
-				.on('drag', (event) => {
+				.on('drag', (event: any) => {
 					const minY = margin.top - 8; // Minimum y position
 					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+
+					const svgRect = svgEl.getBoundingClientRect();
+					let mouse: THREE.Vector2 = new THREE.Vector2();
+					mouse.x = ((event.sourceEvent.clientX - svgRect.left) / svgRect.width) * 2 - 1;
+					mouse.y = -((event.sourceEvent.clientY - svgRect.top) / svgRect.height) * 2 + 1;
+					// console.log(mouse.x, mouse.y);
+					axesFilters[idx].mouse = {
+						x: mouse.x,
+						y: mouse.y
+					};
 
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY - 4})`); // Move upper filter
 					axisUpperFiltersValues[idx]
@@ -485,6 +497,7 @@
 
 					axesFilters[idx].pixels.start = newY - margin.top - 1 + 8;
 					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
+
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {});
@@ -632,7 +645,8 @@
 			percentages: {
 				start: 0,
 				end: 1
-			}
+			},
+			mouse: null
 		};
 
 		filtersArray.set(axesFilters);
@@ -650,7 +664,8 @@
 			percentages: {
 				start: 0,
 				end: 1
-			}
+			},
+			mouse: null
 		}));
 
 		filtersArray.set(axesFilters);
@@ -722,6 +737,7 @@
 </script>
 
 <svg
+	bind:this={svgEl}
 	id="parcoord-canvas-axes"
 	{width}
 	{height}

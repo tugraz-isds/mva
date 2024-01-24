@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox';
-	import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper';
 	import { select, line as lineD3 } from 'd3';
 	import {
 		brushedArray,
@@ -16,8 +14,7 @@
 	import {
 		LINE_MATERIAL_MAP,
 		LINE_MATERIAL_HOVERED,
-		LINE_MATERIAL_BRUSHED,
-		MATERIAL_DRAGGING_RECT
+		LINE_MATERIAL_BRUSHED
 	} from '../../util/materials';
 	import { reorderArray, areSetsEqual } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
@@ -41,8 +38,6 @@
 	let line: THREE.Line & { index?: number };
 	let raycaster: THREE.Raycaster;
 	let mouse: THREE.Vector2;
-	let selectionBox: SelectionBox;
-	let selectionHelper: SelectionHelper;
 
 	let lines: THREE.Line[] = [];
 	let lineShow: boolean[] = [];
@@ -54,19 +49,15 @@
 	let previouslyHoveredLinesIndices = new Set<number>();
 	let brushedLinesIndices = new Set<number>();
 	let previouslyBrushedLinesIndices = new Set<number>();
-
-	let isDragging: boolean = false;
-	let dragStart: {
-		x: number;
-		y: number;
-	} | null = null;
-	let draggingRectangle: THREE.Line;
 	let intersectingLines: any[];
 
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
 		if (dataset?.length > 0 && dimensions?.length > 0) {
-			if (axesFilters.length === dimensions.length) applyFilters();
+			if (axesFilters.length === dimensions.length) {
+				// applyFilters();
+				handleFiltering();
+			}
 		}
 	});
 
@@ -102,8 +93,6 @@
 		if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
 		raycaster = new THREE.Raycaster();
 		mouse = new THREE.Vector2();
-		selectionBox = new SelectionBox(camera, scene);
-		selectionHelper = new SelectionHelper(renderer, 'selectBox');
 	}
 
 	export function drawLines(newWidth: number | undefined = undefined) {
@@ -202,59 +191,20 @@
 		)
 			return;
 
-		// --- SELECTION BOX ---
-		if (isDragging) {
-			console.log('Moving mouse');
-			selectionBox.endPoint.set(
-				(event.clientX / window.innerWidth) * 2 - 1,
-				-(event.clientY / window.innerHeight) * 2 + 1,
-				0.5
-			);
-		}
-
+		// console.log(mouse.x, mouse.y);
 		// Check for intersections
 		raycaster.setFromCamera(mouse, camera);
-		if (isDragging) {
-			if (!dragStart) return;
-			const rectWidth = event.clientX - canvasRect.left - dragStart.x,
-				rectHeight = event.clientY - canvasRect.top - dragStart.y;
-			// drawDraggingRectangle(rectWidth, rectHeight);
+		// Add hovered lines
+		intersectingLines = raycaster.intersectObjects(lines);
+		const hoveredLinesSet: Set<number> = new Set();
+		intersectingLines.forEach((intersection) => {
+			const line = intersection.object as any;
+			if (lineShow[line.index]) hoveredLinesSet.add(line.index);
+		});
 
-			previouslyBrushedArray.set(brushedLinesIndices);
-			intersectingLines.push(...raycaster.intersectObjects(lines));
-			// Add to brushed if Ctrl key is pressed
-			if (event.ctrlKey) {
-				intersectingLines.forEach((intersection) => {
-					const line = intersection.object as any;
-					brushedLinesIndices.add(line.index);
-				});
-			}
-			// Set brushed to lines in drawn rectangle
-			else {
-				const newBrushedLinesIndices = new Set<number>();
-				intersectingLines.forEach((intersection) => {
-					const line = intersection.object as any;
-					newBrushedLinesIndices.add(line.index);
-				});
-				brushedLinesIndices = newBrushedLinesIndices;
-			}
-			brushedLinesIndices.forEach((i) => {
-				if (!lineShow[i]) brushedLinesIndices.delete(i);
-			});
-			brushedArray.set(brushedLinesIndices);
-		} else {
-			// Add hovered lines
-			intersectingLines = raycaster.intersectObjects(lines);
-			const hoveredLinesSet: Set<number> = new Set();
-			intersectingLines.forEach((intersection) => {
-				const line = intersection.object as any;
-				if (lineShow[line.index]) hoveredLinesSet.add(line.index);
-			});
-
-			if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
-			setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
-			hoveredArray.set(hoveredLinesSet);
-		}
+		if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
+		setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+		hoveredArray.set(hoveredLinesSet);
 	}
 
 	function handleMouseDown(event: MouseEvent) {
@@ -271,17 +221,6 @@
 		)
 			return;
 
-		// --- SELECTION BOX ---
-		console.log('mouse down');
-		selectionBox.startPoint.set(
-			(event.clientX / window.innerWidth) * 2 - 1,
-			-(event.clientY / window.innerHeight) * 2 + 1,
-			0.5
-		);
-
-		isDragging = true;
-		// isDragging = false;
-		dragStart = { x: event.clientX - canvasRect.left, y: event.clientY - canvasRect.top };
 		setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
 		intersectingLines = [];
 
@@ -322,29 +261,40 @@
 		)
 			return;
 
-		isDragging = false;
-		dragStart = null;
-		scene.remove(draggingRectangle);
 		intersectingLines = [];
 	}
 
-	function drawDraggingRectangle(rectWidth: number, rectHeight: number) {
-		if (!dragStart) return;
-		scene.remove(draggingRectangle);
-		const rectanglePoints = [
-			new THREE.Vector3(dragStart.x, dragStart.y, 3),
-			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y, 3),
-			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y + rectHeight, 3),
-			new THREE.Vector3(dragStart.x, dragStart.y + rectHeight, 3),
-			new THREE.Vector3(dragStart.x, dragStart.y, 3)
-		];
+	function handleFiltering() {
+		const filterValueStart =
+			$dimensionDataStore.get(dimensions[0])?.type === 'numerical'
+				? axesFilters[0].pixels.start
+				: axesFilters[0].pixels.start - yScales[dimensions[0]].step() / 2;
+		const filterValueEnd =
+			$dimensionDataStore.get(dimensions[0])?.type === 'numerical'
+				? axesFilters[0].pixels.end
+				: axesFilters[0].pixels.end - yScales[dimensions[0]].step() / 2;
 
-		const material = MATERIAL_DRAGGING_RECT;
+		// console.log(xScales[0], filterValueStart);
 
-		const geometry = new THREE.BufferGeometry().setFromPoints(rectanglePoints);
-		draggingRectangle = new THREE.Line(geometry, material);
-
-		scene.add(draggingRectangle);
+		raycaster.setFromCamera(
+			new THREE.Vector2(axesFilters[0].mouse?.x, axesFilters[0].mouse?.y),
+			camera
+		);
+		const intersectingLines = raycaster.intersectObjects(lines);
+		intersectingLines.forEach((intersection) => {
+			const line = intersection.object as any;
+			// console.log(line);
+			const isLineShown = !lineShow[line.index];
+			if (isLineShown) {
+				lineData[line.index] = { color: COLOR_ACTIVE, position: 0 };
+			} else {
+				lineData[line.index] = { color: COLOR_FILTERED, position: -1 };
+			}
+			lines[line.index].material = LINE_MATERIAL_MAP.get(
+				lineData[line.index].color
+			) as THREE.LineBasicMaterial;
+			changeLinePosition(lines[line.index], lineData[line.index].position);
+		});
 	}
 
 	export const applyFilters = () => {
@@ -524,4 +474,4 @@
 	});
 </script>
 
-<canvas bind:this={canvasEl} on:pointerdown={() => console.log('down')} />
+<canvas bind:this={canvasEl} />
