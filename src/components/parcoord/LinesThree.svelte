@@ -354,13 +354,9 @@
 		linkingArray.set(lineShow);
 
 		// const dataURL = canvasElFiltered.toDataURL();
-		// // const img = new Image();
-		// // img.src = dataURL;
-		// // imageEl = img;
-		// // console.log(img);
-		// const image: HTMLImageElement | null =
-		// 	(document.getElementById('filtered-lines-image') as HTMLImageElement) ?? null;
-		// if (image?.src) image.src = dataURL;
+		// const img = new Image();
+		// img.src = dataURL;
+		// imageEl = img;
 	};
 
 	function setTooltip(hoveredLinesSet: Set<number>, x: number, y: number) {
@@ -400,10 +396,6 @@
 		if (!renderer || !rendererFiltered) return;
 		renderer.render(scene, camera);
 		rendererFiltered.render(sceneFiltered, cameraFiltered);
-		const dataURL = canvasElFiltered.toDataURL();
-		const image: HTMLImageElement | null =
-			(document.getElementById('filtered-lines-image') as HTMLImageElement) ?? null;
-		if (image?.src) image.src = dataURL;
 	}
 
 	function animate() {
