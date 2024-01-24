@@ -3,11 +3,9 @@ import type {
 	AxesFilterType,
 	CustomRangeType,
 	DimensionMetadataType,
-	FilteringType,
 	HistogramsType
 } from '../components/parcoord/types';
 
-export const parcoordFilterPos = writable<FilteringType>(null);
 export const filtersArray = writable<AxesFilterType[]>([]);
 export const parcoordCustomAxisRanges = writable<Map<string, CustomRangeType>>(new Map());
 export const parcoordIsInteractable = writable<boolean>(true);

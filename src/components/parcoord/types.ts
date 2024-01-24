@@ -9,11 +9,6 @@ export type DimensionMetadataType = {
 	binNo: number | null;
 };
 
-export type FilteringType = {
-	x: number;
-	y: number;
-} | null;
-
 export type AxesFilterType = {
 	pixels: {
 		// Actual pixel values of filters start/end

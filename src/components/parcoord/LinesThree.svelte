@@ -11,7 +11,7 @@
 		previouslyBrushedArray
 	} from '../../stores/brushing';
 	import { labelDimension, dimensionDataStore } from '../../stores/dataset';
-	import { filtersArray, parcoordIsInteractable, parcoordFilterPos } from '../../stores/parcoord';
+	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
 	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
 	import {
 		LINE_MATERIAL_MAP,
@@ -33,6 +33,7 @@
 	export let yScales: any;
 	export let setTooltipData: Function;
 
+	let imageEl: HTMLImageElement;
 	let canvasEl: HTMLCanvasElement;
 	let camera: THREE.OrthographicCamera;
 	let scene: THREE.Scene;
@@ -211,26 +212,21 @@
 		)
 			return;
 
-		if ($parcoordFilterPos) {
-			// handleFiltering();
-		} else {
-			// Add hovered lines
-			raycaster.setFromCamera(mouse, camera);
-			intersectingLines = raycaster.intersectObjects(lines);
-			const hoveredLinesSet: Set<number> = new Set();
-			intersectingLines.forEach((intersection) => {
-				const line = intersection.object as any;
-				if (lineShow[line.index]) hoveredLinesSet.add(line.index);
-			});
+		// Add hovered lines
+		raycaster.setFromCamera(mouse, camera);
+		intersectingLines = raycaster.intersectObjects(lines);
+		const hoveredLinesSet: Set<number> = new Set();
+		intersectingLines.forEach((intersection) => {
+			const line = intersection.object as any;
+			if (lineShow[line.index]) hoveredLinesSet.add(line.index);
+		});
 
-			if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
-			setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
-			hoveredArray.set(hoveredLinesSet);
-		}
+		if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
+		setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+		hoveredArray.set(hoveredLinesSet);
 	}
 
 	function handleMouseDown(event: MouseEvent) {
-		console.log(scene.children.length, sceneFiltered.children.length);
 		if (!canvasEl) return;
 		const canvasRect = canvasEl.getBoundingClientRect();
 		// If mouse is not in parcoord, return
@@ -306,7 +302,6 @@
 
 		line.material = LINE_MATERIAL_MAP.get(COLOR_FILTERED) as THREE.LineBasicMaterial;
 		changeLinePosition(line, -1);
-		console.log(scene.children.length, sceneFiltered.children.length);
 	}
 
 	function moveLineToActiveCanvas(line: THREE.Line, idx: number) {
@@ -317,7 +312,6 @@
 
 		line.material = LINE_MATERIAL_MAP.get(COLOR_ACTIVE) as THREE.LineBasicMaterial;
 		changeLinePosition(line, 0);
-		console.log(scene.children.length, sceneFiltered.children.length);
 	}
 
 	export const applyFilters = () => {
@@ -358,6 +352,15 @@
 		});
 		brushedArray.set(brushedLinesIndices);
 		linkingArray.set(lineShow);
+
+		// const dataURL = canvasElFiltered.toDataURL();
+		// // const img = new Image();
+		// // img.src = dataURL;
+		// // imageEl = img;
+		// // console.log(img);
+		// const image: HTMLImageElement | null =
+		// 	(document.getElementById('filtered-lines-image') as HTMLImageElement) ?? null;
+		// if (image?.src) image.src = dataURL;
 	};
 
 	function setTooltip(hoveredLinesSet: Set<number>, x: number, y: number) {
@@ -397,6 +400,10 @@
 		if (!renderer || !rendererFiltered) return;
 		renderer.render(scene, camera);
 		rendererFiltered.render(sceneFiltered, cameraFiltered);
+		const dataURL = canvasElFiltered.toDataURL();
+		const image: HTMLImageElement | null =
+			(document.getElementById('filtered-lines-image') as HTMLImageElement) ?? null;
+		if (image?.src) image.src = dataURL;
 	}
 
 	function animate() {
@@ -487,7 +494,6 @@
 			initialzeArrays();
 		}
 		initScene();
-		console.log('animatin');
 		animate();
 		drawLines();
 	});
@@ -504,8 +510,9 @@
 
 <canvas
 	bind:this={canvasElFiltered}
-	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; user-select: none; visibility: hidden;"
+	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; user-select: none; display: none;"
 />
+<img id="filtered-lines-image" bind:this={imageEl} alt="Filtered lines" />
 <canvas
 	bind:this={canvasEl}
 	style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; user-select: none;"
