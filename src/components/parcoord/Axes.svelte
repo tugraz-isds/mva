@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag, text } from 'd3';
-	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
+	import { filtersArray, parcoordDimMetadata, parcoordFilterPos } from '../../stores/parcoord';
 	import { dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import { getAllTicks, reorderArray } from '../../util/util';
@@ -466,11 +466,16 @@
 	function handleUpperFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {})
+				.on('start', () => {})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
 					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+
+					parcoordFilterPos.set({
+						x: event.x,
+						y: newY
+					});
 
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY - 4})`); // Move upper filter
 					axisUpperFiltersValues[idx]
@@ -487,7 +492,9 @@
 					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {});
+				.on('end', () => {
+					parcoordFilterPos.set(null);
+				});
 
 			axisUpperFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
@@ -496,11 +503,16 @@
 	function handleLowerFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {})
+				.on('start', () => {})
 				.on('drag', (event) => {
 					const minY = axesFilters[idx].pixels.start + margin.top; // Minimum y position
 					const maxY = height - margin.bottom; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
+
+					parcoordFilterPos.set({
+						x: event.x,
+						y: newY
+					});
 
 					axisLowerFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY})`); // Move lower filter
 					axisLowerFiltersValues[idx]
@@ -518,7 +530,9 @@
 					axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {});
+				.on('end', () => {
+					parcoordFilterPos.set(null);
+				});
 
 			axisLowerFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
