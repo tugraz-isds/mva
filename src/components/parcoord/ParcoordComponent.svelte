@@ -19,6 +19,7 @@
 	import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
 	import type { MarginType, TooltipType } from '../../util/types';
 	import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
+	import OffscreenCanvas from './OffscreenCanvas.svelte';
 
 	let isBrowser = false; // Flag to see if we are in browser
 
@@ -277,7 +278,7 @@
 	{#if dataset?.length === 0}
 		<span>No data available.</span>
 	{:else if yScales && Object.keys(yScales).length !== 0 && xScales && Object.keys(xScales).length !== 0}
-		<Axes
+		<!-- <Axes
 			bind:this={axesComponent}
 			bind:contextMenuAxes
 			bind:width
@@ -318,7 +319,8 @@
 			{xScales}
 			{yScales}
 			{setTooltipData}
-		/>
+		/> -->
+		<OffscreenCanvas />
 	{/if}
 </div>
 
