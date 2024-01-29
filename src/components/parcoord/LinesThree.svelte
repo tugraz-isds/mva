@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox';
-	import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper';
 	import { select, line as lineD3 } from 'd3';
 	import {
 		brushedArray,
@@ -41,8 +39,6 @@
 	let line: THREE.Line & { index?: number };
 	let raycaster: THREE.Raycaster;
 	let mouse: THREE.Vector2;
-	let selectionBox: SelectionBox;
-	let selectionHelper: SelectionHelper;
 
 	let lines: THREE.Line[] = [];
 	let lineShow: boolean[] = [];
@@ -102,8 +98,6 @@
 		if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
 		raycaster = new THREE.Raycaster();
 		mouse = new THREE.Vector2();
-		selectionBox = new SelectionBox(camera, scene);
-		selectionHelper = new SelectionHelper(renderer, 'selectBox');
 	}
 
 	export function drawLines(newWidth: number | undefined = undefined) {
@@ -202,16 +196,6 @@
 		)
 			return;
 
-		// --- SELECTION BOX ---
-		if (isDragging) {
-			console.log('Moving mouse');
-			selectionBox.endPoint.set(
-				(event.clientX / window.innerWidth) * 2 - 1,
-				-(event.clientY / window.innerHeight) * 2 + 1,
-				0.5
-			);
-		}
-
 		// Check for intersections
 		raycaster.setFromCamera(mouse, camera);
 		if (isDragging) {
@@ -270,14 +254,6 @@
 			)
 		)
 			return;
-
-		// --- SELECTION BOX ---
-		console.log('mouse down');
-		selectionBox.startPoint.set(
-			(event.clientX / window.innerWidth) * 2 - 1,
-			-(event.clientY / window.innerHeight) * 2 + 1,
-			0.5
-		);
 
 		isDragging = true;
 		// isDragging = false;
