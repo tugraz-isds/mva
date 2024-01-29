@@ -7,10 +7,21 @@
 
 	let histogramSettings: HistogramsType;
 
-	function checkData() {
-		histogramSettings.fillOpacity = Math.max(0, Math.min(1, histogramSettings.fillOpacity));
-		histogramSettings.strokeOpacity = Math.max(0, Math.min(1, histogramSettings.strokeOpacity));
-		histogramSettings.scale = Math.max(0, Math.min(1, histogramSettings.scale));
+	function checkData(
+		property: 'fillOpacity' | 'strokeOpacity' | 'width' | 'widthLimits',
+		minValue: number,
+		maxValue: number
+	) {
+		if (property === 'widthLimits')
+			histogramSettings.widthLimits.min = Math.max(
+				minValue,
+				Math.min(maxValue, histogramSettings.widthLimits.min)
+			);
+		else
+			histogramSettings[property] = Math.max(
+				minValue,
+				Math.min(maxValue, histogramSettings[property])
+			);
 	}
 
 	function loadData() {
@@ -24,7 +35,7 @@
 </script>
 
 <Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
-	<form class="flex flex-col space-y-6" action="#">
+	<form class="flex flex-col space-y-6">
 		<h3 class="text-xl font-medium text-gray-900">Histogram Settings</h3>
 		<div>
 			<div class="flex items-center">
@@ -32,7 +43,7 @@
 				<NumberInput
 					id="fill-opacity-input"
 					bind:value={histogramSettings.fillOpacity}
-					on:change={checkData}
+					on:change={() => checkData('fillOpacity', 0, 1)}
 					defaultClass="block w-1/5"
 					size="sm"
 					step={0.1}
@@ -50,7 +61,7 @@
 				<NumberInput
 					id="stroke-opacity-input"
 					bind:value={histogramSettings.strokeOpacity}
-					on:change={checkData}
+					on:change={() => checkData('strokeOpacity', 0, 1)}
 					defaultClass="block w-1/5"
 					size="sm"
 					step={0.1}
@@ -64,11 +75,11 @@
 			</div>
 
 			<div class="flex items-center">
-				<Label for="scale-input" class="w-1/4">Bins scale:</Label>
+				<Label for="width-input" class="w-1/4">Bins width:</Label>
 				<NumberInput
-					id="scale-input"
-					bind:value={histogramSettings.scale}
-					on:change={checkData}
+					id="width-input"
+					bind:value={histogramSettings.width}
+					on:change={() => checkData('width', 0, 1)}
 					defaultClass="block w-1/5"
 					size="sm"
 					step={0.1}
@@ -79,8 +90,26 @@
 			<div class="mb-6 flex items-center">
 				<span class="w-1/4 bg-red-300" />
 				<Helper class="text-xs w-3/4"
-					>Bins scale as percentage of distance between two axes. Select a number from 0 to 1.</Helper
+					>Bins width as percentage of distance between two axes. Select a number from 0 to 1.</Helper
 				>
+			</div>
+
+			<div class="flex items-center">
+				<Label for="width-input" class="w-1/4">Bins min width:</Label>
+				<NumberInput
+					id="width-input"
+					bind:value={histogramSettings.widthLimits.min}
+					on:change={() => checkData('widthLimits', 0, histogramSettings.widthLimits.max)}
+					defaultClass="block w-1/5"
+					size="sm"
+					step={1}
+					min={0}
+					max={histogramSettings.widthLimits.max}
+				/>
+			</div>
+			<div class="mb-6 flex items-center">
+				<span class="w-1/4 bg-red-300" />
+				<Helper class="text-xs w-3/4">Minimum width of bins in pixels.</Helper>
 			</div>
 
 			<Button type="submit" class="w-full" on:click={saveData}>Save</Button>

@@ -78,9 +78,9 @@
 				binsEnd = 0;
 			}
 
-			const binWidth = Math.abs(binsStart - binsEnd) / bins.length;
+			const binHeight = Math.abs(binsStart - binsEnd) / bins.length;
 			// If bin has width less than 10 hide histogram by default
-			if (initialRender && binWidth < 10) {
+			if (initialRender && binHeight < 10) {
 				if (!currDimData) return;
 				currDimData.showHistograms = false;
 				dimData.set(dim, currDimData);
@@ -90,20 +90,24 @@
 			}
 			const longestBinHeight = bins.reduce((max, array) => Math.max(max, array.length), 0);
 			bins.forEach((bin, j) => {
+				const binWidth =
+					(bin.length / longestBinHeight) * ((step - 16) * $parcoordHistogramData.width);
 				binGroup
 					.append('rect')
 					.attr('class', 'axis-bin axis-bins-0-bin')
 					.attr(
 						'width',
-						(bin.length / longestBinHeight) * ((step - 16) * $parcoordHistogramData.scale)
+						binWidth < $parcoordHistogramData.widthLimits.min
+							? $parcoordHistogramData.widthLimits.min
+							: binWidth
 					)
-					.attr('height', binWidth)
+					.attr('height', binHeight)
 					.attr(
 						'transform',
 						`translate(${xScales[i] + 8}, ${
 							margin.top +
 							binsEnd +
-							binWidth * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
+							binHeight * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
 						})`
 					)
 					.attr('fill', 'grey')

@@ -14,5 +14,9 @@ export const parcoordHistogramData = writable<HistogramsType>({
 	visible: true,
 	fillOpacity: 0.2,
 	strokeOpacity: 0.3,
-	scale: 0.5
+	width: 0.2,
+	widthLimits: {
+		min: 0,
+		max: 0
+	}
 });

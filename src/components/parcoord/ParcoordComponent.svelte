@@ -207,7 +207,7 @@
 	function setMarginRight(histogramsVisible: boolean) {
 		const step = xScales[1] - xScales[0];
 		if (!step) return;
-		margin.right = histogramsVisible ? 10 + (step - 16) * $parcoordHistogramData.scale : 40;
+		margin.right = histogramsVisible ? 10 + (step - 16) * $parcoordHistogramData.width : 40;
 	}
 
 	export function saveSVG() {
@@ -254,7 +254,11 @@
 			visible: true,
 			fillOpacity: 0.2,
 			strokeOpacity: 0.3,
-			scale: 0.5
+			width: 0.2,
+			widthLimits: {
+				min: 0,
+				max: xScales[1] - xScales[0]
+			}
 		});
 	});
 

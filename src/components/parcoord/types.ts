@@ -1,5 +1,3 @@
-import type { ColorType } from '../../util/types';
-
 export type DimensionMetadataType = {
 	inverted: boolean;
 	showLabels: boolean;
@@ -38,5 +36,9 @@ export type HistogramsType = {
 	visible: boolean;
 	fillOpacity: number;
 	strokeOpacity: number;
-	scale: number;
+	width: number;
+	widthLimits: {
+		min: number;
+		max: number;
+	};
 };
