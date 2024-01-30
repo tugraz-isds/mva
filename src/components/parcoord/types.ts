@@ -15,8 +15,8 @@ export type AxesFilterType = {
 	};
 	percentages: {
 		// Percentages on plot of filters start/end
-		start: number;
-		end: number;
+		start: number | null;
+		end: number | null;
 	};
 };
 

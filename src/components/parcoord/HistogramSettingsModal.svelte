@@ -109,7 +109,11 @@
 			</div>
 			<div class="mb-6 flex items-center">
 				<span class="w-1/4 bg-red-300" />
-				<Helper class="text-xs w-3/4">Minimum width of bins in pixels.</Helper>
+				<Helper class="text-xs w-3/4"
+					>Minimum width of bins in pixels. Select a number from 0 to {Math.floor(
+						histogramSettings.widthLimits.max
+					)}.</Helper
+				>
 			</div>
 
 			<Button type="submit" class="w-full" on:click={saveData}>Save</Button>

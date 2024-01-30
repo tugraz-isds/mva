@@ -6,6 +6,7 @@
 	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
 	import SetRangeModal from './SetRangeModal.svelte';
 	import SetBinNoModal from './SetBinNoModal.svelte';
+	import SetFilterModal from './SetFilterModal.svelte';
 	import type Axes from './Axes.svelte';
 	import type { DSVParsedArray } from 'd3';
 	import type { MarginType } from '../../util/types';
@@ -15,11 +16,11 @@
 	export let xScales: any;
 	export let yScales: any;
 	export let margin: MarginType;
-	export let dataset: DSVParsedArray<any>;
 
 	let debounceTimeout: number;
-	let isSetRangeModalOpen: boolean = false;
-	let isSetBinNoModalOpen: boolean = false;
+	let isSetRangeModalOpen: boolean = false,
+		isSetBinNoModalOpen: boolean = false,
+		isSetFilterModalOpen: boolean = false;
 	let isContextMenuShown = false; // Flag if context menu is visible
 	let menuStyle = ''; // Menu style string
 	let dimIndex: number; // Dataset dimension index
@@ -51,6 +52,13 @@
 		hideContextMenu();
 		isSetBinNoModalOpen = false;
 		isSetBinNoModalOpen = true;
+		$parcoordIsInteractable = false;
+	}
+
+	function openSetFilterModal() {
+		hideContextMenu();
+		isSetFilterModalOpen = false;
+		isSetFilterModalOpen = true;
 		$parcoordIsInteractable = false;
 	}
 
@@ -184,6 +192,12 @@
 				>{/if}
 		</Dropdown>
 		<DropdownDivider />
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+			<DropdownDivider />
+			<DropdownItem defaultClass={activeClass} on:click={() => openSetFilterModal()}
+				>Set Filter...</DropdownItem
+			>
+		{/if}
 		<DropdownItem
 			defaultClass={activeClass}
 			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset Filter</DropdownItem
@@ -191,15 +205,16 @@
 	</div>
 {/if}
 
-<SetRangeModal
-	isOpen={isSetRangeModalOpen}
-	dimension={dimensions[dimIndex]}
-	{yScales}
-	{dataset}
-	{dimIndex}
-/>
+<SetRangeModal isOpen={isSetRangeModalOpen} dimension={dimensions[dimIndex]} {yScales} {dimIndex} />
 
 <SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
+
+<SetFilterModal
+	isOpen={isSetFilterModalOpen}
+	dimension={dimensions[dimIndex]}
+	{yScales}
+	{dimIndex}
+/>
 
 <style>
 	.context-menu {

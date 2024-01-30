@@ -12,11 +12,9 @@
 	export let isOpen: boolean;
 	export let dimension: string;
 	export let yScales: any;
-	export let dataset: DSVParsedArray<any>;
 	export let dimIndex: number;
 
-	let rangeStart: number;
-	let rangeEnd: number;
+	let rangeStart: number, rangeEnd: number;
 	let validUpload: boolean = true; // If false show error message
 	let errorMessage: string = '';
 
@@ -30,14 +28,14 @@
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
 		const min: number = $dimensionDataStore.get(dimension)?.min as number;
 		const max: number = $dimensionDataStore.get(dimension)?.max as number;
-		if (rangeEnd < min) {
+		if (rangeEnd < max) {
 			validUpload = false;
-			errorMessage = `Highest value of dimension is ${min}. You cannot set the range lower than that.`;
+			errorMessage = `Highest value of dimension is ${max}. You cannot set the range lower than that.`;
 			return;
 		}
-		if (rangeStart > max) {
+		if (rangeStart > min) {
 			validUpload = false;
-			errorMessage = `Lowest value of dimension is ${max}. You cannot set the range higher than that.`;
+			errorMessage = `Lowest value of dimension is ${min}. You cannot set the range higher than that.`;
 			return;
 		}
 
@@ -55,8 +53,8 @@
 		const newScale = scaleLinear()
 			.domain(isAxisInverted ? [rangeEnd, rangeStart] : [rangeStart, rangeEnd])
 			.range([0, 1]);
-		const originalStart = originalScale.invert(1 - filtersTemp.start);
-		const originalEnd = originalScale.invert(1 - filtersTemp.end);
+		const originalStart = originalScale.invert(1 - (filtersTemp.start as number));
+		const originalEnd = originalScale.invert(1 - (filtersTemp.end as number));
 		$filtersArray[dimIndex].percentages = {
 			start: 1 - newScale(originalStart),
 			end: 1 - newScale(originalEnd)
@@ -83,11 +81,23 @@
 		<div class="mb-6 flex items-center">
 			<div class="flex flex-row items-center">
 				<Label for="range-min" class="mr-2">Start:</Label>
-				<Input bind:value={rangeStart} id="range-min" defaultClass="block w-1/2" size="sm" />
+				<Input
+					bind:value={rangeStart}
+					on:change={() => (validUpload = true)}
+					id="range-min"
+					defaultClass="block w-1/2"
+					size="sm"
+				/>
 			</div>
 			<div class="flex flex-row items-center">
 				<Label for="range-max" class="mr-2">End:</Label>
-				<Input bind:value={rangeEnd} id="range-max" defaultClass="block w-1/2" size="sm" />
+				<Input
+					bind:value={rangeEnd}
+					on:change={() => (validUpload = true)}
+					id="range-max"
+					defaultClass="block w-1/2"
+					size="sm"
+				/>
 			</div>
 		</div>
 		{#if !validUpload}

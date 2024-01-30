@@ -54,6 +54,34 @@
 		}
 	);
 
+	// If filters are set throught context menu, redraw axes
+	const unsubscribeFilters = filtersArray.subscribe((value: AxesFilterType[]) => {
+		if (
+			!axesFilters ||
+			!axisUpperFilters ||
+			axesFilters.length === 0 ||
+			axisUpperFilters.length === 0
+		)
+			return;
+
+		let redrawAxes = false;
+		dimensions.forEach((dim: string, i: number) => {
+			if (value[i].percentages.start === null) {
+				axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
+				redrawAxes = true;
+			}
+			if (value[i].percentages.end === null) {
+				axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
+				redrawAxes = true;
+			}
+		});
+
+		if (redrawAxes) {
+			clearSVG();
+			renderAxes();
+		}
+	});
+
 	// Remove all axes elements and drag handlers
 	export function clearSVG() {
 		axisLines = [];
@@ -180,7 +208,10 @@
 					$dimensionDataStore.get(dim)?.type === 'numerical' &&
 					dimensionsMetadata.get(dim)?.showFilterValues
 				) {
-					const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start);
+					const upperFilterValue = getAxisDomainValue(
+						i,
+						axesFilters[i].percentages.start as number
+					);
 					const groupUpper = svg
 						.append('g')
 						.attr('class', 'axis-filter-upper-value')
@@ -188,7 +219,7 @@
 							'transform',
 							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
 						)
-						.attr('display', axesFilters[i].percentages.start <= 0 ? 'none' : 'block');
+						.attr('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
 					groupUpper
 						.append('rect')
 						.attr('class', 'axis-filter-upper-value')
@@ -213,7 +244,7 @@
 							'transform',
 							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
 						)
-						.attr('display', axesFilters[i].percentages.end >= 1 ? 'none' : 'block');
+						.attr('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
 					groupLower
 						.append('rect')
 						.attr('class', 'axis-filter-lower-value')
@@ -228,7 +259,7 @@
 						.attr('fill', 'black')
 						.attr('x', 4)
 						.attr('y', 10)
-						.text(getAxisDomainValue(i, axesFilters[i].percentages.end));
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
 					axisLowerFiltersValues.push(groupLower);
 				} else {
 					axisUpperFiltersValues.push(null);
@@ -475,10 +506,13 @@
 					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY - 4})`); // Move upper filter
 					axisUpperFiltersValues[idx]
 						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 2})`)
-						.style('display', axesFilters[idx].percentages.start <= 0 ? 'none' : 'block');
+						.style(
+							'display',
+							(axesFilters[idx].percentages.start as number) <= 0 ? 'none' : 'block'
+						);
 					axisUpperFiltersValues[idx]
 						?.select('text')
-						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.start));
+						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.start as number));
 					axisFilterRectangles[idx]
 						.attr('y', `${newY + 8}`)
 						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
@@ -505,10 +539,10 @@
 					axisLowerFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY})`); // Move lower filter
 					axisLowerFiltersValues[idx]
 						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 4})`)
-						.style('display', axesFilters[idx].percentages.end >= 1 ? 'none' : 'block');
+						.style('display', (axesFilters[idx].percentages.end as number) >= 1 ? 'none' : 'block');
 					axisLowerFiltersValues[idx]
 						?.select('text')
-						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.end));
+						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.end as number));
 					axisFilterRectangles[idx].attr(
 						'height',
 						`${newY - axesFilters[idx].pixels.start - margin.top}`
@@ -565,10 +599,10 @@
 							'transform',
 							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
 						)
-						.style('display', axesFilters[i].percentages.start <= 0 ? 'none' : 'block');
+						.style('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
 					axisUpperFiltersValues[i]
 						.select('text')
-						.text(getAxisDomainValue(i, axesFilters[i].percentages.start));
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.start as number));
 					axisLowerFilters[i].attr(
 						'transform',
 						`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.end + margin.top})`
@@ -578,10 +612,10 @@
 							'transform',
 							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
 						)
-						.style('display', axesFilters[i].percentages.end >= 1 ? 'none' : 'block');
+						.style('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
 					axisLowerFiltersValues[i]
 						.select('text')
-						.text(getAxisDomainValue(i, axesFilters[i].percentages.end));
+						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
 				})
 				.on('end', () => {
 					startY = 0;
@@ -675,8 +709,8 @@
 		dimensions.forEach((dim: string, i: number) => {
 			// Calculate new pixel values
 			axesFilters[i].pixels = {
-				start: axesFilters[i].percentages.start * axisHeight,
-				end: axesFilters[i].percentages.end * axisHeight
+				start: (axesFilters[i].percentages.start as number) * axisHeight,
+				end: (axesFilters[i].percentages.end as number) * axisHeight
 			};
 		});
 
@@ -711,6 +745,7 @@
 			initAxesFilters();
 			calculateMarginLeft();
 		}
+
 		resizeFilters();
 		clearSVG();
 		renderAxes();
@@ -718,6 +753,7 @@
 
 	onDestroy(() => {
 		unsubscribeDimData();
+		unsubscribeFilters();
 	});
 </script>
 

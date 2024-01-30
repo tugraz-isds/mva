@@ -309,7 +309,6 @@
 			bind:yScales
 			bind:dimensions
 			bind:margin
-			{dataset}
 		/>
 
 		<LinesThree
