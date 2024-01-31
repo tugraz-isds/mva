@@ -491,7 +491,9 @@
 	function getAxisDomainValue(i: number, percentage: number) {
 		const axisDomain = yScales[dimensions[i]].domain();
 		const axisRange = axisDomain[1] - axisDomain[0];
-		return (axisDomain[0] + (1 - percentage) * axisRange).toFixed(2);
+		return (axisDomain[0] + (1 - percentage) * axisRange).toFixed(
+			$dimensionDataStore.get(dimensions[i])?.numberOfDecimals
+		);
 	}
 
 	function handleUpperFilterDragging() {

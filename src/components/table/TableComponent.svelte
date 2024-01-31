@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { datasetStore } from '../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { linkingArray } from '../../stores/linking';
 	import {
 		brushedArray,
@@ -17,6 +17,7 @@
 	let hoveredLineIndex: number | null = null; // Currently hovered line
 	let hoveredRowsIndices: Set<number> = new Set(); // Currently hovered rows
 	let brushedRowsIndices: Set<number> = new Set(); // Currently brushed rows
+	let dimensions: string[] = [];
 
 	// Selection range
 	let rangeStart: number | null = null; // Start of range of rows
@@ -25,6 +26,7 @@
 	let dataset: DSVParsedArray<any>;
 	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
 		dataset = value;
+		if (dataset?.length > 0) dimensions = Object.keys(dataset[0]);
 	});
 
 	const unsubscribeLinking = linkingArray.subscribe((value: any) => {
@@ -94,6 +96,12 @@
 		hoveredArray.set(hoveredRowsIndices);
 	}
 
+	function formatCell(value: string, dimIndex: number) {
+		const dimData = $dimensionDataStore.get(dimensions[dimIndex]);
+		if (!dimData || dimData.type === 'categorical') return value;
+		return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
+	}
+
 	onDestroy(() => {
 		unsubscribeDataset();
 		unsubscribeLinking();
@@ -123,8 +131,8 @@
 					on:mouseleave={handleMouseLeave}
 					on:mousedown={handleRowClick}
 				>
-					{#each Object.keys(row) as key}
-						<td>{row[key]}</td>
+					{#each Object.keys(row) as key, i}
+						<td>{formatCell(row[key], i)}</td>
 					{/each}
 				</tr>
 			{/each}

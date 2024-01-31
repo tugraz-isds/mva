@@ -13,13 +13,14 @@
 	let errorMessage: string = '';
 
 	function loadData() {
+		const numberOfDecimals = $dimensionDataStore.get(dimension)?.numberOfDecimals;
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
 		filterStart = isAxisInverted
-			? yScales[dimension].invert($filtersArray[dimIndex].pixels.start)
-			: yScales[dimension].invert($filtersArray[dimIndex].pixels.end);
+			? yScales[dimension].invert($filtersArray[dimIndex].pixels.start).toFixed(numberOfDecimals)
+			: yScales[dimension].invert($filtersArray[dimIndex].pixels.end).toFixed(numberOfDecimals);
 		filterEnd = isAxisInverted
-			? yScales[dimension].invert($filtersArray[dimIndex].pixels.end)
-			: yScales[dimension].invert($filtersArray[dimIndex].pixels.start);
+			? yScales[dimension].invert($filtersArray[dimIndex].pixels.end).toFixed(numberOfDecimals)
+			: yScales[dimension].invert($filtersArray[dimIndex].pixels.start).toFixed(numberOfDecimals);
 	}
 
 	function setAxisRange() {

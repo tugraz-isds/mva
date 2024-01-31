@@ -24,4 +24,5 @@ export type DimensionDataType = {
 	type: 'numerical' | 'categorical';
 	min: number | null;
 	max: number | null;
+	numberOfDecimals: number | null;
 };

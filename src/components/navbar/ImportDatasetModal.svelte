@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
-	import { csvParse, autoType, extent, type DSVParsedArray } from 'd3';
+	import { csvParse, autoType, extent, max, type DSVParsedArray } from 'd3';
 	import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
 	import type { DimensionDataType } from '../../util/types';
 
@@ -30,8 +30,29 @@
 			dimensions.forEach((dim: string) => {
 				if (isNumber(dataset[0][dim])) {
 					const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-					dimensionTypeMap.set(dim, { type: 'numerical', min: dimExtent[0], max: dimExtent[1] });
-				} else dimensionTypeMap.set(dim, { type: 'categorical', min: null, max: null });
+					let maxNumberOfDecimals = max(
+						dataset.map((d) => d[dim]),
+						(number: number) => {
+							const numberOfDecimals = number?.toString().includes('.')
+								? number.toString().split('.')[1].length
+								: 0;
+							return numberOfDecimals;
+						}
+					);
+
+					dimensionTypeMap.set(dim, {
+						type: 'numerical',
+						min: dimExtent[0],
+						max: dimExtent[1],
+						numberOfDecimals: maxNumberOfDecimals ?? null
+					});
+				} else
+					dimensionTypeMap.set(dim, {
+						type: 'categorical',
+						min: null,
+						max: null,
+						numberOfDecimals: null
+					});
 			});
 			dimensionDataStore.set(dimensionTypeMap);
 			localStorage.setItem(
