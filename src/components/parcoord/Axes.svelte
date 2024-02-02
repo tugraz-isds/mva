@@ -159,6 +159,12 @@
 			const step = xScales[1] - xScales[0];
 			// Create axis titles SVG
 			const maxTitleLength = calculateMaxLength(dim, 10, 'Roboto', step);
+			const cursorString =
+				i === 0
+					? 'url("arrow-right.svg") 7 5, auto'
+					: i === dimensions.length - 1
+					? 'url("arrow-left.svg") 7 5, auto'
+					: 'url("arrows-right-left.svg") 8 8, auto';
 			axisTitles.push(
 				svg
 					.append('text')
@@ -166,7 +172,7 @@
 					.attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
-					.style('cursor', `url("arrows-right-left.svg") 9 9, auto`)
+					.style('cursor', cursorString)
 					.text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
 					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
