@@ -8,7 +8,7 @@ export const arrow_curved_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" vie
 `;
 
 export const arrow_filter_down_hover_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916664 5.2916666">
-  <path  stroke-width="0.259554" d="M0.3363627,2.5225803H4.9507688L2.6460125,5.030853Z" />
+  <path stroke-width="0.259554" d="M0.3363627,2.5225803H4.9507688L2.6460125,5.030853Z" />
 </svg>
 `;
 
@@ -54,7 +54,7 @@ export const arrow_right_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
 `;
 
 export const arrows_right_left_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916667 5.2916667">
-  <path fill-opacity="1" stroke-width="0.279868" d="M1.0611627,1.2579603v0.7960966h1.7729567v0.745551L4.9415095,1.6370539 2.8387006,0.50609109V1.2674376Z" />
-  <path fill-opacity="1" stroke-width="0.279868" d="M4.2096487,4.0871794V3.2910826H2.436692V2.5455317L0.32930199,3.7080856 2.4321108,4.8390485V4.077702Z" />
+  <path stroke-width="0.279868" d="M1.0611627,1.2579603v0.7960966h1.7729567v0.745551L4.9415095,1.6370539 2.8387006,0.50609109V1.2674376Z" />
+  <path stroke-width="0.279868" d="M4.2096487,4.0871794V3.2910826H2.436692V2.5455317L0.32930199,3.7080856 2.4321108,4.8390485V4.077702Z" />
 </svg>
 `;
