@@ -4,6 +4,20 @@
 	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
 	import { dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
+	import {
+		arrow_invert_down_icon,
+		arrow_invert_up_icon,
+		arrow_filter_up_icon,
+		arrow_filter_down_icon,
+		arrow_right_icon,
+		arrow_left_icon,
+		arrows_right_left_icon,
+		arrow_filter_down_hover_icon,
+		arrow_filter_up_hover_icon,
+		arrow_filter_up_down_icon,
+		arrow_curved_up_icon,
+		arrow_curved_down_icon
+	} from '../../util/icon-definitions';
 	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
 	import type { AxesFilterType, DimensionMetadataType } from './types';
@@ -30,11 +44,6 @@
 	let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
 	let axisLowerFiltersValues: any = []; // Array of SVG elements for axis lower filters values
 	let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
-	let filterArrowDown: string,
-		filterArrowUp: string,
-		invertArrowDown: string,
-		invertArrowUp: string;
-	let iconsRead: boolean = false;
 
 	let axisHeight: number; // Actual axis height in pixels
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
@@ -106,7 +115,7 @@
 
 	// Draw axes elements
 	export function renderAxes(newWidth: number | undefined = undefined) {
-		if (!dimensions || xScales?.length === 0 || yScales?.length === 0 || !iconsRead) return;
+		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
 		if (newWidth) width = newWidth;
 
@@ -161,10 +170,10 @@
 			const maxTitleLength = calculateMaxLength(dim, 10, 'Roboto', step);
 			const cursorString =
 				i === 0
-					? 'url("arrow-right.svg") 7 5, auto'
+					? `${btoa(setSvgStyle(arrow_right_icon, 14, 10, '#000', '#f9f9f9'))}") 7 5`
 					: i === dimensions.length - 1
-					? 'url("arrow-left.svg") 7 5, auto'
-					: 'url("arrows-right-left.svg") 8 8, auto';
+					? `${btoa(setSvgStyle(arrow_left_icon, 14, 10, '#000', '#f9f9f9'))}") 7 5`
+					: `${btoa(setSvgStyle(arrows_right_left_icon, 16, 16, '#000', '#f9f9f9'))}") 8 8`;
 			axisTitles.push(
 				svg
 					.append('text')
@@ -172,7 +181,7 @@
 					.attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
 					.style('text-anchor', 'middle')
 					.style('font-size', '10px')
-					.style('cursor', cursorString)
+					.style('cursor', `url("data:image/svg+xml;base64,${cursorString}, pointer`)
 					.text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
 					.on('mouseenter', () => showCustomTooltip(dim, i))
 					.on('mouseleave', hideCustomTooltip)
@@ -183,17 +192,30 @@
 			// Create axis invert icons SVG
 			axisInvertIcons.push(
 				svg
-					.append('g')
+					.append('svg')
 					.attr('class', 'axis-invert cursor-pointer')
-					.html(dimensionsMetadata.get(dim)?.inverted ? invertArrowDown : invertArrowUp)
-					.attr('transform', `translate(${xScales[i] - 8}, ${margin.top - 28})`)
+					.html(
+						dimensionsMetadata.get(dim)?.inverted ? arrow_invert_down_icon : arrow_invert_up_icon
+					)
+					.attr('x', xScales[i] - 8)
+					.attr('y', margin.top - 28)
+					.attr('width', '16px')
+					.attr('height', '16px')
+					.attr('stroke', '#000')
+					.attr('fill', '#000')
 					.style(
 						'cursor',
-						`url(${
-							dimensionsMetadata.get(dim)?.inverted
-								? 'arrow-curved-up.svg'
-								: 'arrow-curved-down.svg'
-						}) 9 9, auto`
+						`url("data:image/svg+xml;base64,${btoa(
+							setSvgStyle(
+								dimensionsMetadata.get(dim)?.inverted
+									? arrow_curved_up_icon
+									: arrow_curved_down_icon,
+								15,
+								15,
+								'#000',
+								'#f9f9f9'
+							)
+						)}") 7 5, pointer`
 					)
 					.on('click', () => handleOnInvertAxesClick(i))
 			);
@@ -201,14 +223,21 @@
 			if (dimensionsMetadata.get(dim)?.showFilter) {
 				axisUpperFilters.push(
 					svg
-						.append('g')
+						.append('svg')
 						.attr('class', 'axis-filter-upper')
-						.html(filterArrowDown)
-						.attr(
-							'transform',
-							`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.start + margin.top - 12})`
+						.html(arrow_filter_down_icon)
+						.attr('x', xScales[i] - 8)
+						.attr('y', axesFilters[i].pixels.start + margin.top - 16)
+						.attr('width', '16px')
+						.attr('height', '16px')
+						.attr('stroke', '#000')
+						.attr('fill', '#000')
+						.style(
+							'cursor',
+							`url("data:image/svg+xml;base64,${btoa(
+								setSvgStyle(arrow_filter_down_hover_icon, 12, 12, '#000', '#f9f9f9')
+							)}") 7 5, pointer`
 						)
-						.style('cursor', `url("arrow-filter-down-hover.svg") 9 9, auto`)
 				);
 				if (
 					$dimensionDataStore.get(dim)?.type === 'numerical' &&
@@ -275,14 +304,21 @@
 				// Create axis lower filter
 				axisLowerFilters.push(
 					svg
-						.append('g')
+						.append('svg')
 						.attr('class', 'axis-filter-lower')
-						.html(filterArrowUp)
-						.attr(
-							'transform',
-							`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.end + margin.top})`
+						.html(arrow_filter_up_icon)
+						.attr('x', xScales[i] - 8)
+						.attr('y', axesFilters[i].pixels.end + margin.top)
+						.attr('width', '16px')
+						.attr('height', '16px')
+						.attr('stroke', '#000')
+						.attr('fill', '#000')
+						.style(
+							'cursor',
+							`url("data:image/svg+xml;base64,${btoa(
+								setSvgStyle(arrow_filter_up_hover_icon, 12, 12, '#000', '#f9f9f9')
+							)}") 7 5, pointer`
 						)
-						.style('cursor', `url("arrow-filter-up-hover.svg") 9 9, auto`)
 				);
 
 				// Create filter rectangles SVG
@@ -297,7 +333,12 @@
 						.attr('fill', 'rgba(255, 255, 100, 0.2)')
 						.attr('stroke', 'rgba(0, 0, 0, 0.25)')
 						.attr('transform', `translate(${xScales[i] - 6}, 0)`)
-						.style('cursor', `url("arrow-filter-up-down-v2.svg") 9 9, auto`)
+						.style(
+							'cursor',
+							`url("data:image/svg+xml;base64,${btoa(
+								setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
+							)}") 7 5, pointer`
+						)
 				);
 			}
 		});
@@ -306,6 +347,13 @@
 		handleFilterRectDragging();
 		handleUpperFilterDragging();
 		handleLowerFilterDragging();
+	}
+
+	function setSvgStyle(svg: string, width: number, height: number, stroke: string, fill: string) {
+		return svg.replace(
+			'<svg',
+			`<svg width="${width}" height="${height}" stroke="${stroke}" fill="${fill}"`
+		);
 	}
 
 	function showCustomTooltip(axisTitle: string, axisIndex: number) {
@@ -348,19 +396,10 @@
 					// Move dragged axis
 					axisLines[draggingIndex].attr('transform', `translate(${newX}, ${margin.top})`);
 					axisTitles[draggingIndex].attr('transform', `translate(${newX}, ${margin.top - 30})`);
-					axisInvertIcons[draggingIndex].attr(
-						'transform',
-						`translate(${newX - 8}, ${margin.top - 28})`
-					);
+					axisInvertIcons[draggingIndex].attr('x', newX - 8);
 					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
-						axisUpperFilters[draggingIndex].attr(
-							'transform',
-							`translate(${newX - 6}, ${axesFilters[draggingIndex].pixels.start + margin.top - 12})`
-						);
-						axisLowerFilters[draggingIndex].attr(
-							'transform',
-							`translate(${newX - 6}, ${axesFilters[draggingIndex].pixels.end + margin.top})`
-						);
+						axisUpperFilters[draggingIndex].attr('x', newX - 8);
+						axisLowerFilters[draggingIndex].attr('x', newX - 8);
 						axisFilterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
 					}
 					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
@@ -390,23 +429,10 @@
 							'transform',
 							`translate(${xScales[draggingIndex]}, ${margin.top - 30})`
 						);
-						axisInvertIcons[newIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
-						);
+						axisInvertIcons[draggingIndex].attr('x', xScales[draggingIndex] - 8);
 						if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
-							axisUpperFilters[newIndex].attr(
-								'transform',
-								`translate(${xScales[draggingIndex] - 6}, ${
-									axesFilters[draggingIndex].pixels.start + margin.top - 12
-								})`
-							);
-							axisLowerFilters[newIndex].attr(
-								'transform',
-								`translate(${xScales[draggingIndex] - 6}, ${
-									axesFilters[draggingIndex].pixels.end + margin.top
-								})`
-							);
+							axisUpperFilters[draggingIndex].attr('x', xScales[draggingIndex] - 8);
+							axisLowerFilters[draggingIndex].attr('x', xScales[draggingIndex] - 8);
 							axisFilterRectangles[newIndex].attr(
 								'transform',
 								`translate(${xScales[draggingIndex] - 6}, 0)`
@@ -450,23 +476,10 @@
 						'transform',
 						`translate(${xScales[draggingIndex]}, ${margin.top - 30})`
 					);
-					axisInvertIcons[draggingIndex].attr(
-						'transform',
-						`translate(${xScales[draggingIndex] - 8}, ${margin.top - 28})`
-					);
+					axisInvertIcons[draggingIndex].attr('x', xScales[draggingIndex] - 8);
 					if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilter) {
-						axisUpperFilters[draggingIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 6}, ${
-								axesFilters[draggingIndex].pixels.start + margin.top - 12
-							})`
-						);
-						axisLowerFilters[draggingIndex].attr(
-							'transform',
-							`translate(${xScales[draggingIndex] - 6}, ${
-								axesFilters[draggingIndex].pixels.end + margin.top
-							})`
-						);
+						axisUpperFilters[draggingIndex].attr('x', xScales[draggingIndex] - 8);
+						axisLowerFilters[draggingIndex].attr('x', xScales[draggingIndex] - 8);
 						axisFilterRectangles[draggingIndex].attr(
 							'transform',
 							`translate(${xScales[draggingIndex] - 6}, 0)`
@@ -511,7 +524,7 @@
 					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
-					axisUpperFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY - 4})`); // Move upper filter
+					axisUpperFilters[idx].attr('y', newY - 8); // Move upper filter
 					axisUpperFiltersValues[idx]
 						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 2})`)
 						.style(
@@ -540,20 +553,20 @@
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {})
 				.on('drag', (event) => {
-					const minY = axesFilters[idx].pixels.start + margin.top; // Minimum y position
-					const maxY = height - margin.bottom; // Maximum y position
+					const minY = axesFilters[idx].pixels.start + margin.top + 8; // Minimum y position
+					const maxY = height - margin.bottom + 8; // Maximum y position
 					const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
-					axisLowerFilters[idx].attr('transform', `translate(${xScales[idx] - 6}, ${newY})`); // Move lower filter
+					axisLowerFilters[idx].attr('y', newY - 8); // Move lower filter
 					axisLowerFiltersValues[idx]
-						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 4})`)
+						?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 8})`)
 						.style('display', (axesFilters[idx].percentages.end as number) >= 1 ? 'none' : 'block');
 					axisLowerFiltersValues[idx]
 						?.select('text')
 						.text(getAxisDomainValue(idx, axesFilters[idx].percentages.end as number));
 					axisFilterRectangles[idx].attr(
 						'height',
-						`${newY - axesFilters[idx].pixels.start - margin.top}`
+						`${newY - axesFilters[idx].pixels.start - margin.top - 8}`
 					); // Move filter rectangle
 
 					axesFilters[idx].pixels.end = newY - margin.top;
@@ -598,10 +611,7 @@
 					filtersArray.set(axesFilters);
 
 					// Update axis upper and lower filters
-					axisUpperFilters[i].attr(
-						'transform',
-						`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.start + margin.top - 12})`
-					);
+					axisUpperFilters[i].attr('y', axesFilters[i].pixels.start + margin.top - 16);
 					axisUpperFiltersValues[i]
 						?.attr(
 							'transform',
@@ -611,10 +621,7 @@
 					axisUpperFiltersValues[i]
 						.select('text')
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.start as number));
-					axisLowerFilters[i].attr(
-						'transform',
-						`translate(${xScales[i] - 6}, ${axesFilters[i].pixels.end + margin.top})`
-					);
+					axisLowerFilters[i].attr('y', axesFilters[i].pixels.end + margin.top);
 					axisLowerFiltersValues[i]
 						?.attr(
 							'transform',
@@ -725,14 +732,6 @@
 		filtersArray.set(axesFilters);
 	}
 
-	async function readIcons() {
-		filterArrowDown = await text('arrow-filter-down.svg');
-		filterArrowUp = await text('arrow-filter-up.svg');
-		invertArrowDown = await text('arrow-invert-down.svg');
-		invertArrowUp = await text('arrow-invert-up.svg');
-		iconsRead = true;
-	}
-
 	// Save axes to SVG
 	export const saveSVG = () => {
 		const svgElement = document.getElementById('parcoord-canvas-axes');
@@ -747,8 +746,6 @@
 	});
 
 	afterUpdate(async () => {
-		if (!iconsRead) await readIcons();
-
 		if (axesFilters.length !== dimensions.length) {
 			initAxesFilters();
 			calculateMarginLeft();
