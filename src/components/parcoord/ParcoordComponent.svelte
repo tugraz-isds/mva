@@ -192,8 +192,15 @@
 		linesComponent.handleInvertAxis(axisIndex);
 	}
 
-	function handleHideDImension(idx: number) {
+	function handleHideDimension(idx: number) {
 		dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
+		idx === 0 && calculateMarginLeft();
+	}
+
+	function calculateMarginLeft() {
+		setTimeout(() => {
+			axesComponent.calculateMarginLeft();
+		}, 10);
 	}
 
 	function setTooltipData(data: TooltipType) {
@@ -316,6 +323,8 @@
 			bind:yScales
 			bind:dimensions
 			bind:margin
+			{handleHideDimension}
+			{calculateMarginLeft}
 		/>
 
 		<LinesThreeOffscreen

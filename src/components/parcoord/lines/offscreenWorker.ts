@@ -76,7 +76,6 @@ function init() {
 }
 
 function drawLines(inputLines: number[][][]) {
-	console.log('Redrawing all lines');
 	lines = [];
 	scene.children = [];
 	inputLines.forEach((currLine: number[][], i: number) => {
@@ -93,7 +92,6 @@ function drawLines(inputLines: number[][][]) {
 		lines.push(line);
 		scene.add(line);
 	});
-	console.log(scene.children.length);
 	lineShow = Array(scene.children.length).fill(true);
 	animate();
 }

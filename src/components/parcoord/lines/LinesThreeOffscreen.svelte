@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import OffscreenWorker from './offscreenWorker?worker';
 	import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../../stores/parcoord';
 	import {
@@ -26,7 +27,6 @@
 	let canvasEl: HTMLCanvasElement;
 	let offscreenCanvasEl: OffscreenCanvas;
 	let worker: Worker;
-	// let dimensions: string[];
 	let lines: number[][][] = [];
 	let lineData: RecordDataType[] = [];
 	let lineShow: boolean[] = [];
@@ -243,9 +243,8 @@
 		window.addEventListener('pointerdown', handleMouseDown, false);
 
 		offscreenCanvasEl = canvasEl.transferControlToOffscreen();
-		worker = new Worker('../src/components/parcoord/lines/offscreenWorker.ts', {
-			type: 'module'
-		});
+		worker = new OffscreenWorker();
+
 		worker.postMessage(
 			{
 				function: 'init',
@@ -255,6 +254,7 @@
 			},
 			[offscreenCanvasEl]
 		);
+
 		worker.onmessage = (message) => {
 			const data = message.data;
 			switch (data.function) {

@@ -686,7 +686,8 @@
 	}
 
 	// Function to calculate new margin left
-	function calculateMarginLeft() {
+	export function calculateMarginLeft() {
+		console.log('calculating margin left');
 		if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
 			const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
 			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');

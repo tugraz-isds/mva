@@ -15,6 +15,8 @@
 	export let xScales: any;
 	export let yScales: any;
 	export let margin: MarginType;
+	export let handleHideDimension: Function;
+	export let calculateMarginLeft: Function;
 
 	let debounceTimeout: number;
 	let isSetRangeModalOpen: boolean = false,
@@ -72,8 +74,8 @@
 		};
 	}
 
-	function handleHideDImension() {
-		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
+	function hideDimension() {
+		handleHideDimension(dimIndex);
 		hideContextMenu();
 	}
 
@@ -82,8 +84,10 @@
 		const currDimData = dimData.get(dimensions[dimIndex]);
 		if (!currDimData) return;
 
-		if (field === 'labels') currDimData.showLabels = !currDimData.showLabels;
-		else if (field === 'histograms') {
+		if (field === 'labels') {
+			currDimData.showLabels = !currDimData.showLabels;
+			dimIndex === 0 && calculateMarginLeft();
+		} else if (field === 'histograms') {
 			currDimData.showHistograms = !currDimData.showHistograms;
 			const step = xScales[1] - xScales[0];
 			if (dimIndex === dimensions.length - 1)
@@ -115,7 +119,7 @@
 		on:mouseenter={handleMouseEnter}
 		on:mouseleave={handleMouseLeave}
 	>
-		<DropdownItem defaultClass={activeClass} on:click={() => handleHideDImension()}
+		<DropdownItem defaultClass={activeClass} on:click={() => hideDimension()}
 			>Hide Axis</DropdownItem
 		>
 		<DropdownItem
