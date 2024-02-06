@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { axisLeft, select, drag, text } from 'd3';
-	import { filtersArray, parcoordDimMetadata, parcoordIsInteractable } from '../../stores/parcoord';
-	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
+	import { axisLeft, select, drag } from 'd3';
+	import {
+		filtersArray,
+		parcoordDimMetadata,
+		parcoordIsInteractable
+	} from '../../../stores/parcoord';
+	import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
+	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../../util/text';
 	import {
 		arrow_invert_down_icon,
 		arrow_invert_up_icon,
@@ -17,11 +21,11 @@
 		arrow_filter_up_down_icon,
 		arrow_curved_up_icon,
 		arrow_curved_down_icon
-	} from '../../util/icon-definitions';
-	import { getAllTicks, reorderArray } from '../../util/util';
-	import type ContextMenuAxes from './ContextMenuAxes.svelte';
-	import type { AxesFilterType, DimensionMetadataType } from './types';
-	import type { MarginType } from '../../util/types';
+	} from '../../../util/icon-definitions';
+	import { getAllTicks, reorderArray } from '../../../util/util';
+	import type ContextMenuAxes from '../context-menu/ContextMenuAxes.svelte';
+	import type { AxesFilterType, DimensionMetadataType } from '../types';
+	import type { MarginType } from '../../../util/types';
 
 	export let width: number; // Container width
 	export let contextMenuAxes: ContextMenuAxes;
@@ -639,7 +643,7 @@
 						)
 						.style('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
 					axisUpperFiltersValues[i]
-						.select('text')
+						?.select('text')
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.start as number));
 					axisLowerFilters[i].attr('y', axesFilters[i].pixels.end + margin.top);
 					axisLowerFiltersValues[i]
@@ -649,7 +653,7 @@
 						)
 						.style('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
 					axisLowerFiltersValues[i]
-						.select('text')
+						?.select('text')
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
 				})
 				.on('end', () => {

@@ -4,7 +4,7 @@
 	import { openWindow } from 'svelte-window-system';
 	import { Dropdown, DropdownItem } from 'flowbite-svelte';
 	import { activeViewsStore } from '../../stores/views';
-	import HistogramSettings from '../parcoord/HistogramSettings.svelte';
+	import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
 	import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
 	import type { View } from './ViewType';
 

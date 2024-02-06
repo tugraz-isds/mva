@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { afterUpdate } from 'svelte';
 	import { select } from 'd3';
-	import { getTextWidth } from '../../util/text';
-	import type { TooltipAxisTitleType } from './types';
+	import { getTextWidth } from '../../../util/text';
+	import type { TooltipAxisTitleType } from '../types';
 
 	export let width: number; // Container width
 	export let data: TooltipAxisTitleType;

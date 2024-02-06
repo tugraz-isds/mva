@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Modal, Label, NumberInput, Helper } from 'flowbite-svelte';
-	import { parcoordHistogramData } from '../../stores/parcoord';
-	import type { HistogramsType } from './types';
+	import { parcoordHistogramData } from '../../../stores/parcoord';
+	import type { HistogramsType } from '../types';
 
 	export let isOpen: boolean;
 

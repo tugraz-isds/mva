@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
 	import { Check } from 'svelte-heros-v2';
-	import { dimensionDataStore } from '../../stores/dataset';
-	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
-	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../stores/parcoord';
+	import { dimensionDataStore } from '../../../stores/dataset';
+	import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
+	import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../../stores/parcoord';
 	import SetRangeModal from './SetRangeModal.svelte';
 	import SetBinNoModal from './SetBinNoModal.svelte';
 	import SetFilterModal from './SetFilterModal.svelte';
-	import type Axes from './Axes.svelte';
-	import type { DSVParsedArray } from 'd3';
-	import type { MarginType } from '../../util/types';
+	import type Axes from '../axes/Axes.svelte';
+	import type { MarginType } from '../../../util/types';
 
 	export let axesComponent: Axes;
 	export let dimensions: string[] = [];

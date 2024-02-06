@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
-	import { parcoordDimMetadata, parcoordIsInteractable, filtersArray } from '../../stores/parcoord';
-	import { dimensionDataStore } from '../../stores/dataset';
+	import {
+		parcoordDimMetadata,
+		parcoordIsInteractable,
+		filtersArray
+	} from '../../../stores/parcoord';
+	import { dimensionDataStore } from '../../../stores/dataset';
 
 	export let isOpen: boolean;
 	export let dimension: string;

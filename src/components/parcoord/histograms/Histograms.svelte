@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
 	import { select, group, bin, range } from 'd3';
-	import { dimensionDataStore } from '../../stores/dataset';
-	import { parcoordDimMetadata, parcoordHistogramData } from '../../stores/parcoord';
+	import { dimensionDataStore } from '../../../stores/dataset';
+	import { parcoordDimMetadata, parcoordHistogramData } from '../../../stores/parcoord';
 	import type { DSVParsedArray } from 'd3';
 
 	export let dataset: DSVParsedArray<any>;

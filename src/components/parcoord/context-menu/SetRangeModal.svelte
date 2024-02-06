@@ -5,9 +5,9 @@
 		parcoordDimMetadata,
 		parcoordIsInteractable,
 		filtersArray
-	} from '../../stores/parcoord';
-	import { dimensionDataStore } from '../../stores/dataset';
-	import { scaleLinear, type DSVParsedArray } from 'd3';
+	} from '../../../stores/parcoord';
+	import { dimensionDataStore } from '../../../stores/dataset';
+	import { scaleLinear } from 'd3';
 
 	export let isOpen: boolean;
 	export let dimension: string;

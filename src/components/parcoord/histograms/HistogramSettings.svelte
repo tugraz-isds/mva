@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Checkbox } from 'flowbite-svelte';
 	import { Cog8Tooth } from 'svelte-heros-v2';
-	import { parcoordHistogramData } from '../../stores/parcoord';
-	import HistogramSettingsModal from '../parcoord/HistogramSettingsModal.svelte';
+	import { parcoordHistogramData } from '../../../stores/parcoord';
+	import HistogramSettingsModal from './HistogramSettingsModal.svelte';
 
 	let isHistogramSettingsModalOpen: boolean = false;
 

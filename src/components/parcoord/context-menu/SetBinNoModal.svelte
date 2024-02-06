@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Modal, Label, NumberInput } from 'flowbite-svelte';
-	import { parcoordDimMetadata, parcoordIsInteractable } from '../../stores/parcoord';
-	import type { DimensionMetadataType } from './types';
+	import { parcoordDimMetadata, parcoordIsInteractable } from '../../../stores/parcoord';
+	import type { DimensionMetadataType } from '../types';
 
 	export let isOpen: boolean;
 	export let dimension: string;

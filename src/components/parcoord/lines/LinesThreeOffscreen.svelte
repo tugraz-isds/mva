@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { dimensionDataStore, labelDimension } from '../../stores/dataset';
-	import { filtersArray, parcoordIsInteractable } from '../../stores/parcoord';
+	import { onDestroy, onMount } from 'svelte';
+	import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
+	import { filtersArray, parcoordIsInteractable } from '../../../stores/parcoord';
 	import {
 		brushedArray,
 		hoveredArray,
 		previouslyBrushedArray,
 		previouslyHoveredArray
-	} from '../../stores/brushing';
-	import { linkingArray } from '../../stores/linking';
-	import { COLOR_ACTIVE } from '../../util/colors';
+	} from '../../../stores/brushing';
+	import { linkingArray } from '../../../stores/linking';
+	import { COLOR_ACTIVE } from '../../../util/colors';
 	import type { DSVParsedArray } from 'd3';
-	import type { RecordDataType } from '../../util/types';
-	import type { AxesFilterType } from './types';
+	import type { RecordDataType } from '../../../util/types';
+	import type { AxesFilterType } from '../types';
 
 	export let width: number;
 	export let height: number;

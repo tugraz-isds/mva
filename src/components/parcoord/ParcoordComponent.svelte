@@ -9,12 +9,12 @@
 	} from '../../stores/parcoord';
 	import { scaleLinear, scaleBand } from 'd3';
 	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
-	import Axes from './Axes.svelte';
-	import Histograms from './Histograms.svelte';
-	import LinesThreeOffscreen from './LinesThreeOffscreen.svelte';
+	import Axes from './axes/Axes.svelte';
+	import Histograms from './histograms/Histograms.svelte';
+	import LinesThreeOffscreen from './lines/LinesThreeOffscreen.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
-	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
-	import ContextMenuAxes from './ContextMenuAxes.svelte';
+	import TooltipAxisTitle from './axes/TooltipAxisTitle.svelte';
+	import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
 	import type { DSVParsedArray } from 'd3';
 	import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
 	import type { MarginType, TooltipType } from '../../util/types';
