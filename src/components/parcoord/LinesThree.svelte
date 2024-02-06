@@ -14,8 +14,7 @@
 	import {
 		LINE_MATERIAL_MAP,
 		LINE_MATERIAL_HOVERED,
-		LINE_MATERIAL_BRUSHED,
-		MATERIAL_DRAGGING_RECT
+		LINE_MATERIAL_BRUSHED
 	} from '../../util/materials';
 	import { reorderArray, areSetsEqual } from '../../util/util';
 	import { linkingArray } from '../../stores/linking';
@@ -50,13 +49,6 @@
 	let previouslyHoveredLinesIndices = new Set<number>();
 	let brushedLinesIndices = new Set<number>();
 	let previouslyBrushedLinesIndices = new Set<number>();
-
-	let isDragging: boolean = false;
-	let dragStart: {
-		x: number;
-		y: number;
-	} | null = null;
-	let draggingRectangle: THREE.Line;
 	let intersectingLines: any[];
 
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -198,47 +190,17 @@
 
 		// Check for intersections
 		raycaster.setFromCamera(mouse, camera);
-		if (isDragging) {
-			if (!dragStart) return;
-			const rectWidth = event.clientX - canvasRect.left - dragStart.x,
-				rectHeight = event.clientY - canvasRect.top - dragStart.y;
-			// drawDraggingRectangle(rectWidth, rectHeight);
+		// Add hovered lines
+		intersectingLines = raycaster.intersectObjects(lines);
+		const hoveredLinesSet: Set<number> = new Set();
+		intersectingLines.forEach((intersection) => {
+			const line = intersection.object as any;
+			if (lineShow[line.index]) hoveredLinesSet.add(line.index);
+		});
 
-			previouslyBrushedArray.set(brushedLinesIndices);
-			intersectingLines.push(...raycaster.intersectObjects(lines));
-			// Add to brushed if Ctrl key is pressed
-			if (event.ctrlKey) {
-				intersectingLines.forEach((intersection) => {
-					const line = intersection.object as any;
-					brushedLinesIndices.add(line.index);
-				});
-			}
-			// Set brushed to lines in drawn rectangle
-			else {
-				const newBrushedLinesIndices = new Set<number>();
-				intersectingLines.forEach((intersection) => {
-					const line = intersection.object as any;
-					newBrushedLinesIndices.add(line.index);
-				});
-				brushedLinesIndices = newBrushedLinesIndices;
-			}
-			brushedLinesIndices.forEach((i) => {
-				if (!lineShow[i]) brushedLinesIndices.delete(i);
-			});
-			brushedArray.set(brushedLinesIndices);
-		} else {
-			// Add hovered lines
-			intersectingLines = raycaster.intersectObjects(lines);
-			const hoveredLinesSet: Set<number> = new Set();
-			intersectingLines.forEach((intersection) => {
-				const line = intersection.object as any;
-				if (lineShow[line.index]) hoveredLinesSet.add(line.index);
-			});
-
-			if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
-			setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
-			hoveredArray.set(hoveredLinesSet);
-		}
+		if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
+		setTooltip(hoveredLinesSet, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+		hoveredArray.set(hoveredLinesSet);
 	}
 
 	function handleMouseDown(event: MouseEvent) {
@@ -254,10 +216,6 @@
 			)
 		)
 			return;
-
-		isDragging = true;
-		// isDragging = false;
-		dragStart = { x: event.clientX - canvasRect.left, y: event.clientY - canvasRect.top };
 		setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
 		intersectingLines = [];
 
@@ -298,29 +256,7 @@
 		)
 			return;
 
-		isDragging = false;
-		dragStart = null;
-		scene.remove(draggingRectangle);
 		intersectingLines = [];
-	}
-
-	function drawDraggingRectangle(rectWidth: number, rectHeight: number) {
-		if (!dragStart) return;
-		scene.remove(draggingRectangle);
-		const rectanglePoints = [
-			new THREE.Vector3(dragStart.x, dragStart.y, 3),
-			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y, 3),
-			new THREE.Vector3(dragStart.x + rectWidth, dragStart.y + rectHeight, 3),
-			new THREE.Vector3(dragStart.x, dragStart.y + rectHeight, 3),
-			new THREE.Vector3(dragStart.x, dragStart.y, 3)
-		];
-
-		const material = MATERIAL_DRAGGING_RECT;
-
-		const geometry = new THREE.BufferGeometry().setFromPoints(rectanglePoints);
-		draggingRectangle = new THREE.Line(geometry, material);
-
-		scene.add(draggingRectangle);
 	}
 
 	export const applyFilters = () => {

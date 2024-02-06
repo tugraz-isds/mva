@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag, text } from 'd3';
-	import { filtersArray, parcoordDimMetadata } from '../../stores/parcoord';
-	import { dimensionDataStore } from '../../stores/dataset';
+	import { filtersArray, parcoordDimMetadata, parcoordIsInteractable } from '../../stores/parcoord';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import {
 		arrow_invert_down_icon,
@@ -48,6 +48,7 @@
 	let axisHeight: number; // Actual axis height in pixels
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false; // Is user currently filtering flag
+	let datasetUploaded = false;
 
 	$: axisHeight = height - margin.top - margin.bottom;
 
@@ -58,7 +59,6 @@
 				dimensionsMetadata = value;
 				clearSVG();
 				renderAxes();
-				calculateMarginLeft();
 			}
 		}
 	);
@@ -89,6 +89,11 @@
 			clearSVG();
 			renderAxes();
 		}
+	});
+
+	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+		if (!dimensionsMetadata) return;
+		datasetUploaded = true;
 	});
 
 	// Remove all axes elements and drag handlers
@@ -384,6 +389,7 @@
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 20 })) // Set initial position
 				.on('start', (event) => {
+					parcoordIsInteractable.set(false);
 					draggingIndex = dimensions.indexOf(dim);
 					event.subject.x = xScales[dimensions.indexOf(dim)];
 					isCurrentlyFiltering = true;
@@ -460,13 +466,18 @@
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
 
 						// Calculate new margin left
-						if ((newIndex === 0 && draggingIndex === 1) || (newIndex === 1 && draggingIndex === 0))
+						if (
+							(newIndex === 0 && draggingIndex === 1) ||
+							(newIndex === 1 && draggingIndex === 0)
+						) {
 							calculateMarginLeft();
+						}
 
 						draggingIndex = newIndex;
 					}
 				})
 				.on('end', () => {
+					parcoordIsInteractable.set(true);
 					// Snap elements into correct place
 					axisLines[draggingIndex].attr(
 						'transform',
@@ -518,7 +529,9 @@
 	function handleUpperFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {})
+				.on('start', (event) => {
+					parcoordIsInteractable.set(false);
+				})
 				.on('drag', (event) => {
 					const minY = margin.top - 8; // Minimum y position
 					const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
@@ -542,7 +555,9 @@
 					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {});
+				.on('end', () => {
+					parcoordIsInteractable.set(true);
+				});
 
 			axisUpperFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
@@ -551,7 +566,9 @@
 	function handleLowerFilterDragging() {
 		dimensions.forEach((dim: string, idx: number) => {
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
-				.on('start', (event) => {})
+				.on('start', (event) => {
+					parcoordIsInteractable.set(false);
+				})
 				.on('drag', (event) => {
 					const minY = axesFilters[idx].pixels.start + margin.top + 8; // Minimum y position
 					const maxY = height - margin.bottom + 8; // Maximum y position
@@ -573,7 +590,9 @@
 					axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
 					filtersArray.set(axesFilters);
 				})
-				.on('end', () => {});
+				.on('end', () => {
+					parcoordIsInteractable.set(false);
+				});
 
 			axisLowerFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
@@ -587,6 +606,7 @@
 			// Add drag behavior to the axis title
 			const dragBehavior = drag<SVGTextElement, unknown, any>()
 				.on('start', (event) => {
+					parcoordIsInteractable.set(false);
 					startY = event.y;
 					rectangleStart = +axisFilterRectangles[i].attr('y');
 				})
@@ -633,6 +653,7 @@
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
 				})
 				.on('end', () => {
+					parcoordIsInteractable.set(false);
 					startY = 0;
 				});
 
@@ -746,9 +767,10 @@
 	});
 
 	afterUpdate(async () => {
-		if (axesFilters.length !== dimensions.length) {
+		if (datasetUploaded) {
 			initAxesFilters();
 			calculateMarginLeft();
+			datasetUploaded = false;
 		}
 
 		resizeFilters();
@@ -759,6 +781,7 @@
 	onDestroy(() => {
 		unsubscribeDimData();
 		unsubscribeFilters();
+		unsubscribeDataset();
 	});
 </script>
 

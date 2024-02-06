@@ -8,10 +8,10 @@
 		parcoordHistogramData
 	} from '../../stores/parcoord';
 	import { scaleLinear, scaleBand } from 'd3';
-	import { reorderArray } from '../../util/util';
+	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
 	import Axes from './Axes.svelte';
 	import Histograms from './Histograms.svelte';
-	import LinesThree from './LinesThree.svelte';
+	import LinesThreeOffscreen from './LinesThreeOffscreen.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './ContextMenuAxes.svelte';
@@ -33,11 +33,13 @@
 	let xScales: any[] = []; // Scales for all of the X-axes
 	let yScales: any = {}; // Scales for all of the Y-axes
 
+	let canvasEl: HTMLCanvasElement;
 	let parcoordDiv: HTMLElement;
-	let linesComponent: LinesThree; // Svelte Lines component
+	let linesComponent: LinesThreeOffscreen; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
 	let svgExportModal: SvgExportModal;
+	let isOffscreenCanvasSupport: boolean;
 
 	let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
@@ -178,9 +180,7 @@
 		setTimeout(() => {
 			axesComponent.clearSVG();
 			axesComponent.renderAxes(width);
-
-			linesComponent.initScene();
-			linesComponent.drawLines(width);
+			linesComponent.handleMarginChanged();
 		}, 10);
 	}
 
@@ -189,7 +189,7 @@
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
-		linesComponent.handleInvertAxis();
+		linesComponent.handleInvertAxis(axisIndex);
 	}
 
 	function handleHideDImension(idx: number) {
@@ -233,6 +233,13 @@
 	}
 
 	onMount(() => {
+		isOffscreenCanvasSupport = isOffscreenCanvasSupported(canvasEl);
+		if (!isOffscreenCanvasSupport)
+			console.warn(
+				'Your browser does not support OffscreenCanvas with a WebGL Context.' +
+					' Check the browser support on https://caniuse.com/#feat=offscreencanvas.' +
+					' You will likely experience slower performance on larger datasets.'
+			);
 		initialHeight = height;
 		calculateYScales();
 		isBrowser = true;
@@ -311,12 +318,12 @@
 			bind:margin
 		/>
 
-		<LinesThree
+		<LinesThreeOffscreen
 			bind:this={linesComponent}
-			bind:width
+			{width}
 			{height}
 			{dataset}
-			initialDimensions={dimensions}
+			{dimensions}
 			bind:margin
 			{xScales}
 			{yScales}
@@ -326,3 +333,4 @@
 </div>
 
 <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
+<canvas bind:this={canvasEl} height="0" width="0" />
