@@ -17,7 +17,7 @@
 	export let width: number;
 	export let height: number;
 	export let dataset: DSVParsedArray<any>;
-	export let initialDimensions: string[] = [];
+	export let dimensions: string[] = [];
 	export let margin: any;
 	export let xScales: any[];
 	export let yScales: any;
@@ -38,13 +38,11 @@
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
 		if (!worker) return;
-		if (dataset?.length > 0 && initialDimensions?.length > 0) {
-			if (axesFilters.length === initialDimensions.length) {
-				worker.postMessage({
-					function: 'applyFilters',
-					axesFilters
-				});
-			}
+		if (dataset?.length > 0 && dimensions?.length > 0) {
+			worker.postMessage({
+				function: 'applyFilters',
+				axesFilters
+			});
 		}
 	});
 
@@ -94,7 +92,7 @@
 		lines = [];
 		dataset.forEach((dataRow: any, i: number) => {
 			const linePoints: number[][] = [];
-			initialDimensions.forEach((dim: string, j: number) => {
+			dimensions.forEach((dim: string, j: number) => {
 				let yPos;
 				if ($dimensionDataStore.get(dim)?.type === 'numerical') yPos = yScales[dim](dataRow[dim]);
 				else yPos = yScales[dim](dataRow[dim]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
@@ -191,7 +189,7 @@
 
 	export function handleInvertAxis(axisIndex: number) {
 		dataset.forEach((dataRow: any, i: number) => {
-			const dim = initialDimensions[axisIndex];
+			const dim = dimensions[axisIndex];
 			let yPos;
 			if ($dimensionDataStore.get(dim)?.type === 'numerical') yPos = yScales[dim](dataRow[dim]);
 			else yPos = yScales[dim](dataRow[dim]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
@@ -233,7 +231,7 @@
 	}
 
 	function initializeArrays() {
-		initialDimensions = initialDimensions;
+		dimensions = dimensions;
 		lineShow = Array(dataset.length).fill(true);
 		lineData = Array(dataset.length).fill({ color: COLOR_ACTIVE, position: 0 });
 		linkingArray.set(lineShow);

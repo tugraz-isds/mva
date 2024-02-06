@@ -67,6 +67,7 @@
 
 	function handleHideDImension() {
 		dimensions = [...dimensions.slice(0, dimIndex), ...dimensions.slice(dimIndex + 1)];
+		hideContextMenu();
 	}
 
 	function handleShow(field: 'labels' | 'histograms' | 'filter' | 'filterValues') {

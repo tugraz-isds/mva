@@ -319,7 +319,7 @@
 			{width}
 			{height}
 			{dataset}
-			initialDimensions={dimensions}
+			{dimensions}
 			bind:margin
 			{xScales}
 			{yScales}

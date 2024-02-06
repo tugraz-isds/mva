@@ -2,7 +2,7 @@
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { axisLeft, select, drag, text } from 'd3';
 	import { filtersArray, parcoordDimMetadata, parcoordIsInteractable } from '../../stores/parcoord';
-	import { dimensionDataStore } from '../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../util/text';
 	import { getAllTicks, reorderArray } from '../../util/util';
 	import type ContextMenuAxes from './ContextMenuAxes.svelte';
@@ -39,6 +39,7 @@
 	let axisHeight: number; // Actual axis height in pixels
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false; // Is user currently filtering flag
+	let datasetUploaded = false;
 
 	$: axisHeight = height - margin.top - margin.bottom;
 
@@ -49,11 +50,14 @@
 				dimensionsMetadata = value;
 				clearSVG();
 				renderAxes();
-				// console.log('1');
-				// calculateMarginLeft();
 			}
 		}
 	);
+
+	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+		if (!dimensionsMetadata) return;
+		datasetUploaded = true;
+	});
 
 	// Remove all axes elements and drag handlers
 	export function clearSVG() {
@@ -724,9 +728,10 @@
 	afterUpdate(async () => {
 		if (!iconsRead) await readIcons();
 
-		if (axesFilters.length !== dimensions.length) {
+		if (datasetUploaded) {
 			initAxesFilters();
 			calculateMarginLeft();
+			datasetUploaded = false;
 		}
 		resizeFilters();
 		clearSVG();
@@ -735,6 +740,7 @@
 
 	onDestroy(() => {
 		unsubscribeDimData();
+		unsubscribeDataset();
 	});
 </script>
 
