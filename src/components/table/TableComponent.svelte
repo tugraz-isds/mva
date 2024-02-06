@@ -38,6 +38,7 @@
 	});
 
 	const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+		previouslyHoveredArray.set(hoveredRowsIndices);
 		hoveredRowsIndices = value;
 	});
 
@@ -85,13 +86,12 @@
 	function handleMouseEnter(index: number) {
 		hoveredLineIndex = index;
 		hoveredArray.set(new Set([hoveredLineIndex]));
-		previouslyHoveredArray.set(new Set([hoveredLineIndex]));
 	}
 
 	function handleMouseLeave() {
+		previouslyHoveredArray.set(new Set([hoveredLineIndex as number]));
 		hoveredLineIndex = null;
 		hoveredRowsIndices.clear();
-		hoveredArray.set(hoveredRowsIndices);
 	}
 
 	onDestroy(() => {

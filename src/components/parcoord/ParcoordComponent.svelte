@@ -11,7 +11,6 @@
 	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
 	import Axes from './Axes.svelte';
 	import Histograms from './Histograms.svelte';
-	import LinesThree from './LinesThree.svelte';
 	import LinesThreeOffscreen from './LinesThreeOffscreen.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import TooltipAxisTitle from './TooltipAxisTitle.svelte';
@@ -36,7 +35,7 @@
 
 	let canvasEl: HTMLCanvasElement;
 	let parcoordDiv: HTMLElement;
-	let linesComponent: LinesThree; // Svelte Lines component
+	let linesComponent: LinesThreeOffscreen; // Svelte Lines component
 	let axesComponent: Axes; // Svelte Axes component
 	let contextMenuAxes: ContextMenuAxes;
 	let svgExportModal: SvgExportModal;
@@ -181,9 +180,7 @@
 		setTimeout(() => {
 			axesComponent.clearSVG();
 			axesComponent.renderAxes(width);
-
-			// linesComponent.initScene();
-			// linesComponent.drawLines(width);
+			linesComponent.handleMarginChanged();
 		}, 10);
 	}
 
@@ -192,7 +189,7 @@
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
 			yScales[dimensions[axisIndex]].domain().reverse()
 		);
-		linesComponent.handleInvertAxis();
+		linesComponent.handleInvertAxis(axisIndex);
 	}
 
 	function handleHideDImension(idx: number) {
@@ -315,33 +312,19 @@
 			bind:yScales
 			bind:dimensions
 			bind:margin
-			{dataset}
 		/>
 
-		{#if isOffscreenCanvasSupport !== undefined && isOffscreenCanvasSupport}
-			<LinesThreeOffscreen
-				{width}
-				{height}
-				{dataset}
-				initialDimensions={dimensions}
-				bind:margin
-				{xScales}
-				{yScales}
-				{setTooltipData}
-			/>
-		{:else if isOffscreenCanvasSupport !== undefined && !isOffscreenCanvasSupport}
-			<LinesThree
-				bind:this={linesComponent}
-				bind:width
-				{height}
-				{dataset}
-				initialDimensions={dimensions}
-				bind:margin
-				{xScales}
-				{yScales}
-				{setTooltipData}
-			/>
-		{/if}
+		<LinesThreeOffscreen
+			bind:this={linesComponent}
+			{width}
+			{height}
+			{dataset}
+			initialDimensions={dimensions}
+			bind:margin
+			{xScales}
+			{yScales}
+			{setTooltipData}
+		/>
 	{/if}
 </div>
 

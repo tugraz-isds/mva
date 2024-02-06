@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {
 	LINE_MATERIAL_ACTIVE,
+	LINE_MATERIAL_BRUSHED,
 	LINE_MATERIAL_FILTERED,
 	LINE_MATERIAL_HOVERED,
 	LINE_MATERIAL_MAP
@@ -20,7 +21,9 @@ let mouse: THREE.Vector2;
 let lines: THREE.Line[] = [];
 
 let hoveredLinesIndices = new Set<number>(),
-	previouslyHoveredLinesIndices = new Set<number>();
+	previouslyHoveredLinesIndices = new Set<number>(),
+	brushedLinesIndices = new Set<number>(),
+	previouslyBrushedLinesIndices = new Set<number>();
 let lineShow: boolean[] = [];
 
 self.onmessage = function (message) {
@@ -37,8 +40,24 @@ self.onmessage = function (message) {
 			mouse = data.mouse;
 			handleMouseMove();
 			break;
+		case 'mouseDown':
+			mouse = data.mouse;
+			handleMouseDown(data.event);
+			break;
 		case 'applyFilters':
 			applyFilters(data.axesFilters);
+			break;
+		case 'updateHovered':
+			drawHoveredLines(data.indices);
+			break;
+		case 'updatePreviouslyHovered':
+			removePreviouslyHoveredLines(data.indices);
+			break;
+		case 'updateBrushed':
+			drawBrushedLines(data.indices);
+			break;
+		case 'updatePreviouslyBrushed':
+			removePreviouslyBrushedLines(data.indices);
 			break;
 		default:
 			break;
@@ -91,16 +110,52 @@ function handleMouseMove() {
 	if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
 
 	hoveredLinesIndices = hoveredLinesSet;
-	removeHoveredLines();
+	removePreviouslyHoveredLines();
 	drawHoveredLines();
+
 	postMessage({
 		function: 'setHovered',
-		hoveredIndices: hoveredLinesSet
+		hoveredIndices: hoveredLinesIndices
 	});
 }
 
-function drawHoveredLines() {
+function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
+	previouslyBrushedLinesIndices = brushedLinesIndices;
+
+	// Add to brushed if Shift key is pressed
+	if (event.shiftKey) {
+		hoveredLinesIndices.forEach((i) => {
+			brushedLinesIndices.add(i);
+		});
+	}
+	// Toggle brushed if Ctrl key is pressed
+	else if (event.ctrlKey) {
+		hoveredLinesIndices.forEach((i) => {
+			if (brushedLinesIndices.has(i)) brushedLinesIndices.delete(i);
+			else brushedLinesIndices.add(i);
+		});
+	}
+	// Set brushed to hovered
+	else {
+		const newBrushedLinesIndices = new Set<number>();
+		hoveredLinesIndices.forEach((i) => {
+			if (!brushedLinesIndices.has(i) && lineShow[i]) newBrushedLinesIndices.add(i);
+		});
+		brushedLinesIndices = newBrushedLinesIndices;
+	}
+
+	removePreviouslyBrushedLines();
+	drawBrushedLines();
+	postMessage({
+		function: 'setBrushed',
+		brushedIndices: brushedLinesIndices
+	});
+}
+
+function drawHoveredLines(hoveredIndices: Set<number> | null = null) {
+	if (hoveredIndices) hoveredLinesIndices = hoveredIndices;
 	hoveredLinesIndices.forEach((i) => {
+		if (!lineShow[i]) return;
 		const line = lines[i];
 		line.material = LINE_MATERIAL_HOVERED;
 		changeLinePosition(line, 2);
@@ -108,8 +163,37 @@ function drawHoveredLines() {
 	});
 }
 
-function removeHoveredLines() {
+function removePreviouslyHoveredLines(hoveredIndices: Set<number> | null = null) {
+	if (hoveredIndices) previouslyHoveredLinesIndices = hoveredIndices;
 	previouslyHoveredLinesIndices.forEach((i) => {
+		if (!lineShow[i]) return;
+		const line = lines[i];
+		if (brushedLinesIndices.has(i)) {
+			line.material = LINE_MATERIAL_BRUSHED;
+			changeLinePosition(line, 1);
+		} else {
+			line.material = LINE_MATERIAL_ACTIVE;
+			changeLinePosition(line, 0);
+		}
+		line.material.needsUpdate = false;
+	});
+}
+
+function drawBrushedLines(brushedIndices: Set<number> | null = null) {
+	if (brushedIndices) brushedLinesIndices = brushedIndices;
+	brushedLinesIndices.forEach((i) => {
+		if (!lineShow[i]) return;
+		const line = lines[i];
+		line.material = LINE_MATERIAL_BRUSHED;
+		changeLinePosition(line, 1);
+		line.material.needsUpdate = true;
+	});
+}
+
+function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null) {
+	if (brushedIndices) previouslyBrushedLinesIndices = brushedIndices;
+	previouslyBrushedLinesIndices.forEach((i) => {
+		if (!lineShow[i]) return;
 		const line = lines[i];
 		line.material = LINE_MATERIAL_ACTIVE;
 		changeLinePosition(line, 0);
@@ -123,27 +207,24 @@ function applyFilters(axesFilters: AxesFilterType[]) {
 		const positions = line.geometry.attributes.position.array;
 		lineShow[i] = true;
 		for (let j = 0; j < positions.length / 3; j++) {
-			if (!axesFilters[j].pixels) return;
+			if (!axesFilters[j] || !axesFilters[j].pixels) return;
 
 			const lineY = positions[j * 3 + 1];
-			// if (!(lineY > axesFilters[j].pixels.start + 40 && lineY < axesFilters[j].pixels.end + 40))
 			if (lineY < axesFilters[j].pixels.start + 40 || lineY > axesFilters[j].pixels.end + 40)
 				lineShow[i] = false;
 		}
 		if (lineShow[i]) {
-			line.material = LINE_MATERIAL_ACTIVE;
-			changeLinePosition(line, 0);
+			if (brushedLinesIndices.has(i)) {
+				line.material = LINE_MATERIAL_BRUSHED;
+				changeLinePosition(line, 1);
+			} else {
+				line.material = LINE_MATERIAL_ACTIVE;
+				changeLinePosition(line, 0);
+			}
 		} else {
 			line.material = LINE_MATERIAL_FILTERED;
 			changeLinePosition(line, -1);
 		}
-		// const positions = line.geometry.attributes.position.array;
-		// const lineY = positions[axisIndex * 3 + 1];
-		// if (!(lineY > filter.start && lineY < filter.end)) {
-		// 	console.log(lineY, filter);
-		// 	line.material = LINE_MATERIAL_FILTERED;
-		// 	changeLinePosition(line, -1);
-		// }
 	});
 }
 
