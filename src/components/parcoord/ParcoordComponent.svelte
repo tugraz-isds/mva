@@ -306,6 +306,7 @@
 			{handleInvertAxis}
 			{handleMarginChanged}
 			{setTooltipAxisTitleData}
+			{setTooltipData}
 			{xScales}
 			bind:yScales
 		/>

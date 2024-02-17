@@ -20,6 +20,7 @@ let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let lines: THREE.Line[] = [];
 
+let interactable: boolean = true;
 let hoveredLinesIndices = new Set<number>(),
 	previouslyHoveredLinesIndices = new Set<number>(),
 	brushedLinesIndices = new Set<number>(),
@@ -37,8 +38,12 @@ self.onmessage = function (message) {
 			drawLines(data.lines);
 			break;
 		case 'mouseMove':
-			mouse = data.mouse;
-			handleMouseMove();
+			({ mouse, interactable } = data);
+			if (interactable) handleMouseMove();
+			else if (!interactable && hoveredLinesIndices.size > 0) {
+				removePreviouslyHoveredLines(hoveredLinesIndices);
+				drawHoveredLines(new Set());
+			}
 			break;
 		case 'mouseDown':
 			mouse = data.mouse;
@@ -164,7 +169,7 @@ function drawHoveredLines(hoveredIndices: Set<number> | null = null) {
 function removePreviouslyHoveredLines(hoveredIndices: Set<number> | null = null) {
 	if (hoveredIndices) previouslyHoveredLinesIndices = hoveredIndices;
 	previouslyHoveredLinesIndices.forEach((i) => {
-		if (!lineShow[i]) return;
+		if (!lineShow[i] || (interactable && hoveredLinesIndices.has(i))) return;
 		const line = lines[i];
 		if (brushedLinesIndices.has(i)) {
 			line.material = LINE_MATERIAL_BRUSHED;

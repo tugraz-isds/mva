@@ -120,12 +120,11 @@
 				event.clientY <= canvasRect.bottom &&
 				event.clientX >= canvasRect.left &&
 				event.clientX <= canvasRect.right
-			) ||
-			!$parcoordIsInteractable
+			)
 		)
 			return;
 
-		worker.postMessage({ function: 'mouseMove', mouse });
+		worker.postMessage({ function: 'mouseMove', mouse, interactable: $parcoordIsInteractable });
 
 		tooltipPos = {
 			x: event.clientX - canvasRect.left,
@@ -211,6 +210,10 @@
 	export function handleMarginChanged() {
 		initializeArrays();
 		drawLines();
+		worker.postMessage({
+			function: 'applyFilters',
+			axesFilters
+		});
 	}
 
 	function setTooltip(hoveredLinesSet: Set<number>) {
@@ -259,6 +262,7 @@
 			const data = message.data;
 			switch (data.function) {
 				case 'setHovered':
+					if (!$parcoordIsInteractable) break;
 					updatedHere = true;
 					hoveredArray.set(data.hoveredIndices);
 					setTooltip(data.hoveredIndices);

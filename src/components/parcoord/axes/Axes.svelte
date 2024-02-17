@@ -36,6 +36,7 @@
 	export let handleInvertAxis: Function; // Callback function when filter is applied
 	export let handleMarginChanged: Function; // Callback function when margin changes
 	export let setTooltipAxisTitleData: Function; // Callback function for tooltip
+	export let setTooltipData: Function; // Callback function for tooltip
 	export let xScales: any[]; // Scales for all of the X-axes
 	export let yScales: any; // Scales for all of the Y-axes
 
@@ -348,6 +349,13 @@
 								setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
 							)}") 7 5, pointer`
 						)
+						.on('mouseenter', () => {
+							parcoordIsInteractable.set(false);
+							setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+						})
+						.on('mouseleave', () => {
+							parcoordIsInteractable.set(true);
+						})
 				);
 			}
 		});
@@ -468,6 +476,7 @@
 						axisFilterRectangles = reorderArray(axisFilterRectangles, draggingIndex, newIndex);
 						axisInvertIcons = reorderArray(axisInvertIcons, draggingIndex, newIndex);
 						axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
+						filtersArray.set(axesFilters);
 
 						// Calculate new margin left
 						if (
@@ -595,7 +604,7 @@
 					filtersArray.set(axesFilters);
 				})
 				.on('end', () => {
-					parcoordIsInteractable.set(false);
+					parcoordIsInteractable.set(true);
 				});
 
 			axisLowerFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
@@ -657,7 +666,7 @@
 						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
 				})
 				.on('end', () => {
-					parcoordIsInteractable.set(false);
+					parcoordIsInteractable.set(true);
 					startY = 0;
 				});
 
@@ -687,7 +696,6 @@
 
 	// Function to calculate new margin left
 	export function calculateMarginLeft() {
-		console.log('calculating margin left');
 		if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
 			const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
 			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
