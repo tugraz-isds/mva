@@ -64,6 +64,11 @@ self.onmessage = function (message) {
 		case 'updatePreviouslyBrushed':
 			removePreviouslyBrushedLines(data.indices);
 			break;
+		case 'resizeCanvas':
+			({ width, height } = data);
+			init();
+			resizeCanvas(canvas, width, height);
+			break;
 		default:
 			break;
 	}
@@ -88,7 +93,6 @@ function drawLines(inputLines: number[][][]) {
 		currLine.forEach((point: number[]) => {
 			linePoints.push(new THREE.Vector3(...point));
 		});
-		// const material = LINE_MATERIAL_MAP.get(lineData[idx].color) ?? new THREE.LineBasicMaterial();
 		const material = LINE_MATERIAL_MAP.get(COLOR_ACTIVE) as THREE.LineBasicMaterial;
 		material.needsUpdate = false;
 		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
@@ -246,4 +250,10 @@ function render() {
 function animate() {
 	requestAnimationFrame(animate);
 	render();
+}
+
+function resizeCanvas(canvas: OffscreenCanvas, width: number, height: number) {
+	if (!canvas) return;
+	canvas.width = width;
+	canvas.height = height;
 }

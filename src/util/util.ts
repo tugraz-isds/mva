@@ -48,3 +48,22 @@ export function isOffscreenCanvasSupported(canvas: HTMLCanvasElement): boolean {
 
 	return supportOffScreenWebGL;
 }
+
+export const throttle = (func: Function, delay: number) => {
+	let prev = 0;
+	return (...args: any[]) => {
+		let now = new Date().getTime();
+		if (now - prev > delay) {
+			prev = now;
+			return func(...args);
+		}
+	};
+};
+
+export const debounce = (func: Function, delay: number) => {
+	let debounceTimer: number;
+	return (...args: any[]) => {
+		clearTimeout(debounceTimer);
+		debounceTimer = window.setTimeout(() => func(...args), delay);
+	};
+};

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import OffscreenWorker from './offscreenWorker?worker';
 	import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
 	import { filtersArray, parcoordIsInteractable } from '../../../stores/parcoord';
@@ -14,6 +14,7 @@
 	import type { DSVParsedArray } from 'd3';
 	import type { RecordDataType } from '../../../util/types';
 	import type { AxesFilterType } from '../types';
+	import { debounce, throttle } from '../../../util/util';
 
 	export let width: number;
 	export let height: number;
@@ -33,6 +34,8 @@
 	let mouse: { x: number; y: number } = { x: 0, y: 0 };
 	let tooltipPos: { x: number; y: number } = { x: 0, y: 0 };
 	let updatedHere = false;
+	let throttledDrawLines: () => void;
+	let debouncedDrawLines: () => void;
 
 	let axesFilters: AxesFilterType[] = [];
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -244,6 +247,8 @@
 		initializeArrays();
 		window.addEventListener('pointermove', handleMouseMove, false);
 		window.addEventListener('pointerdown', handleMouseDown, false);
+		throttledDrawLines = throttle(drawLines, 10);
+		debouncedDrawLines = debounce(throttledDrawLines, 10);
 
 		offscreenCanvasEl = canvasEl.transferControlToOffscreen();
 		worker = new OffscreenWorker();
@@ -274,10 +279,12 @@
 					break;
 			}
 		};
+	});
 
-		setTimeout(() => {
-			drawLines();
-		}, 10);
+	afterUpdate(() => {
+		worker.postMessage({ function: 'resizeCanvas', width, height });
+		// throttledDrawLines();
+		debouncedDrawLines();
 	});
 
 	onDestroy(() => {
