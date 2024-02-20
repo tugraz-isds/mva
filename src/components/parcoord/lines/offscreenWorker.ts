@@ -256,4 +256,10 @@ function resizeCanvas(canvas: OffscreenCanvas, width: number, height: number) {
 	if (!canvas) return;
 	canvas.width = width;
 	canvas.height = height;
+
+	postMessage({
+		function: 'canvasResized',
+		height,
+		width
+	});
 }

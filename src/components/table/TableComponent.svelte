@@ -44,7 +44,6 @@
 		hoveredRowsIndices = value;
 	});
 
-	// Handle click on row
 	function handleRowClick(event: MouseEvent) {
 		previouslyBrushedArray.set(brushedRowsIndices);
 		if (hoveredLineIndex === null) return;
@@ -91,6 +90,7 @@
 	}
 
 	function handleMouseLeave() {
+		hoveredArray.set(new Set());
 		previouslyHoveredArray.set(new Set([hoveredLineIndex as number]));
 		hoveredLineIndex = null;
 		hoveredRowsIndices.clear();

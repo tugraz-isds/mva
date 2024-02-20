@@ -34,6 +34,8 @@
 	let mouse: { x: number; y: number } = { x: 0, y: 0 };
 	let tooltipPos: { x: number; y: number } = { x: 0, y: 0 };
 	let updatedHere = false;
+	let currWidth: number = width,
+		currHeight: number = height;
 	let throttledDrawLines: () => void;
 	let debouncedDrawLines: () => void;
 
@@ -275,6 +277,10 @@
 				case 'setBrushed':
 					brushedArray.set(data.brushedIndices);
 					break;
+				case 'canvasResized':
+					currWidth = data.width;
+					currHeight = data.height;
+					break;
 				default:
 					break;
 			}
@@ -282,8 +288,8 @@
 	});
 
 	afterUpdate(() => {
+		if (currWidth === width && currHeight === height) return;
 		worker.postMessage({ function: 'resizeCanvas', width, height });
-		// throttledDrawLines();
 		debouncedDrawLines();
 	});
 
