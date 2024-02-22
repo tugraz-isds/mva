@@ -161,10 +161,6 @@
 				.domain([0, dimensions.length - 1])
 				.range([margin.left, width - margin.right])(i)
 		);
-
-		const step = xScales[1] - xScales[0];
-		if (step && $parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms)
-			margin.right = 10 + step / 2;
 	}
 
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
@@ -181,7 +177,7 @@
 			axesComponent.clearSVG();
 			axesComponent.renderAxes(width);
 			linesComponent.handleMarginChanged();
-		}, 10);
+		}, 0);
 	}
 
 	// Handle inverting axes
@@ -195,12 +191,13 @@
 	function handleHideDimension(idx: number) {
 		dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
 		idx === 0 && calculateMarginLeft();
+		linesComponent.handleHideDimension();
 	}
 
 	function calculateMarginLeft() {
 		setTimeout(() => {
 			axesComponent.calculateMarginLeft();
-		}, 10);
+		}, 0);
 	}
 
 	function setTooltipData(data: TooltipType) {
@@ -214,7 +211,11 @@
 	function setMarginRight(histogramsVisible: boolean) {
 		const step = xScales[1] - xScales[0];
 		if (!step) return;
-		margin.right = histogramsVisible ? 10 + (step - 16) * $parcoordHistogramData.width : 40;
+		margin.right =
+			histogramsVisible &&
+			$parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms
+				? 10 + (step - 16) * $parcoordHistogramData.width
+				: 40;
 	}
 
 	export function saveSVG() {
@@ -274,6 +275,10 @@
 				max: xScales[1] - xScales[0]
 			}
 		});
+
+		setTimeout(() => {
+			setMarginRight(true);
+		}, 0);
 	});
 
 	onDestroy(() => {

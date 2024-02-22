@@ -2,7 +2,11 @@
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import OffscreenWorker from './offscreenWorker?worker';
 	import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
-	import { filtersArray, parcoordIsInteractable } from '../../../stores/parcoord';
+	import {
+		filtersArray,
+		parcoordHistogramData,
+		parcoordIsInteractable
+	} from '../../../stores/parcoord';
 	import {
 		brushedArray,
 		hoveredArray,
@@ -49,6 +53,17 @@
 				axesFilters
 			});
 		}
+	});
+
+	const unsubscribeParcoordHistogramData = parcoordHistogramData.subscribe((value: any) => {
+		if (!worker) return;
+		setTimeout(() => {
+			setLineData();
+			worker.postMessage({
+				function: 'redrawLines',
+				lines
+			});
+		}, 0);
 	});
 
 	const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value: Set<number>) => {
@@ -212,6 +227,16 @@
 		});
 	}
 
+	export function handleHideDimension() {
+		setTimeout(() => {
+			setLineData();
+			worker.postMessage({
+				function: 'drawLines',
+				lines
+			});
+		}, 0);
+	}
+
 	export function handleMarginChanged() {
 		initializeArrays();
 		drawLines();
@@ -295,6 +320,7 @@
 
 	onDestroy(() => {
 		unsubscribeFilters();
+		unsubscribeParcoordHistogramData();
 		unsubscribeHovered();
 		unsubscribeBrushed();
 		unsubscribePreviouslyHovered();

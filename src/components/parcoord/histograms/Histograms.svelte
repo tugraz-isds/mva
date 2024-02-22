@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { afterUpdate, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { select, group, bin, range } from 'd3';
-	import { dimensionDataStore } from '../../../stores/dataset';
+	import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
 	import { parcoordDimMetadata, parcoordHistogramData } from '../../../stores/parcoord';
 	import type { DSVParsedArray } from 'd3';
 
@@ -16,7 +16,12 @@
 	let binGroupsCount = 0;
 
 	let axisHeight: number;
+	let initialRender: boolean = true;
 	$: axisHeight = height - margin.top - margin.bottom;
+
+	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+		initialRender = true;
+	});
 
 	export function clearSVG() {
 		const svg = select('#parcoord-canvas-histograms');
@@ -31,7 +36,7 @@
 	}
 
 	// Draw axes elements
-	export function renderHistograms(initialRender: boolean = false) {
+	export function renderHistograms() {
 		if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
 		const svg = select('#parcoord-canvas-histograms');
@@ -82,6 +87,7 @@
 			// If bin has width less than 10 hide histogram by default
 			if (initialRender && binHeight < 10) {
 				if (!currDimData) return;
+				initialRender = false;
 				currDimData.showHistograms = false;
 				dimData.set(dim, currDimData);
 				parcoordDimMetadata.set(dimData);
@@ -121,15 +127,19 @@
 	onMount(() => {
 		setTimeout(() => {
 			clearSVG();
-			renderHistograms(true);
-		}, 10);
+			renderHistograms();
+		}, 0);
 	});
 
 	afterUpdate(() => {
 		setTimeout(() => {
 			clearSVG();
-			renderHistograms(dimensions.length !== binGroupsCount);
-		}, 10);
+			renderHistograms();
+		}, 0);
+	});
+
+	onDestroy(() => {
+		unsubscribeDataset();
 	});
 </script>
 

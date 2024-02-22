@@ -189,8 +189,8 @@
 					.append('text')
 					.attr('class', `axis-title`)
 					.attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
+					.attr('font-size', '10px')
 					.style('text-anchor', 'middle')
-					.style('font-size', '10px')
 					.style('cursor', `url("data:image/svg+xml;base64,${cursorString}, pointer`)
 					.text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
 					.on('mouseenter', () => showCustomTooltip(dim, i))
@@ -274,7 +274,7 @@
 						.attr('stroke', 'black');
 					groupUpper
 						.append('text')
-						.style('font-size', '10')
+						.attr('font-size', '10')
 						.attr('text-anchor', 'start')
 						.attr('fill', 'black')
 						.attr('x', 4)
@@ -299,7 +299,7 @@
 						.attr('stroke', 'black');
 					groupLower
 						.append('text')
-						.style('font-size', '10')
+						.attr('font-size', '10')
 						.attr('text-anchor', 'start')
 						.attr('fill', 'black')
 						.attr('x', 4)
@@ -698,7 +698,7 @@
 	export function calculateMarginLeft() {
 		if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
 			const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
-			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto');
+			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto') + 8;
 			margin.left =
 				longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
 		} else margin.left = 30;

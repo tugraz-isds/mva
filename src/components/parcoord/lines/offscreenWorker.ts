@@ -69,6 +69,10 @@ self.onmessage = function (message) {
 			init();
 			resizeCanvas(canvas, width, height);
 			break;
+		case 'redrawLines':
+			init();
+			drawLines(data.lines);
+			break;
 		default:
 			break;
 	}
