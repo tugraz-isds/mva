@@ -161,7 +161,7 @@
 		// If mouse is not in canvas, return
 		if (
 			!(
-				event.clientY >= canvasRect.top &&
+				event.clientY >= canvasRect.top + margin.top &&
 				event.clientY <= canvasRect.bottom &&
 				event.clientX >= canvasRect.left &&
 				event.clientX <= canvasRect.right

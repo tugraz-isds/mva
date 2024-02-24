@@ -35,6 +35,7 @@
 	export let handleAxesSwapped: Function; // Callback function when axes are swapped
 	export let handleInvertAxis: Function; // Callback function when filter is applied
 	export let handleMarginChanged: Function; // Callback function when margin changes
+	export let handleAutoscroll: Function; // Callback function for autoscroll
 	export let setTooltipAxisTitleData: Function; // Callback function for tooltip
 	export let setTooltipData: Function; // Callback function for tooltip
 	export let xScales: any[]; // Scales for all of the X-axes
@@ -230,134 +231,144 @@
 					.on('click', () => handleOnInvertAxesClick(i))
 			);
 
-			if (dimensionsMetadata.get(dim)?.showFilter) {
-				axisUpperFilters.push(
-					svg
-						.append('svg')
-						.attr('class', 'axis-filter-upper')
-						.html(arrow_filter_down_icon)
-						.attr('x', xScales[i] - 8)
-						.attr('y', axesFilters[i].pixels.start + margin.top - 16)
-						.attr('width', '16px')
-						.attr('height', '16px')
-						.attr('stroke', '#000')
-						.attr('fill', '#000')
-						.style(
-							'cursor',
-							`url("data:image/svg+xml;base64,${btoa(
-								setSvgStyle(arrow_filter_down_hover_icon, 12, 12, '#000', '#f9f9f9')
-							)}") 7 5, pointer`
-						)
-				);
-				if (
-					$dimensionDataStore.get(dim)?.type === 'numerical' &&
-					dimensionsMetadata.get(dim)?.showFilterValues
-				) {
-					const upperFilterValue = getAxisDomainValue(
-						i,
-						axesFilters[i].percentages.start as number
+			axisUpperFilters.push(
+				svg
+					.append('svg')
+					.attr('class', 'axis-filter-upper')
+					.html(arrow_filter_down_icon)
+					.attr('x', xScales[i] - 8)
+					.attr('y', axesFilters[i].pixels.start + margin.top - 16)
+					.attr('width', '16px')
+					.attr('height', '16px')
+					.attr('stroke', '#000')
+					.attr('fill', '#000')
+					.style('display', dimensionsMetadata.get(dim)?.showFilter ? 'block' : 'none')
+					.style(
+						'cursor',
+						`url("data:image/svg+xml;base64,${btoa(
+							setSvgStyle(arrow_filter_down_hover_icon, 12, 12, '#000', '#f9f9f9')
+						)}") 7 5, pointer`
+					)
+			);
+			if (
+				$dimensionDataStore.get(dim)?.type === 'numerical' &&
+				dimensionsMetadata.get(dim)?.showFilterValues
+			) {
+				const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start as number);
+				const groupUpper = svg
+					.append('g')
+					.attr('class', 'axis-filter-upper-value')
+					.attr(
+						'transform',
+						`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
+					)
+					.style(
+						'display',
+						!dimensionsMetadata.get(dim)?.showFilter ||
+							(axesFilters[i].percentages.start as number) <= 0
+							? 'none'
+							: 'block'
 					);
-					const groupUpper = svg
-						.append('g')
-						.attr('class', 'axis-filter-upper-value')
-						.attr(
-							'transform',
-							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
-						)
-						.attr('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
-					groupUpper
-						.append('rect')
-						.attr('class', 'axis-filter-upper-value')
-						.attr('width', getTextWidth(upperFilterValue, 10, 'Roboto') + 8)
-						.attr('height', 14)
-						.attr('fill', 'lightgrey')
-						.attr('stroke', 'black');
-					groupUpper
-						.append('text')
-						.attr('font-size', '10')
-						.attr('text-anchor', 'start')
-						.attr('fill', 'black')
-						.attr('x', 4)
-						.attr('y', 10)
-						.text(upperFilterValue);
-					axisUpperFiltersValues.push(groupUpper);
+				groupUpper
+					.append('rect')
+					.attr('class', 'axis-filter-upper-value')
+					.attr('width', getTextWidth(upperFilterValue, 10, 'Roboto') + 8)
+					.attr('height', 14)
+					.attr('fill', 'lightgrey')
+					.attr('stroke', 'black');
+				groupUpper
+					.append('text')
+					.attr('font-size', '10')
+					.attr('text-anchor', 'start')
+					.attr('fill', 'black')
+					.attr('x', 4)
+					.attr('y', 10)
+					.text(upperFilterValue);
+				axisUpperFiltersValues.push(groupUpper);
 
-					const groupLower = svg
-						.append('g')
-						.attr('class', 'axis-filter-lower-value')
-						.attr(
-							'transform',
-							`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
-						)
-						.attr('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
-					groupLower
-						.append('rect')
-						.attr('class', 'axis-filter-lower-value')
-						.attr('width', 30)
-						.attr('height', 14)
-						.attr('fill', 'lightgrey')
-						.attr('stroke', 'black');
-					groupLower
-						.append('text')
-						.attr('font-size', '10')
-						.attr('text-anchor', 'start')
-						.attr('fill', 'black')
-						.attr('x', 4)
-						.attr('y', 10)
-						.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
-					axisLowerFiltersValues.push(groupLower);
-				} else {
-					axisUpperFiltersValues.push(null);
-					axisLowerFiltersValues.push(null);
-				}
-
-				// Create axis lower filter
-				axisLowerFilters.push(
-					svg
-						.append('svg')
-						.attr('class', 'axis-filter-lower')
-						.html(arrow_filter_up_icon)
-						.attr('x', xScales[i] - 8)
-						.attr('y', axesFilters[i].pixels.end + margin.top)
-						.attr('width', '16px')
-						.attr('height', '16px')
-						.attr('stroke', '#000')
-						.attr('fill', '#000')
-						.style(
-							'cursor',
-							`url("data:image/svg+xml;base64,${btoa(
-								setSvgStyle(arrow_filter_up_hover_icon, 12, 12, '#000', '#f9f9f9')
-							)}") 7 5, pointer`
-						)
-				);
-
-				// Create filter rectangles SVG
-				axisFilterRectangles.push(
-					svg
-						.append('rect')
-						.attr('class', 'axis-filter-rect')
-						.attr('cursor', 'crosshair')
-						.attr('width', 12)
-						.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
-						.attr('y', margin.top + axesFilters[i].pixels.start)
-						.attr('fill', 'rgba(255, 255, 100, 0.2)')
-						.attr('stroke', 'rgba(0, 0, 0, 0.25)')
-						.attr('transform', `translate(${xScales[i] - 6}, 0)`)
-						.style(
-							'cursor',
-							`url("data:image/svg+xml;base64,${btoa(
-								setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
-							)}") 7 5, pointer`
-						)
-						.on('mouseenter', () => {
-							parcoordIsInteractable.set(false);
-							setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
-						})
-						.on('mouseleave', () => {
-							parcoordIsInteractable.set(true);
-						})
-				);
+				const groupLower = svg
+					.append('g')
+					.attr('class', 'axis-filter-lower-value')
+					.attr(
+						'transform',
+						`translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
+					)
+					.style(
+						'display',
+						!dimensionsMetadata.get(dim)?.showFilter ||
+							(axesFilters[i].percentages.end as number) >= 1
+							? 'none'
+							: 'block'
+					);
+				groupLower
+					.append('rect')
+					.attr('class', 'axis-filter-lower-value')
+					.attr('width', 30)
+					.attr('height', 14)
+					.attr('fill', 'lightgrey')
+					.attr('stroke', 'black');
+				groupLower
+					.append('text')
+					.attr('font-size', '10')
+					.attr('text-anchor', 'start')
+					.attr('fill', 'black')
+					.attr('x', 4)
+					.attr('y', 10)
+					.text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
+				axisLowerFiltersValues.push(groupLower);
+			} else {
+				axisUpperFiltersValues.push(null);
+				axisLowerFiltersValues.push(null);
 			}
+
+			// Create axis lower filter
+			axisLowerFilters.push(
+				svg
+					.append('svg')
+					.attr('class', 'axis-filter-lower')
+					.html(arrow_filter_up_icon)
+					.attr('x', xScales[i] - 8)
+					.attr('y', axesFilters[i].pixels.end + margin.top)
+					.attr('width', '16px')
+					.attr('height', '16px')
+					.attr('stroke', '#000')
+					.attr('fill', '#000')
+					.style('display', dimensionsMetadata.get(dim)?.showFilter ? 'block' : 'none')
+					.style(
+						'cursor',
+						`url("data:image/svg+xml;base64,${btoa(
+							setSvgStyle(arrow_filter_up_hover_icon, 12, 12, '#000', '#f9f9f9')
+						)}") 7 5, pointer`
+					)
+			);
+
+			// Create filter rectangles SVG
+			axisFilterRectangles.push(
+				svg
+					.append('rect')
+					.attr('class', 'axis-filter-rect')
+					.attr('cursor', 'crosshair')
+					.attr('width', 12)
+					.attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)
+					.attr('y', margin.top + axesFilters[i].pixels.start)
+					.attr('fill', 'rgba(255, 255, 100, 0.2)')
+					.attr('stroke', 'rgba(0, 0, 0, 0.25)')
+					.attr('transform', `translate(${xScales[i] - 6}, 0)`)
+					.style('display', dimensionsMetadata.get(dim)?.showFilter ? 'block' : 'none')
+					.style(
+						'cursor',
+						`url("data:image/svg+xml;base64,${btoa(
+							setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
+						)}") 7 5, pointer`
+					)
+					.on('mouseenter', () => {
+						parcoordIsInteractable.set(false);
+						setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+					})
+					.on('mouseleave', () => {
+						parcoordIsInteractable.set(true);
+					})
+			);
 		});
 
 		handleAxesDragging();
@@ -430,6 +441,8 @@
 							`translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.end + margin.top - 4})`
 						);
 					}
+
+					checkAutoscroll(event.sourceEvent.clientX);
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -529,6 +542,13 @@
 
 			axisTitles[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
+	}
+
+	function checkAutoscroll(x: number) {
+		const parcoordDiv = select('.view-parcoord');
+		const rect = (parcoordDiv.node() as any).getBoundingClientRect();
+		if (x > rect.right) handleAutoscroll('right');
+		else if (x <= rect.left) handleAutoscroll('left');
 	}
 
 	function getAxisDomainValue(i: number, percentage: number) {

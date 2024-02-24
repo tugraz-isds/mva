@@ -180,6 +180,12 @@
 		}, 0);
 	}
 
+	function handleAutoscroll(direction: 'left' | 'right') {
+		if (!parcoordDiv) return;
+		if (direction === 'right') parcoordDiv.scrollLeft += 10;
+		else if (direction === 'left') parcoordDiv.scrollLeft -= 10;
+	}
+
 	// Handle inverting axes
 	function handleInvertAxis(axisIndex: number) {
 		yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
@@ -310,6 +316,7 @@
 			{handleAxesSwapped}
 			{handleInvertAxis}
 			{handleMarginChanged}
+			{handleAutoscroll}
 			{setTooltipAxisTitleData}
 			{setTooltipData}
 			{xScales}
