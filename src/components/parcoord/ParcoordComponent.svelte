@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
 	import {
@@ -224,6 +224,16 @@
 				: 40;
 	}
 
+	function setMarginBottom(bottom: number) {
+		const isFirefox = navigator.userAgent.includes('Firefox');
+		const isSafari =
+			navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+		if (!isFirefox && !isSafari) return;
+		margin.bottom = bottom;
+		calculateYScales();
+		handleMarginChanged();
+	}
+
 	export function saveSVG() {
 		let linesStringSvg = linesComponent.saveSVG();
 		let axesStringSvg = axesComponent.saveSVG();
@@ -287,6 +297,14 @@
 		}, 0);
 	});
 
+	afterUpdate(() => {
+		if (parcoordDiv.scrollWidth > parcoordDiv.clientWidth && margin.bottom !== 20) {
+			setMarginBottom(20);
+		} else if (parcoordDiv.scrollWidth <= parcoordDiv.clientWidth && margin.bottom !== 10) {
+			setMarginBottom(10);
+		}
+	});
+
 	onDestroy(() => {
 		unsubscribeDataset();
 		unsubscribeCustomRanges();
@@ -297,8 +315,8 @@
 
 <div
 	id="parcoord-canvas"
-	class="w-full h-full overflow-scroll-x"
-	style="overflow-x: scroll !important;"
+	class="w-full h-full overflow-scroll-x scrollable-div"
+	style="overflow-x: auto !important; box-sizing: border-box;"
 	bind:this={parcoordDiv}
 	bind:clientWidth={originalWidth}
 	bind:clientHeight={height}
@@ -356,3 +374,13 @@
 
 <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
 <canvas bind:this={canvasEl} height="0" width="0" />
+
+<style>
+	.scrollable-div {
+		scrollbar-width: thin;
+	}
+
+	.scrollable-div::-webkit-scrollbar {
+		height: 12px;
+	}
+</style>

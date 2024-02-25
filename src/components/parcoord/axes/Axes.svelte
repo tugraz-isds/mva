@@ -774,7 +774,9 @@
 	}
 
 	// Function to resize axes filters
-	function resizeFilters() {
+	export function resizeFilters() {
+		axisHeight = height - margin.top - margin.bottom;
+		console.log('Resizing filters', axisHeight, margin.bottom);
 		dimensions.forEach((dim: string, i: number) => {
 			// Calculate new pixel values
 			axesFilters[i].pixels = {
