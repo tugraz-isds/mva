@@ -14,6 +14,10 @@
 	export let yScales: any;
 	export let dimIndex: number;
 
+	$: if (!isOpen) {
+		$parcoordIsInteractable = true;
+	}
+
 	let rangeStart: number, rangeEnd: number;
 	let validUpload: boolean = true; // If false show error message
 	let errorMessage: string = '';
@@ -45,7 +49,7 @@
 			start: isAxisInverted ? rangeEnd : rangeStart,
 			end: isAxisInverted ? rangeStart : rangeEnd
 		});
-		closeSetRangeModal();
+		isOpen = false;
 
 		// Calculate new filter values
 		const filtersTemp = $filtersArray[dimIndex].percentages;
@@ -62,20 +66,9 @@
 
 		$parcoordCustomAxisRanges = customRanges;
 	}
-
-	function closeSetRangeModal() {
-		isOpen = false;
-		$parcoordIsInteractable = true;
-	}
 </script>
 
-<Modal
-	bind:open={isOpen}
-	on:open={loadData}
-	on:closed={closeSetRangeModal}
-	size="xs"
-	class="w-full"
->
+<Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
 	<form class="flex flex-col space-y-6" action="#">
 		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Axis Range</h3>
 		<div class="mb-6 flex items-center">

@@ -3,6 +3,7 @@
 	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import { brushedArray } from '../../stores/brushing';
 	import {
+		filtersArray,
 		parcoordCustomAxisRanges,
 		parcoordDimMetadata,
 		parcoordHistogramData
@@ -30,13 +31,13 @@
 	let dimensionsInitial: string[] = []; // Dataset initial dimensions
 	let initialHeight: number; // Initial height (needed after resizing)
 
-	let xScales: any[] = []; // Scales for all of the X-axes
-	let yScales: any = {}; // Scales for all of the Y-axes
+	let xScales: any[] = [];
+	let yScales: any = {};
 
 	let canvasEl: HTMLCanvasElement;
 	let parcoordDiv: HTMLElement;
-	let linesComponent: LinesThreeOffscreen; // Svelte Lines component
-	let axesComponent: Axes; // Svelte Axes component
+	let linesComponent: LinesThreeOffscreen;
+	let axesComponent: Axes;
 	let contextMenuAxes: ContextMenuAxes;
 	let svgExportModal: SvgExportModal;
 	let isOffscreenCanvasSupport: boolean;
@@ -57,6 +58,15 @@
 	};
 
 	let customRanges: Map<string, CustomRangeType>;
+	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
+		(value: Map<string, CustomRangeType>) => {
+			customRanges = value;
+			calculateYScales();
+			setTimeout(() => {
+				linesComponent?.drawLines();
+			}, 0);
+		}
+	);
 
 	// Set dataset and handle new dataset upload
 	let dataset: DSVParsedArray<any>;
@@ -96,13 +106,6 @@
 		setMarginRight(histogramsVisible);
 	});
 
-	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
-		(value: Map<string, CustomRangeType>) => {
-			customRanges = value;
-			calculateYScales();
-		}
-	);
-
 	$: width =
 		originalWidth < 100 * dimensions.length + margin.left + margin.right
 			? 100 * dimensions.length + margin.left + margin.right
@@ -121,8 +124,7 @@
 		}
 	}
 
-	// Update yScales
-	function calculateYScales(init: boolean = false) {
+	function calculateYScales() {
 		if (height > 0 && dataset?.length > 0) {
 			yScales = dimensions.reduce((acc: any, dim: string, i: number) => {
 				if ($dimensionDataStore.get(dim)?.type === 'numerical') {
@@ -146,7 +148,7 @@
 				} else {
 					const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
 					acc[dim] = scaleBand()
-						.domain(init ? categoricalValues : categoricalValues.reverse())
+						.domain(categoricalValues.reverse())
 						.range([height - margin.top - margin.bottom, 0]);
 				}
 				return acc;
@@ -154,7 +156,6 @@
 		}
 	}
 
-	// Update yScales
 	function calculateXScales() {
 		xScales = dimensions.map((_, i) =>
 			scaleLinear()
@@ -176,7 +177,7 @@
 		setTimeout(() => {
 			axesComponent.clearSVG();
 			axesComponent.renderAxes(width);
-			linesComponent.handleMarginChanged();
+			linesComponent.drawLines();
 		}, 0);
 	}
 
@@ -197,7 +198,10 @@
 	function handleHideDimension(idx: number) {
 		dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
 		idx === 0 && calculateMarginLeft();
-		linesComponent.handleHideDimension();
+		setTimeout(() => {
+			filtersArray.set([...$filtersArray.slice(0, idx), ...$filtersArray.slice(idx + 1)]);
+			linesComponent.drawLines();
+		}, 0);
 	}
 
 	function calculateMarginLeft() {
@@ -362,7 +366,6 @@
 			bind:this={linesComponent}
 			{width}
 			{height}
-			{dataset}
 			{dimensions}
 			bind:margin
 			{xScales}

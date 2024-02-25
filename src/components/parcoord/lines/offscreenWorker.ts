@@ -9,6 +9,7 @@ import {
 import { COLOR_ACTIVE } from '../../../util/colors';
 import { areSetsEqual } from '../../../util/util';
 import type { AxesFilterType } from '../types';
+import type { MarginType } from '../../../util/types';
 
 let width: number, height: number;
 
@@ -34,6 +35,9 @@ self.onmessage = function (message) {
 			({ canvas, width, height } = data);
 			init();
 			break;
+		case 'resetLines':
+			resetLines(data.lineShow);
+			break;
 		case 'drawLines':
 			drawLines(data.lines);
 			break;
@@ -50,7 +54,7 @@ self.onmessage = function (message) {
 			handleMouseDown(data.event);
 			break;
 		case 'applyFilters':
-			applyFilters(data.axesFilters);
+			applyFilters(data.axesFilters, data.margin);
 			break;
 		case 'updateHovered':
 			drawHoveredLines(data.indices);
@@ -89,23 +93,29 @@ function init() {
 	mouse = new THREE.Vector2();
 }
 
-function drawLines(inputLines: number[][][]) {
+function resetLines(show: boolean[]) {
+	lineShow = show;
 	lines = [];
+}
+
+function drawLines(inputLines: number[][][]) {
 	scene.children = [];
 	inputLines.forEach((currLine: number[][], i: number) => {
 		const linePoints: THREE.Vector3[] = [];
 		currLine.forEach((point: number[]) => {
 			linePoints.push(new THREE.Vector3(...point));
 		});
-		const material = LINE_MATERIAL_MAP.get(COLOR_ACTIVE) as THREE.LineBasicMaterial;
+		const material = (
+			lines[i] ? lines[i].material : LINE_MATERIAL_MAP.get(COLOR_ACTIVE)
+		) as THREE.LineBasicMaterial;
 		material.needsUpdate = false;
 		const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
 		const line: THREE.Line & { index?: number } = new THREE.Line(geometry, material);
 		line.index = i;
-		lines.push(line);
+		lines[i] = line;
 		scene.add(line);
 	});
-	lineShow = Array(scene.children.length).fill(true);
+	if (!lineShow) lineShow = Array(scene.children.length).fill(true);
 	animate();
 }
 
@@ -212,7 +222,7 @@ function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null)
 	});
 }
 
-function applyFilters(axesFilters: AxesFilterType[]) {
+function applyFilters(axesFilters: AxesFilterType[], margin: MarginType) {
 	lineShow = [];
 	lines.forEach((line, i) => {
 		const positions = line.geometry.attributes.position.array;
@@ -221,7 +231,12 @@ function applyFilters(axesFilters: AxesFilterType[]) {
 			if (!axesFilters[j] || !axesFilters[j].pixels) return;
 
 			const lineY = positions[j * 3 + 1];
-			if (lineY < axesFilters[j].pixels.start + 40 || lineY > axesFilters[j].pixels.end + 40)
+			if (
+				axesFilters[j].pixels.end === 0 ||
+				axesFilters[j].pixels.start === height - margin.top - margin.bottom ||
+				lineY < axesFilters[j].pixels.start + margin.top ||
+				lineY > axesFilters[j].pixels.end + margin.top
+			)
 				lineShow[i] = false;
 		}
 		if (lineShow[i]) {
@@ -236,6 +251,11 @@ function applyFilters(axesFilters: AxesFilterType[]) {
 			line.material = LINE_MATERIAL_FILTERED;
 			changeLinePosition(line, -1);
 		}
+	});
+
+	postMessage({
+		function: 'setLineShow',
+		lineShow
 	});
 }
 

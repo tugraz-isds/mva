@@ -10,6 +10,10 @@
 	let currDimData: DimensionMetadataType;
 	let binNo: number = 0;
 
+	$: if (!isOpen) {
+		$parcoordIsInteractable = true;
+	}
+
 	function loadData() {
 		dimData = $parcoordDimMetadata;
 		currDimData = dimData.get(dimension) as DimensionMetadataType;
@@ -22,14 +26,9 @@
 		parcoordDimMetadata.set(dimData);
 		isOpen = false;
 	}
-
-	function closeModal() {
-		isOpen = false;
-		$parcoordIsInteractable = true;
-	}
 </script>
 
-<Modal bind:open={isOpen} on:open={loadData} on:closed={closeModal} size="xs" class="w-full">
+<Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
 	<form class="flex flex-col space-y-6" action="#">
 		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Number of Bins</h3>
 		<div class="mb-6 flex items-center">

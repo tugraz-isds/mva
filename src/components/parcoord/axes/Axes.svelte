@@ -80,6 +80,10 @@
 			return;
 
 		let redrawAxes = false;
+		if (axesFilters.length !== value.length) {
+			redrawAxes = true;
+			axesFilters = value;
+		}
 		dimensions.forEach((dim: string, i: number) => {
 			if (value[i].percentages.start === null) {
 				axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
@@ -584,7 +588,7 @@
 						.attr('y', `${newY + 8}`)
 						.attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
 
-					axesFilters[idx].pixels.start = newY - margin.top - 1 + 8;
+					axesFilters[idx].pixels.start = newY - margin.top + 8;
 					axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
 					filtersArray.set(axesFilters);
 				})
@@ -619,7 +623,7 @@
 						`${newY - axesFilters[idx].pixels.start - margin.top - 8}`
 					); // Move filter rectangle
 
-					axesFilters[idx].pixels.end = newY - margin.top;
+					axesFilters[idx].pixels.end = newY - margin.top - 8;
 					axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
 					filtersArray.set(axesFilters);
 				})
@@ -776,7 +780,6 @@
 	// Function to resize axes filters
 	export function resizeFilters() {
 		axisHeight = height - margin.top - margin.bottom;
-		console.log('Resizing filters', axisHeight, margin.bottom);
 		dimensions.forEach((dim: string, i: number) => {
 			// Calculate new pixel values
 			axesFilters[i].pixels = {

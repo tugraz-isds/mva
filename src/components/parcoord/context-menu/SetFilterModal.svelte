@@ -16,6 +16,10 @@
 	let validUpload: boolean = true;
 	let errorMessage: string = '';
 
+	$: if (!isOpen) {
+		$parcoordIsInteractable = true;
+	}
+
 	function loadData() {
 		const numberOfDecimals = $dimensionDataStore.get(dimension)?.numberOfDecimals;
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
@@ -43,7 +47,7 @@
 		}
 
 		validUpload = true;
-		closeSetRangeModal();
+		isOpen = false;
 
 		// Calculate new filter values
 		const filtersTemp = $filtersArray;
@@ -60,20 +64,9 @@
 
 		$filtersArray = filtersTemp;
 	}
-
-	function closeSetRangeModal() {
-		isOpen = false;
-		$parcoordIsInteractable = true;
-	}
 </script>
 
-<Modal
-	bind:open={isOpen}
-	on:open={loadData}
-	on:closed={closeSetRangeModal}
-	size="xs"
-	class="w-full"
->
+<Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
 	<form class="flex flex-col space-y-6" action="#">
 		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Filter Values</h3>
 		<div class="mb-6 flex items-center">

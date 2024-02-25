@@ -3,8 +3,13 @@
 	import { csvParse, autoType, extent, max, type DSVParsedArray } from 'd3';
 	import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
 	import type { DimensionDataType } from '../../util/types';
+	import { parcoordIsInteractable } from '../../stores/parcoord';
 
 	export let isOpen: boolean;
+
+	$: if (!isOpen) {
+		$parcoordIsInteractable = true;
+	}
 
 	let files: FileList | undefined; // List of uploaded files
 	let validUpload: boolean = true; // If false show error message

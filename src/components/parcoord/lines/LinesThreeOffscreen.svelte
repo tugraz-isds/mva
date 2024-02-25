@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
 	import OffscreenWorker from './offscreenWorker?worker';
-	import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
+	import { datasetStore, dimensionDataStore, labelDimension } from '../../../stores/dataset';
 	import {
 		filtersArray,
+		parcoordCustomAxisRanges,
 		parcoordHistogramData,
 		parcoordIsInteractable
 	} from '../../../stores/parcoord';
@@ -14,15 +15,14 @@
 		previouslyHoveredArray
 	} from '../../../stores/brushing';
 	import { linkingArray } from '../../../stores/linking';
-	import { COLOR_ACTIVE } from '../../../util/colors';
-	import type { DSVParsedArray } from 'd3';
+	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
+	import { select, line as lineD3, type DSVParsedArray } from 'd3';
 	import type { RecordDataType } from '../../../util/types';
-	import type { AxesFilterType } from '../types';
+	import type { AxesFilterType, CustomRangeType } from '../types';
 	import { debounce, throttle } from '../../../util/util';
 
 	export let width: number;
 	export let height: number;
-	export let dataset: DSVParsedArray<any>;
 	export let dimensions: string[] = [];
 	export let margin: any;
 	export let xScales: any[];
@@ -46,13 +46,38 @@
 	let axesFilters: AxesFilterType[] = [];
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
-		if (!worker) return;
-		if (dataset?.length > 0 && dimensions?.length > 0) {
+		if (worker && dataset?.length > 0 && dimensions?.length > 0) {
 			worker.postMessage({
 				function: 'applyFilters',
-				axesFilters
+				axesFilters,
+				margin
 			});
 		}
+	});
+
+	const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
+		(value: Map<string, CustomRangeType>) => {
+			if (!worker) return;
+			setTimeout(() => {
+				worker.postMessage({
+					function: 'applyFilters',
+					axesFilters,
+					margin
+				});
+			}, 0);
+		}
+	);
+
+	let dataset: DSVParsedArray<any>;
+	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+		dataset = value;
+		initializeArrays();
+		setTimeout(() => {
+			worker?.postMessage({
+				function: 'resetLines',
+				lineShow
+			});
+		}, 0);
 	});
 
 	const unsubscribeParcoordHistogramData = parcoordHistogramData.subscribe((value: any) => {
@@ -227,25 +252,6 @@
 		});
 	}
 
-	export function handleHideDimension() {
-		setTimeout(() => {
-			setLineData();
-			worker.postMessage({
-				function: 'drawLines',
-				lines
-			});
-		}, 0);
-	}
-
-	export function handleMarginChanged() {
-		initializeArrays();
-		drawLines();
-		worker.postMessage({
-			function: 'applyFilters',
-			axesFilters
-		});
-	}
-
 	function setTooltip(hoveredLinesSet: Set<number>) {
 		if (hoveredLinesSet.size === 0) {
 			setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
@@ -269,6 +275,67 @@
 		lineData = Array(dataset.length).fill({ color: COLOR_ACTIVE, position: 0 });
 		linkingArray.set(lineShow);
 	}
+
+	export const saveSVG = () => {
+		const tempContainer = document.createElement('div');
+		const svgContainer = select(tempContainer)
+			.append('svg')
+			.attr('viewBox', `0 0 ${width} ${height}`);
+
+		const lineGenerator = lineD3()
+			.x((d: any) => d[0])
+			.y((d: any) => d[1]);
+
+		const filteredIndices: number[] = [],
+			activeIndices: number[] = [];
+		lineShow.forEach((value: boolean, i: number) => {
+			value ? activeIndices.push(i) : filteredIndices.push(i);
+		});
+
+		const drawLineSVG = (dataRow: any[], color: number, opacity: number) => {
+			const linePoints = [];
+			for (let i = 0; i < dimensions.length; i++) {
+				const dim = dimensions[i];
+
+				let yPos;
+				if ($dimensionDataStore.get(dim)?.type === 'numerical')
+					yPos = yScales[dim](dataRow[dim as any]);
+				else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
+
+				linePoints.push([
+					xScales[i],
+					isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
+				]);
+			}
+
+			svgContainer
+				.append('path')
+				.datum(linePoints)
+				.attr('fill', 'none')
+				.attr('stroke', `#${color.toString(16).replace(/^0x/, '')}`)
+				.attr('stroke-width', 1)
+				.attr('stroke-opacity', opacity)
+				.attr('d', lineGenerator as any);
+		};
+
+		filteredIndices.forEach((i) => {
+			drawLineSVG(dataset[i], COLOR_FILTERED, 0.75);
+		});
+
+		activeIndices.forEach((i) => {
+			if (lineData[i].color === COLOR_BRUSHED) return;
+			drawLineSVG(dataset[i], COLOR_ACTIVE, 0.75);
+		});
+
+		$brushedArray.forEach((i) => {
+			drawLineSVG(dataset[i], COLOR_BRUSHED, 1);
+		});
+
+		const serializer = new XMLSerializer();
+		const svgString = serializer.serializeToString(svgContainer.node() as Node);
+		tempContainer.remove();
+		return svgString;
+	};
 
 	onMount(() => {
 		initializeArrays();
@@ -302,6 +369,9 @@
 				case 'setBrushed':
 					brushedArray.set(data.brushedIndices);
 					break;
+				case 'setLineShow':
+					lineShow = data.lineShow;
+					break;
 				case 'canvasResized':
 					currWidth = data.width;
 					currHeight = data.height;
@@ -320,6 +390,8 @@
 
 	onDestroy(() => {
 		unsubscribeFilters();
+		unsubscribeCustomRanges();
+		unsubscribeDataset();
 		unsubscribeParcoordHistogramData();
 		unsubscribeHovered();
 		unsubscribeBrushed();

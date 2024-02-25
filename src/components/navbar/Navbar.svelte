@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
 	import ImportDatasetModal from './ImportDatasetModal.svelte';
+	import { parcoordIsInteractable } from '../../stores/parcoord';
 
 	let isImportDatasetModalOpen: boolean = false;
 
-	function toggleModal() {
+	function openModal() {
 		isImportDatasetModalOpen = false;
 		isImportDatasetModalOpen = true;
+		$parcoordIsInteractable = false;
 	}
 </script>
 
@@ -27,7 +29,7 @@
 				<span class="text-white hover:text-blue-200">Help</span>
 			</NavLi>
 			<Dropdown triggeredBy="#nav-file" class="w-44 z-20">
-				<DropdownItem on:click={toggleModal}>Import Dataset...</DropdownItem>
+				<DropdownItem on:click={openModal}>Import Dataset...</DropdownItem>
 				<DropdownItem>Item 2</DropdownItem>
 				<DropdownItem>Item 3</DropdownItem>
 			</Dropdown>
