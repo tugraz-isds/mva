@@ -1,10 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-let iconsPath = './static/icons/';
-let utilPath = './src/util/';
-
-let iconsData = '';
 function readFiles(dir) {
 	const files = fs.readdirSync(dir);
 	files.forEach((fileName) => {
@@ -16,6 +12,11 @@ function readFiles(dir) {
 				` = \`${fs.readFileSync(filePath)}\`;\n\n`;
 	});
 }
+
+let iconsPath = './static/icons/';
+let utilPath = './src/util/';
+
+let iconsData = '';
 
 readFiles(iconsPath);
 

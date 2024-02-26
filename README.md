@@ -65,3 +65,13 @@ You can find more detailed information in the official [Tauri guide for building
 ### Resources
 
 MVA native application is built with [Tauri](https://tauri.app/).
+
+## Icons
+
+If new icons are added or existing ones are updated, run the following script:
+
+```bash
+npm run optimize-icons
+```
+
+Icons should be added into `/static/icons/` folder. The `optimize-icons` script reads `/static/icons/` folder recursively and exports `.svg` files into TypeScript constants that are saved into `/src/util/icon-definitions.ts` file.
