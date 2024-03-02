@@ -20,7 +20,7 @@
 
 		if (data.text.length === 0) return;
 
-		const tooltipWidth = Math.min(getTextWidthArray(data.text, 10, 'Roboto'), 120);
+		const tooltipWidth = Math.min(getTextWidthArray(data.text, 10, 'sans-serif'), 120);
 
 		// Create a white background rect
 		tooltipBackground = svg

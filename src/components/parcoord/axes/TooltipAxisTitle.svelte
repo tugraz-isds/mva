@@ -18,7 +18,7 @@
 
 		if (data.text.length === 0) return;
 
-		const tooltipWidth = getTextWidth(data.text, 10, 'Roboto');
+		const tooltipWidth = getTextWidth(data.text, 10, 'sans-serif');
 
 		// Create a white background rect
 		tooltipBackground = svg

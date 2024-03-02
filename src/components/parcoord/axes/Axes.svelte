@@ -144,7 +144,12 @@
 			const step = xScales[1] - xScales[0];
 			// Format ticks so they dont overflow
 			const longestString = getLongestStringLen(yScales[dim].domain());
-			const maxTickLength = calculateMaxLength(longestString, 12, 'Roboto', i === 0 ? 100 : step);
+			const maxTickLength = calculateMaxLength(
+				longestString,
+				12,
+				'sans-serif',
+				i === 0 ? 100 : step
+			);
 			const tickFormatter = (d: any) => {
 				let formattedTick = d.toString();
 				formattedTick =
@@ -185,7 +190,7 @@
 		dimensions.forEach((dim: string, i: number) => {
 			const step = xScales[1] - xScales[0];
 			// Create axis titles SVG
-			const maxTitleLength = calculateMaxLength(dim, 10, 'Roboto', step);
+			const maxTitleLength = calculateMaxLength(dim, 10, 'sans-serif', step);
 			const cursorString =
 				i === 0
 					? `${btoa(setSvgStyle(arrow_right_icon, 14, 10, '#000', '#f9f9f9'))}") 7 5`
@@ -279,7 +284,7 @@
 				groupUpper
 					.append('rect')
 					.attr('class', 'axis-filter-upper-value')
-					.attr('width', getTextWidth(upperFilterValue, 10, 'Roboto') + 8)
+					.attr('width', getTextWidth(upperFilterValue, 10, 'sans-serif') + 8)
 					.attr('height', 14)
 					.attr('fill', 'lightgrey')
 					.attr('stroke', 'black');
@@ -736,7 +741,7 @@
 	export function calculateMarginLeft() {
 		if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
 			const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
-			const longestStringWidth = getTextWidth(longestString, 12, 'Roboto') + 8;
+			const longestStringWidth = getTextWidth(longestString, 12, 'sans-serif') + 8;
 			margin.left =
 				longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
 		} else margin.left = 30;

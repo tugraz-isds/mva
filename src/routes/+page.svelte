@@ -7,9 +7,3 @@
 	<Navbar />
 	<ViewPanel />
 </div>
-
-<style>
-	body {
-		font-family: 'Roboto', sans-serif;
-	}
-</style>
