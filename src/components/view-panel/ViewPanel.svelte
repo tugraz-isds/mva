@@ -143,9 +143,3 @@
 		<Layout_1 views={activeViews} {handleSwap} />
 	{/if}
 </div>
-
-<style lang="scss">
-	:global(body) {
-		font-family: 'Roboto', sans-serif;
-	}
-</style>

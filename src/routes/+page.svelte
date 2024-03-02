@@ -8,8 +8,8 @@
 	<ViewPanel />
 </div>
 
-<style lang="scss">
-	:global(body) {
+<style>
+	body {
 		font-family: 'Roboto', sans-serif;
 	}
 </style>

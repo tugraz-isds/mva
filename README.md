@@ -66,12 +66,19 @@ You can find more detailed information in the official [Tauri guide for building
 
 MVA native application is built with [Tauri](https://tauri.app/).
 
-## Icons
+## Custom Scripts
 
-If new icons are added or existing ones are updated, run the following script:
+We defined a few custom Gulp scripts in `gulpfile.js`:
 
-```bash
-npm run optimize-icons
-```
+1. `npm run clean` or `npx gulp clean`
 
-Icons should be added into `/static/icons/` folder. The `optimize-icons` script reads `/static/icons/` folder recursively and exports `.svg` files into TypeScript constants that are saved into `/src/util/icon-definitions.ts` file.
+Removes the existing `build/` directory to enable a clean rebuild of the project.
+
+2. `npm run clean-all` or `npx gulp cleanAll`
+
+Removes existing `.svelte-kit/`, `build/`, and `node_modules/` directories to enable a clean reinitialization of the project.
+
+3. `npm run optimize-icons` or `npx gulp optimizeIcons`
+
+If new icons are added or existing ones are updated, run this following script.
+Icons should be added into `static/icons/` folder. The `optimize-icons` script reads `static/icons/` folder recursively and exports `.svg` files into TypeScript constants that are saved into `src/util/icon-definitions.ts` file.

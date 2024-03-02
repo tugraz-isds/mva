@@ -115,7 +115,6 @@ function drawLines(inputLines: number[][][]) {
 		lines[i] = line;
 		scene.add(line);
 	});
-	if (!lineShow) lineShow = Array(scene.children.length).fill(true);
 	animate();
 }
 
@@ -223,6 +222,7 @@ function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null)
 }
 
 function applyFilters(axesFilters: AxesFilterType[], margin: MarginType) {
+	if (!lines || lines.length === 0) return;
 	lineShow = [];
 	lines.forEach((line, i) => {
 		const positions = line.geometry.attributes.position.array;

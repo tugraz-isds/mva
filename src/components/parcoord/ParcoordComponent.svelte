@@ -12,7 +12,7 @@
 	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
 	import Axes from './axes/Axes.svelte';
 	import Histograms from './histograms/Histograms.svelte';
-	import LinesThreeOffscreen from './lines/LinesThreeOffscreen.svelte';
+	import Lines from './lines/Lines.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import TooltipAxisTitle from './axes/TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
@@ -36,7 +36,7 @@
 
 	let canvasEl: HTMLCanvasElement;
 	let parcoordDiv: HTMLElement;
-	let linesComponent: LinesThreeOffscreen;
+	let linesComponent: Lines;
 	let axesComponent: Axes;
 	let contextMenuAxes: ContextMenuAxes;
 	let svgExportModal: SvgExportModal;
@@ -362,7 +362,7 @@
 			{calculateMarginLeft}
 		/>
 
-		<LinesThreeOffscreen
+		<Lines
 			bind:this={linesComponent}
 			{width}
 			{height}
