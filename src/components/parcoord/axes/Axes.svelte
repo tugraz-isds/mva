@@ -55,6 +55,7 @@
 	let axesFilters: AxesFilterType[] = []; // Filter values array for linking
 	let isCurrentlyFiltering: boolean = false; // Is user currently filtering flag
 	let datasetUploaded = false;
+	let autoscrollInterval: number | null = null;
 
 	$: axisHeight = height - margin.top - margin.bottom;
 
@@ -446,7 +447,7 @@
 						);
 					}
 
-					checkAutoscroll(event.sourceEvent.clientX);
+					checkAutoscroll(event.sourceEvent.clientX, draggingIndex);
 
 					// Set new index for swapping if needed
 					let newIndex = draggingIndex;
@@ -542,17 +543,28 @@
 					}
 					draggingIndex = -1;
 					isCurrentlyFiltering = false;
+
+					if (autoscrollInterval !== null) {
+						clearInterval(autoscrollInterval);
+						autoscrollInterval = null;
+					}
 				});
 
 			axisTitles[dimensions.indexOf(dim)]?.call(dragBehavior);
 		});
 	}
 
-	function checkAutoscroll(x: number) {
+	function checkAutoscroll(x: number, draggingIndex: number) {
 		const parcoordDiv = select('.view-parcoord');
 		const rect = (parcoordDiv.node() as any).getBoundingClientRect();
-		if (x > rect.right) handleAutoscroll('right');
-		else if (x <= rect.left) handleAutoscroll('left');
+
+		if (autoscrollInterval !== null) {
+			clearInterval(autoscrollInterval);
+			autoscrollInterval = null;
+		}
+
+		if (x > rect.right) autoscrollInterval = setInterval(() => handleAutoscroll('right'), 100);
+		else if (x <= rect.left) autoscrollInterval = setInterval(() => handleAutoscroll('left'), 100);
 	}
 
 	function getAxisDomainValue(i: number, percentage: number) {
