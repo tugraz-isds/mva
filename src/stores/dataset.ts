@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { DSVParsedArray } from 'd3';
+import type { DSVParsedArray } from 'd3-dsv';
 import type { DimensionDataType } from '../util/types';
 
 export const datasetStore = writable<DSVParsedArray<any>[]>([]);

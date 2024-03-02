@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { select, group, bin, range } from 'd3';
+	import { select } from 'd3-selection';
+	import { group, bin, range } from 'd3-array';
 	import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
 	import { parcoordDimMetadata, parcoordHistogramData } from '../../../stores/parcoord';
-	import type { DSVParsedArray } from 'd3';
+	import type { DSVParsedArray } from 'd3-dsv';
 
 	export let dataset: DSVParsedArray<any>;
 	export let width: number; // Container width

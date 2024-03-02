@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { PCA } from 'ml-pca';
-	import { scaleLinear } from 'd3';
+	import { scaleLinear } from 'd3-scale';
 	import { Select } from 'flowbite-svelte';
 	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
 	import Axes from '../scatterplot/Axes.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import Points from '../scatterplot/Points.svelte';
-	import type { DSVParsedArray } from 'd3';
+	import type { DSVParsedArray } from 'd3-dsv';
 	import type { MarginType, TooltipType } from '../../util/types';
 
 	let width: number;

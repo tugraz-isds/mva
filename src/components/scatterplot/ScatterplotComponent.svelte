@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { Select } from 'flowbite-svelte';
-	import { extent, scaleLinear } from 'd3';
+	import { extent } from 'd3-array';
+	import { scaleLinear } from 'd3-scale';
 	import Axes from './Axes.svelte';
 	import Points from './Points.svelte';
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-	import type { DSVParsedArray } from 'd3';
+	import type { DSVParsedArray } from 'd3-dsv';
 	import type { MarginType, TooltipType } from '../../util/types';
 
 	let width: number;

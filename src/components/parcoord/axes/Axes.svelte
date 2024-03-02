@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { axisLeft, select, drag } from 'd3';
+	import { axisLeft } from 'd3-axis';
+	import { select } from 'd3-selection';
+	import { drag } from 'd3-drag';
 	import {
 		filtersArray,
 		parcoordDimMetadata,

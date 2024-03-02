@@ -9,7 +9,7 @@
 		previouslyBrushedArray
 	} from '../../stores/brushing';
 	import ContextMenu from './ContextMenu.svelte';
-	import type { DSVParsedArray } from 'd3';
+	import type { DSVParsedArray } from 'd3-dsv';
 
 	let contextMenu: ContextMenu;
 

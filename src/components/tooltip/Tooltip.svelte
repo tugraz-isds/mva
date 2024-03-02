@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { afterUpdate } from 'svelte';
-	import { select } from 'd3';
+	import { select } from 'd3-selection';
 	import { getTextWidthArray } from '../../util/text';
 	import type { TooltipType } from '../../util/types';
 

@@ -8,7 +8,7 @@
 		parcoordDimMetadata,
 		parcoordHistogramData
 	} from '../../stores/parcoord';
-	import { scaleLinear, scaleBand } from 'd3';
+	import { scaleLinear, scaleBand } from 'd3-scale';
 	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
 	import Axes from './axes/Axes.svelte';
 	import Histograms from './histograms/Histograms.svelte';
@@ -16,7 +16,7 @@
 	import Tooltip from '../tooltip/Tooltip.svelte';
 	import TooltipAxisTitle from './axes/TooltipAxisTitle.svelte';
 	import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
-	import type { DSVParsedArray } from 'd3';
+	import type { DSVParsedArray } from 'd3-dsv';
 	import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
 	import type { MarginType, TooltipType } from '../../util/types';
 	import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterUpdate, onMount } from 'svelte';
-	import { axisBottom, axisLeft, select } from 'd3';
+	import { axisBottom, axisLeft } from 'd3-axis';
+	import { select } from 'd3-selection';
 	import type { MarginType } from '../../util/types';
 
 	export let width: number;

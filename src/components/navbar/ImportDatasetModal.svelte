@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
-	import { csvParse, autoType, extent, max, type DSVParsedArray } from 'd3';
+	import { extent, max } from 'd3-array';
+	import { autoType, csvParse, type DSVParsedArray } from 'd3-dsv';
 	import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
 	import type { DimensionDataType } from '../../util/types';
 	import { parcoordIsInteractable } from '../../stores/parcoord';

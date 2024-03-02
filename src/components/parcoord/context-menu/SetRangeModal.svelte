@@ -7,7 +7,7 @@
 		filtersArray
 	} from '../../../stores/parcoord';
 	import { dimensionDataStore } from '../../../stores/dataset';
-	import { scaleLinear } from 'd3';
+	import { scaleLinear } from 'd3-scale';
 
 	export let isOpen: boolean;
 	export let dimension: string;

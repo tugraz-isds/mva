@@ -16,10 +16,12 @@
 	} from '../../../stores/brushing';
 	import { linkingArray } from '../../../stores/linking';
 	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
-	import { select, line as lineD3, type DSVParsedArray } from 'd3';
+	import { select } from 'd3-selection';
+	import { line as lineD3 } from 'd3-shape';
+	import { debounce, throttle } from '../../../util/util';
+	import type { DSVParsedArray } from 'd3-dsv';
 	import type { RecordDataType } from '../../../util/types';
 	import type { AxesFilterType, CustomRangeType } from '../types';
-	import { debounce, throttle } from '../../../util/util';
 
 	export let width: number;
 	export let height: number;
