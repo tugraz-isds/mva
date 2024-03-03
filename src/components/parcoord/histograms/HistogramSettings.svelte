@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Checkbox } from 'flowbite-svelte';
+	import { Checkbox, Tooltip } from 'flowbite-svelte';
 	import { Cog8Tooth } from 'svelte-heros-v2';
 	import { parcoordHistogramData } from '../../../stores/parcoord';
 	import HistogramSettingsModal from './HistogramSettingsModal.svelte';
@@ -23,6 +23,7 @@
 		class="text-grey-900 cursor-pointer hover:bg-sky-100"
 		on:click={toggleModal}
 	/>
+	<Tooltip type="light">Histogram Settings</Tooltip>
 </div>
 
 <HistogramSettingsModal isOpen={isHistogramSettingsModalOpen} />

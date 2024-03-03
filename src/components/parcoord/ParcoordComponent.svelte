@@ -9,7 +9,7 @@
 		parcoordHistogramData
 	} from '../../stores/parcoord';
 	import { scaleLinear, scaleBand } from 'd3-scale';
-	import { reorderArray, isOffscreenCanvasSupported } from '../../util/util';
+	import { reorderArray } from '../../util/util';
 	import Axes from './axes/Axes.svelte';
 	import Histograms from './histograms/Histograms.svelte';
 	import Lines from './lines/Lines.svelte';
@@ -34,13 +34,11 @@
 	let xScales: any[] = [];
 	let yScales: any = {};
 
-	let canvasEl: HTMLCanvasElement;
 	let parcoordDiv: HTMLElement;
 	let linesComponent: Lines;
 	let axesComponent: Axes;
 	let contextMenuAxes: ContextMenuAxes;
 	let svgExportModal: SvgExportModal;
-	let isOffscreenCanvasSupport: boolean;
 
 	let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
 
@@ -261,13 +259,6 @@
 	}
 
 	onMount(() => {
-		isOffscreenCanvasSupport = isOffscreenCanvasSupported(canvasEl);
-		if (!isOffscreenCanvasSupport)
-			console.warn(
-				'Your browser does not support OffscreenCanvas with a WebGL Context.' +
-					' Check the browser support on https://caniuse.com/#feat=offscreencanvas.' +
-					' You will likely experience slower performance on larger datasets.'
-			);
 		initialHeight = height;
 		calculateYScales();
 		isBrowser = true;
@@ -376,7 +367,6 @@
 </div>
 
 <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
-<canvas bind:this={canvasEl} height="0" width="0" />
 
 <style>
 	.scrollable-div {

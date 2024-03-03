@@ -39,7 +39,7 @@ export function isOffscreenCanvasSupported(canvas: HTMLCanvasElement): boolean {
 	const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 	let supportOffScreenWebGL = 'transferControlToOffscreen' in canvas;
 
-	// If it's Safari, then check the version because Safari < 17 doesn't support OffscreenCanvas with a WebGL context.
+	// If it's Safari, then check the version because Safari < 17 doesn't support OffscreenCanvas with a WebGL context
 	if (isSafari) {
 		var versionMatch = navigator.userAgent.match(/version\/(\d+)/i);
 		var safariVersion = versionMatch ? parseInt(versionMatch[1]) : 0;
