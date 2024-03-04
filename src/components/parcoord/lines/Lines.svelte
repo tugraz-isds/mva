@@ -15,6 +15,7 @@
 		previouslyHoveredArray
 	} from '../../../stores/brushing';
 	import { linkingArray } from '../../../stores/linking';
+	import { isCurrentlyResizing } from '../../../stores/views';
 	import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
 	import { select } from 'd3-selection';
 	import { line as lineD3 } from 'd3-shape';
@@ -48,12 +49,14 @@
 	let axesFilters: AxesFilterType[] = [];
 	const unsubscribeFilters = filtersArray.subscribe((value: any) => {
 		axesFilters = value;
-		if (worker && dataset?.length > 0 && dimensions?.length > 0) {
-			worker.postMessage({
-				function: 'applyFilters',
-				axesFilters,
-				margin
-			});
+		if (worker && dataset?.length > 0 && dimensions?.length > 0 && !$isCurrentlyResizing) {
+			setTimeout(() => {
+				worker.postMessage({
+					function: 'applyFilters',
+					axesFilters,
+					margin
+				});
+			}, 0);
 		}
 	});
 

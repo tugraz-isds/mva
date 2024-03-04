@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
+	import { Button, Modal, Label, NumberInput, Helper } from 'flowbite-svelte';
 	import {
 		parcoordDimMetadata,
 		parcoordIsInteractable,
@@ -13,6 +13,7 @@
 	export let dimIndex: number;
 
 	let filterStart: number, filterEnd: number;
+	let originalMin: number, originalMax: number;
 	let validUpload: boolean = true;
 	let errorMessage: string = '';
 
@@ -29,20 +30,25 @@
 		filterEnd = isAxisInverted
 			? yScales[dimension].invert($filtersArray[dimIndex].pixels.end).toFixed(numberOfDecimals)
 			: yScales[dimension].invert($filtersArray[dimIndex].pixels.start).toFixed(numberOfDecimals);
+		originalMin = $dimensionDataStore.get(dimension)?.min as number;
+		originalMax = $dimensionDataStore.get(dimension)?.max as number;
 	}
 
 	function setAxisRange() {
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
-		const min: number = $dimensionDataStore.get(dimension)?.min as number;
-		const max: number = $dimensionDataStore.get(dimension)?.max as number;
-		if (filterEnd > max) {
+		if (filterEnd > originalMax) {
 			validUpload = false;
-			errorMessage = `Highest value of dimension is ${max}. You cannot set the filter value higher than that.`;
+			errorMessage = `Highest value of dimension is ${originalMax}. You cannot set the filter value higher than that.`;
 			return;
 		}
-		if (filterStart < min) {
+		if (filterStart < originalMin) {
 			validUpload = false;
-			errorMessage = `Lowest value of dimension is ${min}. You cannot set the filter value lower than that.`;
+			errorMessage = `Lowest value of dimension is ${originalMin}. You cannot set the filter value lower than that.`;
+			return;
+		}
+		if (filterStart > filterEnd) {
+			validUpload = false;
+			errorMessage = `Filter start cannot be higher than filter end.`;
 			return;
 		}
 
@@ -72,22 +78,28 @@
 		<div class="mb-6 flex items-center">
 			<div class="flex flex-row items-center">
 				<Label for="filter-min" class="mr-2">Start:</Label>
-				<Input
+				<NumberInput
 					bind:value={filterStart}
 					on:change={() => (validUpload = true)}
 					id="filter-min"
 					defaultClass="block w-1/2"
 					size="sm"
+					step={1}
+					min={originalMin}
+					max={filterEnd}
 				/>
 			</div>
 			<div class="flex flex-row items-center">
 				<Label for="filter-max" class="mr-2">End:</Label>
-				<Input
+				<NumberInput
 					bind:value={filterEnd}
 					on:change={() => (validUpload = true)}
 					id="filter-max"
 					defaultClass="block w-1/2"
 					size="sm"
+					step={1}
+					min={filterStart}
+					max={originalMax}
 				/>
 			</div>
 		</div>

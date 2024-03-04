@@ -29,7 +29,6 @@
 	let height: number; // Container height
 	let dimensions: string[] = []; // Dataset dimensions
 	let dimensionsInitial: string[] = []; // Dataset initial dimensions
-	let initialHeight: number; // Initial height (needed after resizing)
 
 	let xScales: any[] = [];
 	let yScales: any = {};
@@ -160,6 +159,11 @@
 				.domain([0, dimensions.length - 1])
 				.range([margin.left, width - margin.right])(i)
 		);
+
+		$parcoordHistogramData.widthLimits = {
+			min: 0,
+			max: xScales[1] - xScales[0]
+		};
 	}
 
 	function handleAxesSwapped(fromIndex: number, toIndex: number) {
@@ -195,16 +199,10 @@
 
 	function handleHideDimension(idx: number) {
 		dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
-		idx === 0 && calculateMarginLeft();
+		idx === 0 && setMarginLeft();
 		setTimeout(() => {
 			filtersArray.set([...$filtersArray.slice(0, idx), ...$filtersArray.slice(idx + 1)]);
 			linesComponent.drawLines();
-		}, 0);
-	}
-
-	function calculateMarginLeft() {
-		setTimeout(() => {
-			axesComponent.calculateMarginLeft();
 		}, 0);
 	}
 
@@ -214,6 +212,12 @@
 
 	function setTooltipAxisTitleData(data: TooltipAxisTitleType) {
 		tooltipAxisTitle = data;
+	}
+
+	function setMarginLeft() {
+		setTimeout(() => {
+			axesComponent.calculateMarginLeft();
+		}, 0);
 	}
 
 	function setMarginRight(histogramsVisible: boolean) {
@@ -259,7 +263,6 @@
 	}
 
 	onMount(() => {
-		initialHeight = height;
 		calculateYScales();
 		isBrowser = true;
 		window.addEventListener('call-save-svg-parcoord', saveSVG);
@@ -276,18 +279,17 @@
 			});
 		});
 
-		parcoordHistogramData.set({
-			visible: true,
-			fillOpacity: 0.2,
-			strokeOpacity: 0.3,
-			width: 0.2,
-			widthLimits: {
-				min: 0,
-				max: xScales[1] - xScales[0]
-			}
-		});
-
 		setTimeout(() => {
+			parcoordHistogramData.set({
+				visible: false,
+				fillOpacity: 0.2,
+				strokeOpacity: 0.3,
+				width: 0.2,
+				widthLimits: {
+					min: 0,
+					max: xScales[1] - xScales[0]
+				}
+			});
 			setMarginRight(true);
 		}, 0);
 	});
@@ -350,7 +352,7 @@
 			bind:dimensions
 			bind:margin
 			{handleHideDimension}
-			{calculateMarginLeft}
+			calculateMarginLeft={setMarginLeft}
 		/>
 
 		<Lines

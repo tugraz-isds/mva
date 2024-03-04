@@ -1,3 +1,5 @@
+import { range } from 'd3';
+
 // Helper function to reorder an array
 export function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
 	const result = [...arr];
@@ -67,3 +69,14 @@ export const debounce = (func: Function, delay: number) => {
 		debounceTimer = window.setTimeout(() => func(...args), delay);
 	};
 };
+
+export function generateEvenlySpacedNumbers(
+	min: number,
+	max: number,
+	n: number,
+	isInverted: boolean
+) {
+	return isInverted
+		? range(0, n).map((i) => max + (i / n) * (min - max))
+		: range(0, n).map((i) => min + (i / n) * (max - min));
+}

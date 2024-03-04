@@ -18,13 +18,15 @@
 	export let handleHideDimension: Function;
 	export let calculateMarginLeft: Function;
 
+	let dimIndex: number;
+	let isSetRangeModalOpen = false,
+		isSetBinNoModalOpen = false,
+		isSetFilterModalOpen = false;
+	let isContextMenuShown = false;
+	let isFilterSet = false;
+
 	let debounceTimeout: number;
-	let isSetRangeModalOpen: boolean = false,
-		isSetBinNoModalOpen: boolean = false,
-		isSetFilterModalOpen: boolean = false;
-	let isContextMenuShown = false; // Flag if context menu is visible
-	let menuStyle = ''; // Menu style string
-	let dimIndex: number; // Dataset dimension index
+	let menuStyle = '';
 	const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
 
 	export function showContextMenu(event: MouseEvent, index: number) {
@@ -32,6 +34,9 @@
 		$parcoordIsInteractable = false;
 		isContextMenuShown = true;
 		dimIndex = index;
+		isFilterSet =
+			$filtersArray[dimIndex].percentages.start !== 0 ||
+			$filtersArray[dimIndex].percentages.end !== 1;
 		const { clientX, clientY } = event;
 		const clientXNew = clientX + 150 < window.innerWidth ? clientX : clientX - 150;
 		menuStyle = `left: ${clientXNew}px; top: ${clientY}px;`;
@@ -42,41 +47,13 @@
 		$parcoordIsInteractable = true;
 	}
 
-	function openSetRangeModal() {
-		hideContextMenu();
-		isSetRangeModalOpen = false;
-		isSetRangeModalOpen = true;
-		$parcoordIsInteractable = false;
-	}
-
-	function openSetBinNoModal() {
-		hideContextMenu();
-		isSetBinNoModalOpen = false;
-		isSetBinNoModalOpen = true;
-		$parcoordIsInteractable = false;
-	}
-
-	function openSetFilterModal() {
-		hideContextMenu();
-		isSetFilterModalOpen = false;
-		isSetFilterModalOpen = true;
-		$parcoordIsInteractable = false;
-	}
-
-	function resetAxisRange() {
-		const customRanges = $parcoordCustomAxisRanges;
-		customRanges.set(dimensions[dimIndex], null);
-		$parcoordCustomAxisRanges = customRanges;
-
-		$filtersArray[dimIndex].percentages = {
-			start: 0,
-			end: 1
-		};
-	}
-
 	function hideDimension() {
 		handleHideDimension(dimIndex);
 		hideContextMenu();
+	}
+
+	function invertDimension() {
+		axesComponent.handleOnInvertAxesClick(dimIndex);
 	}
 
 	function handleShow(field: 'labels' | 'histograms' | 'filter' | 'filterValues') {
@@ -100,6 +77,44 @@
 		hideContextMenu();
 	}
 
+	function openSetRangeModal() {
+		hideContextMenu();
+		isSetRangeModalOpen = false;
+		isSetRangeModalOpen = true;
+		$parcoordIsInteractable = false;
+	}
+
+	function resetDimensionRange() {
+		const customRanges = $parcoordCustomAxisRanges;
+		customRanges.set(dimensions[dimIndex], null);
+		$parcoordCustomAxisRanges = customRanges;
+
+		$filtersArray[dimIndex].percentages = {
+			start: 0,
+			end: 1
+		};
+	}
+
+	function openSetFilterModal() {
+		hideContextMenu();
+		isSetFilterModalOpen = false;
+		isSetFilterModalOpen = true;
+		$parcoordIsInteractable = false;
+	}
+
+	function resetFilter() {
+		isFilterSet = false;
+		axesComponent.resetAxisFilter(dimIndex);
+		handleMouseLeave();
+	}
+
+	function openSetBinNoModal() {
+		hideContextMenu();
+		isSetBinNoModalOpen = false;
+		isSetBinNoModalOpen = true;
+		$parcoordIsInteractable = false;
+	}
+
 	function handleMouseLeave() {
 		debounceTimeout = setTimeout(() => {
 			hideContextMenu();
@@ -119,31 +134,8 @@
 		on:mouseenter={handleMouseEnter}
 		on:mouseleave={handleMouseLeave}
 	>
-		<DropdownItem defaultClass={activeClass} on:click={() => hideDimension()}
-			>Hide Axis</DropdownItem
-		>
-		<DropdownItem
-			defaultClass={activeClass}
-			on:click={() => axesComponent.handleOnInvertAxesClick(dimIndex)}>Invert Axis</DropdownItem
-		>
-		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
-			<DropdownDivider />
-			<DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
-				>Set Range...</DropdownItem
-			>
-		{/if}
-		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
-			<DropdownDivider />
-			<DropdownItem defaultClass={activeClass} on:click={() => resetAxisRange()}
-				>Reset Range</DropdownItem
-			>
-		{/if}
-		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
-			<DropdownDivider />
-			<DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
-				>Set Bin Num...</DropdownItem
-			>
-		{/if}
+		<DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Axis</DropdownItem>
+		<DropdownItem defaultClass={activeClass} on:click={invertDimension}>Invert Axis</DropdownItem>
 		<DropdownDivider />
 		<DropdownItem defaultClass="{activeClass} flex items-center justify-between">
 			Show<ChevronRight class="w-3 h-3 ms-2" />
@@ -195,21 +187,44 @@
 					/>Filter Values</DropdownItem
 				>{/if}
 		</Dropdown>
-		<DropdownDivider />
 		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
 			<DropdownDivider />
+			<DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
+				>Set Range...</DropdownItem
+			>
+		{/if}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
+			<DropdownItem defaultClass={activeClass} on:click={() => resetDimensionRange()}
+				>Reset Range</DropdownItem
+			>
+		{/if}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' || isFilterSet}
+			<DropdownDivider />
+		{/if}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
 			<DropdownItem defaultClass={activeClass} on:click={() => openSetFilterModal()}
 				>Set Filter...</DropdownItem
 			>
 		{/if}
-		<DropdownItem
-			defaultClass={activeClass}
-			on:click={() => axesComponent.resetAxisFilter(dimIndex)}>Reset Filter</DropdownItem
-		>
+		{#if isFilterSet}
+			<DropdownItem defaultClass={activeClass} on:click={resetFilter}>Reset Filter</DropdownItem>
+		{/if}
+		{#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+			<DropdownDivider />
+			<DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
+				>Set Bin Num...</DropdownItem
+			>
+		{/if}
 	</div>
 {/if}
 
-<SetRangeModal isOpen={isSetRangeModalOpen} dimension={dimensions[dimIndex]} {yScales} {dimIndex} />
+<SetRangeModal
+	isOpen={isSetRangeModalOpen}
+	dimension={dimensions[dimIndex]}
+	{yScales}
+	{dimIndex}
+	handleResetDimensionRange={resetDimensionRange}
+/>
 
 <SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
 

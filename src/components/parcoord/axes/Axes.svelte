@@ -253,7 +253,7 @@
 					.attr('width', '16px')
 					.attr('height', '16px')
 					.attr('stroke', '#000')
-					.attr('fill', '#000')
+					.attr('fill', 'rgba(255, 255, 100, 0.5)')
 					.style('display', dimensionsMetadata.get(dim)?.showFilter ? 'block' : 'none')
 					.style(
 						'cursor',
@@ -344,7 +344,7 @@
 					.attr('width', '16px')
 					.attr('height', '16px')
 					.attr('stroke', '#000')
-					.attr('fill', '#000')
+					.attr('fill', 'rgba(255, 255, 100, 0.5)')
 					.style('display', dimensionsMetadata.get(dim)?.showFilter ? 'block' : 'none')
 					.style(
 						'cursor',

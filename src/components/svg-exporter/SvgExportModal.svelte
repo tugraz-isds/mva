@@ -28,7 +28,9 @@
 		svgString = svgString
 			.replaceAll('px', '')
 			.replaceAll(' dy="0.32em"', '')
-			.replaceAll(' opacity="1"', '');
+			.replaceAll(' opacity="1"', '')
+			.replaceAll(/\s?cursor: url\(.*?\).*?;/g, '')
+			.replaceAll(' style=""', '');
 
 		const stringSvgFormatted = xmlFormat(svgString, {
 			indentation: '  ',

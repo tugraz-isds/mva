@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import type { View } from './ViewType';
-	import { activeViewsStore } from '../../stores/views';
+	import { activeViewsStore, isCurrentlyResizing } from '../../stores/views';
 	import Layout_1 from './Layout-1.svelte';
 	import Layout_2 from './Layout-2.svelte';
 	import Layout_3 from './Layout-3.svelte';
@@ -22,6 +22,7 @@
 
 	/* --- HANDLE RESIZING --- */
 	const handleVerticalMouseDown = () => {
+		$isCurrentlyResizing = true;
 		isDraggingVertical = true;
 		disableTextSelection = true;
 	};
@@ -30,11 +31,13 @@
 		if (!(e.target instanceof Element)) return;
 		const dividerId = e.target.id.match(/\d+$/);
 		activeHorizonalDivider = dividerId ? parseInt(dividerId[0]) : null;
+		$isCurrentlyResizing = true;
 		isDraggingHorizontal = true;
 		disableTextSelection = true;
 	};
 
 	const handleMouseUp = () => {
+		$isCurrentlyResizing = false;
 		disableTextSelection = false;
 		isDraggingVertical = false;
 		isDraggingHorizontal = false;

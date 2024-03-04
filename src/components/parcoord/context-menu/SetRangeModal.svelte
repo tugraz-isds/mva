@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Modal, Label, Input, Helper } from 'flowbite-svelte';
+	import { Button, Modal, Label, Helper, NumberInput } from 'flowbite-svelte';
 	import {
 		parcoordCustomAxisRanges,
 		parcoordDimMetadata,
@@ -13,41 +13,44 @@
 	export let dimension: string;
 	export let yScales: any;
 	export let dimIndex: number;
+	export let handleResetDimensionRange: Function;
 
 	$: if (!isOpen) {
 		$parcoordIsInteractable = true;
 	}
 
-	let rangeStart: number, rangeEnd: number;
+	let rangeMin: number, rangeMax: number;
+	let originalMin: number, originalMax: number;
 	let validUpload: boolean = true; // If false show error message
 	let errorMessage: string = '';
 
 	function loadData() {
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
-		rangeStart = isAxisInverted ? yScales[dimension].domain()[1] : yScales[dimension].domain()[0];
-		rangeEnd = isAxisInverted ? yScales[dimension].domain()[0] : yScales[dimension].domain()[1];
+		rangeMin = isAxisInverted ? yScales[dimension].domain()[1] : yScales[dimension].domain()[0];
+		rangeMax = isAxisInverted ? yScales[dimension].domain()[0] : yScales[dimension].domain()[1];
+		originalMin = $dimensionDataStore.get(dimension)?.min as number;
+		originalMax = $dimensionDataStore.get(dimension)?.max as number;
 	}
 
-	function setAxisRange() {
+	function setDimensionRange() {
+		errorMessage = '';
 		const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
-		const min: number = $dimensionDataStore.get(dimension)?.min as number;
-		const max: number = $dimensionDataStore.get(dimension)?.max as number;
-		if (rangeEnd < max) {
+		if (rangeMax < originalMax) {
 			validUpload = false;
-			errorMessage = `Highest value of dimension is ${max}. You cannot set the range lower than that.`;
+			errorMessage = `You cannot set Max lower than ${originalMax}.`;
 			return;
 		}
-		if (rangeStart > min) {
+		if (rangeMin > originalMin) {
 			validUpload = false;
-			errorMessage = `Lowest value of dimension is ${min}. You cannot set the range higher than that.`;
+			errorMessage = `You cannot set Min higher than ${originalMin}.`;
 			return;
 		}
 
 		validUpload = true;
 		const customRanges = $parcoordCustomAxisRanges;
 		customRanges.set(dimension, {
-			start: isAxisInverted ? rangeEnd : rangeStart,
-			end: isAxisInverted ? rangeStart : rangeEnd
+			start: isAxisInverted ? rangeMax : rangeMin,
+			end: isAxisInverted ? rangeMin : rangeMax
 		});
 		isOpen = false;
 
@@ -55,7 +58,7 @@
 		const filtersTemp = $filtersArray[dimIndex].percentages;
 		const originalScale = scaleLinear().domain(yScales[dimension].domain()).range([0, 1]);
 		const newScale = scaleLinear()
-			.domain(isAxisInverted ? [rangeEnd, rangeStart] : [rangeStart, rangeEnd])
+			.domain(isAxisInverted ? [rangeMax, rangeMin] : [rangeMin, rangeMax])
 			.range([0, 1]);
 		const originalStart = originalScale.invert(1 - (filtersTemp.start as number));
 		const originalEnd = originalScale.invert(1 - (filtersTemp.end as number));
@@ -66,36 +69,83 @@
 
 		$parcoordCustomAxisRanges = customRanges;
 	}
+
+	function resetDimensionRange() {
+		rangeMin = originalMin as number;
+		rangeMax = originalMax as number;
+		handleResetDimensionRange();
+	}
 </script>
 
 <Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
 	<form class="flex flex-col space-y-6" action="#">
-		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Axis Range</h3>
+		<h3 class="mb-4 text-xl font-medium text-gray-900">Set Range for Dimension '{dimension}'</h3>
 		<div class="mb-6 flex items-center">
-			<div class="flex flex-row items-center">
-				<Label for="range-min" class="mr-2">Start:</Label>
-				<Input
-					bind:value={rangeStart}
+			<div class="flex flex-row items-center mr-4">
+				<Label for="range-min" class="w-1/4">Min:</Label>
+				<NumberInput
+					bind:value={rangeMin}
 					on:change={() => (validUpload = true)}
 					id="range-min"
-					defaultClass="block w-1/2"
+					defaultClass="block w-3/4"
 					size="sm"
+					step={1}
+					max={originalMin}
+				/>
+			</div>
+			<div class="flex flex-row items-center mr-4">
+				<Label for="range-max" class="mr-2 w-1/4">Max:</Label>
+				<NumberInput
+					bind:value={rangeMax}
+					on:change={() => (validUpload = true)}
+					id="range-max"
+					defaultClass="block w-3/4"
+					size="sm"
+					step={1}
+					min={originalMax}
 				/>
 			</div>
 			<div class="flex flex-row items-center">
-				<Label for="range-max" class="mr-2">End:</Label>
-				<Input
-					bind:value={rangeEnd}
-					on:change={() => (validUpload = true)}
-					id="range-max"
-					defaultClass="block w-1/2"
-					size="sm"
-				/>
+				<Button type="submit" class="w-full" on:click={() => setDimensionRange()}>Save</Button>
+			</div>
+		</div>
+		<div>
+			<div class="text-sm font-medium block text-gray-400 dark:text-gray-500 w-1/4">
+				Original Range:
+			</div>
+			<div class="mb-6 flex items-center">
+				<div class="flex flex-row items-center mr-4">
+					<Label for="original-range-min" class="w-1/4">Min:</Label>
+					<NumberInput
+						disabled
+						readonly
+						value={originalMin}
+						id="original-range-min"
+						defaultClass="block w-3/4"
+						size="sm"
+						style="color: #9ca3af;"
+					/>
+				</div>
+				<div class="flex flex-row items-center mr-4">
+					<Label for="original-range-max" class="mr-2 w-1/4">Max:</Label>
+					<NumberInput
+						value={originalMax}
+						disabled
+						readonly
+						id="original-range-max"
+						defaultClass="block w-3/4"
+						floatClass="text"
+						size="sm"
+						style="color: #9ca3af;"
+					/>
+				</div>
+				<div class="flex flex-row items-center">
+					<Button type="submit" class="w-full" on:click={resetDimensionRange}>Reset</Button>
+				</div>
 			</div>
 		</div>
 		{#if !validUpload}
 			<Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
 		{/if}
-		<Button type="submit" class="w-full" on:click={() => setAxisRange()}>Save</Button>
 	</form>
 </Modal>

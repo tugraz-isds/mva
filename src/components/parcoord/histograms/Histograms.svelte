@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import { select } from 'd3-selection';
-	import { group, bin, range } from 'd3-array';
-	import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
+	import { group, bin } from 'd3-array';
+	import { dimensionDataStore } from '../../../stores/dataset';
 	import { parcoordDimMetadata, parcoordHistogramData } from '../../../stores/parcoord';
+	import { generateEvenlySpacedNumbers } from '../../../util/util';
 	import type { DSVParsedArray } from 'd3-dsv';
 
 	export let dataset: DSVParsedArray<any>;
@@ -17,23 +18,12 @@
 	let binGroupsCount = 0;
 
 	let axisHeight: number;
-	let initialRender: boolean = true;
 	$: axisHeight = height - margin.top - margin.bottom;
-
-	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-		initialRender = true;
-	});
 
 	export function clearSVG() {
 		const svg = select('#parcoord-canvas-histograms');
 		svg.selectAll('.axis-bins').remove();
 		svg.selectAll('.axis-bin').remove();
-	}
-
-	function generateEvenlySpacedNumbers(min: number, max: number, n: number, isInverted: boolean) {
-		return isInverted
-			? range(0, n).map((i) => max + (i / n) * (min - max))
-			: range(0, n).map((i) => min + (i / n) * (max - min));
 	}
 
 	// Draw axes elements
@@ -85,16 +75,6 @@
 			}
 
 			const binHeight = Math.abs(binsStart - binsEnd) / bins.length;
-			// If bin has width less than 10 hide histogram by default
-			if (initialRender && binHeight < 10) {
-				if (!currDimData) return;
-				initialRender = false;
-				currDimData.showHistograms = false;
-				dimData.set(dim, currDimData);
-				parcoordDimMetadata.set(dimData);
-				clearSVG();
-				return;
-			}
 			const longestBinHeight = bins.reduce((max, array) => Math.max(max, array.length), 0);
 			bins.forEach((bin, j) => {
 				const binWidth =
@@ -137,10 +117,6 @@
 			clearSVG();
 			renderHistograms();
 		}, 0);
-	});
-
-	onDestroy(() => {
-		unsubscribeDataset();
 	});
 </script>
 

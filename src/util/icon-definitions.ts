@@ -12,7 +12,7 @@ export const arrow_filter_down_hover_icon = `<svg xmlns="http://www.w3.org/2000/
 </svg>
 `;
 
-export const arrow_filter_down_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916664 5.2916666">
+export const arrow_filter_down_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255, 255, 100, 0.5)" viewBox="0 0 5.2916664 5.2916666">
   <path stroke-width="0.259554" d="M0.3363627,2.5225803H4.9507688L2.6460125,5.030853Z" />
 </svg>`;
 
@@ -27,7 +27,7 @@ export const arrow_filter_up_hover_icon = `<svg xmlns="http://www.w3.org/2000/sv
 </svg>
 `;
 
-export const arrow_filter_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916664 5.2916666" >
+export const arrow_filter_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255, 255, 100, 0.5)" viewBox="0 0 5.2916664 5.2916666" >
   <path stroke-width="0.26" d="M4.9503442,2.7500013H0.3359381L2.6406944,0.24172863Z"/>
 </svg>
 `;
