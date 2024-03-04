@@ -1,95 +1,89 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
-	import { Select } from 'flowbite-svelte';
-	import { extent } from 'd3-array';
-	import { scaleLinear } from 'd3-scale';
-	import Axes from './Axes.svelte';
-	import Points from './Points.svelte';
-	import Tooltip from '../tooltip/Tooltip.svelte';
-	import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-	import type { DSVParsedArray } from 'd3-dsv';
-	import type { MarginType, TooltipType } from '../../util/types';
+  import { onDestroy } from 'svelte';
+  import { Select } from 'flowbite-svelte';
+  import { scaleLinear } from 'd3-scale';
+  import Axes from './Axes.svelte';
+  import Tooltip from '../tooltip/Tooltip.svelte';
+  import { datasetStore, dimensionDataStore } from '../../stores/dataset';
+  import type { DSVParsedArray } from 'd3-dsv';
+  import type { MarginType, TooltipType } from '../../util/types';
 
-	let width: number;
-	let height: number;
-	let dimensions: string[] = [];
-	let numericalDimensions: string[] = [];
-	let xDim: string, yDim: string;
-	let xScale: any, yScale: any;
+  let width: number;
+  let height: number;
+  let dimensions: string[] = [];
+  let numericalDimensions: string[] = [];
+  let xDim: string, yDim: string;
+  let xScale: any, yScale: any;
 
-	let margin: MarginType = { top: 20, right: 10, bottom: 20, left: 30 };
+  let margin: MarginType = { top: 20, right: 10, bottom: 20, left: 30 };
 
-	let tooltip: TooltipType = {
-		visible: false,
-		xPos: 0,
-		yPos: 0,
-		text: []
-	};
+  let tooltip: TooltipType = {
+    visible: false,
+    xPos: 0,
+    yPos: 0,
+    text: []
+  };
 
-	$: {
-		if (height > 0 && dataset?.length > 0) {
-			calculateXScale();
-			calculateYScale();
-		}
-	}
+  $: {
+    if (height > 0 && dataset?.length > 0) {
+      calculateXScale();
+      calculateYScale();
+    }
+  }
 
-	// Set dataset and handle new dataset upload
-	let dataset: DSVParsedArray<any>;
-	const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-		dataset = value;
-		if (dataset?.length > 0) {
-			dimensions = Object.keys(dataset[0]);
-			numericalDimensions = dimensions.filter(
-				(dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
-			);
-			if (numericalDimensions.length >= 2) {
-				yDim = numericalDimensions[0];
-				xDim = numericalDimensions[1];
-			}
-		}
-	});
+  // Set dataset and handle new dataset upload
+  let dataset: DSVParsedArray<any>;
+  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+    dataset = value;
+    if (dataset?.length > 0) {
+      dimensions = Object.keys(dataset[0]);
+      numericalDimensions = dimensions.filter(
+        (dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
+      );
+      if (numericalDimensions.length >= 2) {
+        yDim = numericalDimensions[0];
+        xDim = numericalDimensions[1];
+      }
+    }
+  });
 
-	function calculateXScale() {
-		xScale = scaleLinear()
-			.domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
-				number,
-				number
-			])
-			.range([0, width - margin.right - margin.left]);
-	}
+  function calculateXScale() {
+    xScale = scaleLinear()
+      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
+        number,
+        number
+      ])
+      .range([0, width - margin.right - margin.left]);
+  }
 
-	function calculateYScale() {
-		yScale = scaleLinear()
-			.domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
-				number,
-				number
-			])
-			.range([height * 0.9 - margin.top - margin.bottom, 0]);
-	}
+  function calculateYScale() {
+    yScale = scaleLinear()
+      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
+        number,
+        number
+      ])
+      .range([height * 0.9 - margin.top - margin.bottom, 0]);
+  }
 
-	function setTooltipData(data: TooltipType) {
-		tooltip = data;
-	}
-
-	onDestroy(() => {
-		unsubscribeDataset();
-	});
+  onDestroy(() => {
+    unsubscribeDataset();
+  });
 </script>
 
 {#if numericalDimensions.length < 2}
-	<div><span>Not enough numerical dimensions.</span></div>
+  <div><span>Not enough numerical dimensions.</span></div>
 {:else}
-	<div
-		id="scatterplot-canvas-container"
-		class="w-full h-full flex flex-col items-end"
-		bind:clientWidth={width}
-		bind:clientHeight={height}
-	>
-		<Axes {width} height={height * 0.9} {xScale} {yScale} {margin} viewTitle="scatterplot" />
+  <div
+    id="scatterplot-canvas-container"
+    class="w-full h-full flex flex-col items-end"
+    bind:clientWidth={width}
+    bind:clientHeight={height}
+  >
+    <Axes {width} height={height * 0.9} {xScale} {yScale} {margin} viewTitle="scatterplot" />
 
-		<Tooltip data={tooltip} viewTitle="scatterplot" />
+    <Tooltip data={tooltip} viewTitle="scatterplot" />
 
-		<!-- <Points
+    <!-- <Points
 			{width}
 			height={height * 0.9}
 			{xScale}
@@ -102,15 +96,15 @@
 			viewTitle="scatterplot"
 		/> -->
 
-		<div class="w-full scatterplot-canvas" style="height: {height * 0.9}px;" />
-		<div class="flex w-full justify-evenly" style="height: {height * 0.1}px">
-			<div class="flex items-center w-1/3">
-				<span class="mr-1/2" style="font-size: 0.75em;">Y:</span>
-				<Select
-					bind:value={yDim}
-					size="sm"
-					placeholder=""
-					style="height: {height * 0.06}px;
+    <div class="w-full scatterplot-canvas" style="height: {height * 0.9}px;" />
+    <div class="flex w-full justify-evenly" style="height: {height * 0.1}px">
+      <div class="flex items-center w-1/3">
+        <span class="mr-1/2" style="font-size: 0.75em;">Y:</span>
+        <Select
+          bind:value={yDim}
+          size="sm"
+          placeholder=""
+          style="height: {height * 0.06}px;
 								padding: 0 {width < 350 ? '18px' : '25px'} 0 4px;
 								display: flex;
 								align-items: center;
@@ -119,20 +113,20 @@
 								overflow: hidden;
         				text-overflow: ellipsis;
 								font-size: {width < 350 ? '0.5em' : '0.75em'};"
-					on:change={calculateYScale}
-				>
-					{#each numericalDimensions as dim}
-						<option value={dim}>{dim}</option>
-					{/each}
-				</Select>
-			</div>
-			<div class="flex items-center select-sm w-1/3">
-				<span class="mr-1/2" style="font-size: 0.75em;">X:</span>
-				<Select
-					bind:value={xDim}
-					size="sm"
-					placeholder=""
-					style="height: {height * 0.06}px;
+          on:change={calculateYScale}
+        >
+          {#each numericalDimensions as dim}
+            <option value={dim}>{dim}</option>
+          {/each}
+        </Select>
+      </div>
+      <div class="flex items-center select-sm w-1/3">
+        <span class="mr-1/2" style="font-size: 0.75em;">X:</span>
+        <Select
+          bind:value={xDim}
+          size="sm"
+          placeholder=""
+          style="height: {height * 0.06}px;
 								padding: 0 25px 0 4px;
 								display: flex;
 								align-items: center;
@@ -141,13 +135,13 @@
 								overflow: hidden;
         				text-overflow: ellipsis;
 								font-size: {width < 350 ? '0.5rem' : '0.75rem'};"
-					on:change={calculateXScale}
-				>
-					{#each numericalDimensions as dim}
-						<option value={dim}>{dim}</option>
-					{/each}
-				</Select>
-			</div>
-		</div>
-	</div>
+          on:change={calculateXScale}
+        >
+          {#each numericalDimensions as dim}
+            <option value={dim}>{dim}</option>
+          {/each}
+        </Select>
+      </div>
+    </div>
+  </div>
 {/if}
