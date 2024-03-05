@@ -29,33 +29,33 @@
   import type { AxesFilterType, DimensionMetadataType, TooltipAxisTitleType } from '../types';
   import type { MarginType, TooltipType } from '../../../util/types';
 
-  export let width: number; // Container width
+  export let width: number;
   export let contextMenuAxes: ContextMenuAxes;
-  export let height: number; // Container height
-  export let dimensions: string[] = []; // Initial order of dimensions
-  export let margin: MarginType; // Margin object
-  export let handleAxesSwapped: (fromIndex: number, toIndex: number) => void; // Callback function when axes are swapped
-  export let handleInvertAxis: (axisIndex: number) => void; // Callback function when filter is applied
-  export let handleMarginChanged: () => void; // Callback function when margin changes
-  export let handleAutoscroll: (direction: 'left' | 'right') => void; // Callback function for autoscroll
-  export let setTooltipAxisTitleData: (data: TooltipAxisTitleType) => void; // Callback function for tooltip
-  export let setTooltipData: (data: TooltipType) => void; // Callback function for tooltip
-  export let xScales: any[]; // Scales for all of the X-axes
-  export let yScales: any; // Scales for all of the Y-axes
+  export let height: number;
+  export let dimensions: string[] = [];
+  export let margin: MarginType;
+  export let handleAxesSwapped: (fromIndex: number, toIndex: number) => void;
+  export let handleInvertAxis: (axisIndex: number) => void;
+  export let handleMarginChanged: () => void;
+  export let handleAutoscroll: (direction: 'left' | 'right') => void;
+  export let setTooltipAxisTitleData: (data: TooltipAxisTitleType) => void;
+  export let setTooltipData: (data: TooltipType) => void;
+  export let xScales: any[];
+  export let yScales: any;
 
   // SVG elements
-  let axisLines: any[] = []; // Array of SVG elements for axis groups
-  let axisTitles: any[] = []; // Array of SVG elements for axis titles
-  let axisInvertIcons: any[] = []; // Array of SVG elements for axis invert icons
-  let axisUpperFilters: any = []; // Array of SVG elements for axis upper filters
-  let axisUpperFiltersValues: any = []; // Array of SVG elements for axis upper filters values
-  let axisLowerFilters: any = []; // Array of SVG elements for axis lower filters
-  let axisLowerFiltersValues: any = []; // Array of SVG elements for axis lower filters values
-  let axisFilterRectangles: any[] = []; // Array of SVG elements for axis filter rectangles
+  let axisLines: any[] = [];
+  let axisTitles: any[] = [];
+  let axisInvertIcons: any[] = [];
+  let axisUpperFilters: any = [];
+  let axisUpperFiltersValues: any = [];
+  let axisLowerFilters: any = [];
+  let axisLowerFiltersValues: any = [];
+  let axisFilterRectangles: any[] = [];
 
-  let axisHeight: number; // Actual axis height in pixels
-  let axesFilters: AxesFilterType[] = []; // Filter values array for linking
-  let isCurrentlyFiltering = false; // Is user currently filtering flag
+  let axisHeight: number;
+  let axesFilters: AxesFilterType[] = [];
+  let isCurrentlyFiltering = false;
   let datasetUploaded = false;
   let autoscrollInterval: number | null = null;
 
@@ -109,7 +109,6 @@
     datasetUploaded = true;
   });
 
-  // Remove all axes elements and drag handlers
   export function clearSVG() {
     axisLines = [];
     axisTitles = [];
@@ -131,7 +130,6 @@
     svg.selectAll('.axis-filter-rect').remove();
   }
 
-  // Draw axes elements
   export function renderAxes(newWidth: number | undefined = undefined) {
     if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
@@ -139,7 +137,6 @@
 
     const svg = select('#parcoord-canvas-axes');
 
-    // Create SVG elements of axes and axes titles
     dimensions.forEach((dim: string, i: number) => {
       const step = xScales[1] - xScales[0];
       // Format ticks so they dont overflow
@@ -158,7 +155,6 @@
         return formattedTick;
       };
 
-      // Create axis objects
       let axis;
       const domainValues = yScales[dim].domain();
       if ($dimensionDataStore.get(dim)?.type === 'numerical') {
@@ -169,7 +165,7 @@
         );
       } else {
         axis = axisLeft(yScales[dim]);
-        const tickNumber = axisHeight / 10; // Height in pixels divided by font size 10px
+        const tickNumber = axisHeight / 10;
         const step = Math.ceil(domainValues.length / tickNumber);
         const tickValues = domainValues.filter((_: any, index: number) => index % step === 0);
         axis
@@ -177,7 +173,6 @@
           .tickFormat(tickFormatter);
       }
 
-      // Create axis lines SVG
       axisLines.push(
         svg
           .append('g')
@@ -189,7 +184,6 @@
 
     dimensions.forEach((dim: string, i: number) => {
       const step = xScales[1] - xScales[0];
-      // Create axis titles SVG
       const maxTitleLength = calculateMaxLength(dim, 10, 'sans-serif', step);
       const cursorString =
         i === 0
@@ -212,7 +206,6 @@
           .on('contextmenu', (e) => contextMenuAxes.showContextMenu(e, i))
       );
 
-      // Create axis invert icons SVG
       axisInvertIcons.push(
         svg
           .append('svg')
@@ -333,7 +326,6 @@
         axisLowerFiltersValues.push(null);
       }
 
-      // Create axis lower filter
       axisLowerFilters.push(
         svg
           .append('svg')
@@ -354,7 +346,6 @@
           )
       );
 
-      // Create filter rectangles SVG
       axisFilterRectangles.push(
         svg
           .append('rect')
@@ -415,14 +406,13 @@
     });
   }
 
-  // Handle dragging and swapping of axes
   function handleAxesDragging() {
-    let draggingIndex = -1; // Index of currently dragged axis
+    let draggingIndex = -1;
 
     dimensions.forEach((dim: string) => {
       // Add drag behavior to the axis title
       const dragBehavior = drag<SVGTextElement, unknown, any>()
-        .subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 20 })) // Set initial position
+        .subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 20 }))
         .on('start', (event) => {
           parcoordIsInteractable.set(false);
           draggingIndex = dimensions.indexOf(dim);
@@ -430,8 +420,8 @@
           isCurrentlyFiltering = true;
         })
         .on('drag', (event) => {
-          const minX = margin.left; // Minimum x position
-          const maxX = width - margin.right; // Maximum x position
+          const minX = margin.left;
+          const maxX = width - margin.right;
           const newX = Math.max(minX, Math.min(maxX, event.x)); // Clamp the x position within the valid range
 
           // Move dragged axis
@@ -503,7 +493,6 @@
             axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
             filtersArray.set(axesFilters);
 
-            // Calculate new margin left
             if (
               (newIndex === 0 && draggingIndex === 1) ||
               (newIndex === 1 && draggingIndex === 0)
@@ -589,11 +578,11 @@
           parcoordIsInteractable.set(false);
         })
         .on('drag', (event) => {
-          const minY = margin.top - 8; // Minimum y position
-          const maxY = axesFilters[idx].pixels.end + margin.top - 8; // Maximum y position
+          const minY = margin.top - 8;
+          const maxY = axesFilters[idx].pixels.end + margin.top - 8;
           const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
-          axisUpperFilters[idx].attr('y', newY - 8); // Move upper filter
+          axisUpperFilters[idx].attr('y', newY - 8);
           axisUpperFiltersValues[idx]
             ?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 2})`)
             .style(
@@ -605,7 +594,7 @@
             .text(getAxisDomainValue(idx, axesFilters[idx].percentages.start as number));
           axisFilterRectangles[idx]
             .attr('y', `${newY + 8}`)
-            .attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`); // Move filter rectangle
+            .attr('height', `${axesFilters[idx].pixels.end - newY + margin.top - 8}`);
 
           axesFilters[idx].pixels.start = newY - margin.top + 8;
           axesFilters[idx].percentages.start = axesFilters[idx].pixels.start / axisHeight;
@@ -626,11 +615,11 @@
           parcoordIsInteractable.set(false);
         })
         .on('drag', (event) => {
-          const minY = axesFilters[idx].pixels.start + margin.top + 8; // Minimum y position
-          const maxY = height - margin.bottom + 8; // Maximum y position
+          const minY = axesFilters[idx].pixels.start + margin.top + 8;
+          const maxY = height - margin.bottom + 8;
           const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
-          axisLowerFilters[idx].attr('y', newY - 8); // Move lower filter
+          axisLowerFilters[idx].attr('y', newY - 8);
           axisLowerFiltersValues[idx]
             ?.attr('transform', `translate(${xScales[idx] + 8}, ${newY - 8})`)
             .style('display', (axesFilters[idx].percentages.end as number) >= 1 ? 'none' : 'block');
@@ -640,7 +629,7 @@
           axisFilterRectangles[idx].attr(
             'height',
             `${newY - axesFilters[idx].pixels.start - margin.top - 8}`
-          ); // Move filter rectangle
+          );
 
           axesFilters[idx].pixels.end = newY - margin.top - 8;
           axesFilters[idx].percentages.end = axesFilters[idx].pixels.end / axisHeight;
@@ -654,12 +643,10 @@
     });
   }
 
-  // Handle dragging of the filter rectangle
   function handleFilterRectDragging() {
     dimensions.forEach((dim: string, i: number) => {
       let startY = 0;
       let rectangleStart: number;
-      // Add drag behavior to the axis title
       const dragBehavior = drag<SVGTextElement, unknown, any>()
         .on('start', (event) => {
           parcoordIsInteractable.set(false);
@@ -673,9 +660,8 @@
           else if (newY + filterHeight >= height - margin.bottom + 1)
             newY = height - filterHeight - margin.bottom + 1;
 
-          axisFilterRectangles[i].attr('y', `${newY}`); // Move filter rectangle
+          axisFilterRectangles[i].attr('y', `${newY}`);
 
-          // Update axesFilters
           axesFilters[i].pixels = {
             start: newY - margin.top,
             end: newY + filterHeight - margin.top
@@ -686,7 +672,6 @@
           };
           filtersArray.set(axesFilters);
 
-          // Update axis upper and lower filters
           axisUpperFilters[i].attr('y', axesFilters[i].pixels.start + margin.top - 16);
           axisUpperFiltersValues[i]
             ?.attr(
@@ -717,7 +702,6 @@
     });
   }
 
-  // Handle click on invert
   export function handleOnInvertAxesClick(i: number) {
     handleInvertAxis(i);
 
@@ -737,7 +721,6 @@
     filtersArray.set(axesFilters);
   }
 
-  // Function to calculate new margin left
   export function calculateMarginLeft() {
     if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
       const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
@@ -766,7 +749,6 @@
     renderAxes();
   }
 
-  // Function to initialize axis filter values
   function initAxesFilters() {
     axesFilters = dimensions.map(() => ({
       pixels: {
@@ -796,11 +778,9 @@
     );
   }
 
-  // Function to resize axes filters
   export function resizeFilters() {
     axisHeight = height - margin.top - margin.bottom;
     dimensions.forEach((dim: string, i: number) => {
-      // Calculate new pixel values
       axesFilters[i].pixels = {
         start: (axesFilters[i].percentages.start as number) * axisHeight,
         end: (axesFilters[i].percentages.end as number) * axisHeight
@@ -810,7 +790,6 @@
     filtersArray.set(axesFilters);
   }
 
-  // Save axes to SVG
   export const saveSVG = () => {
     const svgElement = document.getElementById('parcoord-canvas-axes');
     const serializer = new XMLSerializer();

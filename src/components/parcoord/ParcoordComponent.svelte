@@ -160,10 +160,7 @@
         .range([margin.left, width - margin.right])(i)
     );
 
-    $parcoordHistogramData.widthLimits = {
-      min: 0,
-      max: xScales[1] - xScales[0]
-    };
+    $parcoordHistogramData.widthLimits.max = xScales[1] - xScales[0];
   }
 
   function handleAxesSwapped(fromIndex: number, toIndex: number) {
