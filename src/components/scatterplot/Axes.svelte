@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { afterUpdate, onMount } from 'svelte';
+  import { afterUpdate } from 'svelte';
   import { axisBottom, axisLeft } from 'd3-axis';
   import { select } from 'd3-selection';
   import type { MarginType } from '../../util/types';
 
   export let width: number;
   export let height: number;
+  export let margin: MarginType;
   export let xScale: any;
   export let yScale: any;
-  export let margin: MarginType;
   export let viewTitle: string;
 
   function clearSVG() {
     const svg = select(`#${viewTitle}-canvas-axes`);
-    svg.selectAll('g').remove();
+    svg.selectChildren().remove();
   }
 
   function renderAxes() {
@@ -23,18 +23,16 @@
 
     svg
       .append('g')
+      .attr('class', `${viewTitle}-x-axis`)
       .attr('transform', `translate(${margin.left}, ${height - margin.bottom})`)
       .call(axisBottom(xScale));
 
     svg
       .append('g')
+      .attr('class', `${viewTitle}-y-axis`)
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
       .call(axisLeft(yScale));
   }
-
-  onMount(() => {
-    renderAxes();
-  });
 
   afterUpdate(() => {
     clearSVG();

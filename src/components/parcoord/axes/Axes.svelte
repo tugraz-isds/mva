@@ -120,14 +120,7 @@
     axisFilterRectangles = [];
 
     const svg = select('#parcoord-canvas-axes');
-    svg.selectAll('.y-axis').remove();
-    svg.selectAll('.axis-title').remove();
-    svg.selectAll('.axis-invert').remove();
-    svg.selectAll('.axis-filter-upper').remove();
-    svg.selectAll('.axis-filter-upper-value').remove();
-    svg.selectAll('.axis-filter-lower').remove();
-    svg.selectAll('.axis-filter-lower-value').remove();
-    svg.selectAll('.axis-filter-rect').remove();
+    svg.selectChildren().remove();
   }
 
   export function renderAxes(newWidth: number | undefined = undefined) {
@@ -176,7 +169,7 @@
       axisLines.push(
         svg
           .append('g')
-          .attr('class', 'y-axis')
+          .attr('class', 'parcoord-y-axis')
           .attr('transform', `translate(${xScales[i]}, ${margin.top})`)
           .call(axis)
       );
@@ -194,7 +187,7 @@
       axisTitles.push(
         svg
           .append('text')
-          .attr('class', `axis-title`)
+          .attr('class', `parcoord-axis-title`)
           .attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
           .attr('font-size', '10px')
           .style('text-anchor', 'middle')
@@ -209,7 +202,7 @@
       axisInvertIcons.push(
         svg
           .append('svg')
-          .attr('class', 'axis-invert cursor-pointer')
+          .attr('class', 'parcoord-axis-invert cursor-pointer')
           .html(
             dimensionsMetadata.get(dim)?.inverted ? arrow_invert_down_icon : arrow_invert_up_icon
           )
@@ -239,7 +232,7 @@
       axisUpperFilters.push(
         svg
           .append('svg')
-          .attr('class', 'axis-filter-upper')
+          .attr('class', 'parcoord-axis-filter-upper')
           .html(arrow_filter_down_icon)
           .attr('x', xScales[i] - 8)
           .attr('y', axesFilters[i].pixels.start + margin.top - 16)
@@ -262,7 +255,7 @@
         const upperFilterValue = getAxisDomainValue(i, axesFilters[i].percentages.start as number);
         const groupUpper = svg
           .append('g')
-          .attr('class', 'axis-filter-upper-value')
+          .attr('class', 'parcoord-axis-filter-upper-value')
           .attr(
             'transform',
             `translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + margin.top - 10})`
@@ -276,7 +269,7 @@
           );
         groupUpper
           .append('rect')
-          .attr('class', 'axis-filter-upper-value')
+          .attr('class', 'parcoord-axis-filter-upper-value')
           .attr('width', getTextWidth(upperFilterValue, 10, 'sans-serif') + 8)
           .attr('height', 14)
           .attr('fill', 'lightgrey')
@@ -293,7 +286,7 @@
 
         const groupLower = svg
           .append('g')
-          .attr('class', 'axis-filter-lower-value')
+          .attr('class', 'parcoord-axis-filter-lower-value')
           .attr(
             'transform',
             `translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + margin.top - 4})`
@@ -307,7 +300,7 @@
           );
         groupLower
           .append('rect')
-          .attr('class', 'axis-filter-lower-value')
+          .attr('class', 'parcoord-axis-filter-lower-value')
           .attr('width', 30)
           .attr('height', 14)
           .attr('fill', 'lightgrey')
@@ -329,7 +322,7 @@
       axisLowerFilters.push(
         svg
           .append('svg')
-          .attr('class', 'axis-filter-lower')
+          .attr('class', 'parcoord-axis-filter-lower')
           .html(arrow_filter_up_icon)
           .attr('x', xScales[i] - 8)
           .attr('y', axesFilters[i].pixels.end + margin.top)
@@ -349,7 +342,7 @@
       axisFilterRectangles.push(
         svg
           .append('rect')
-          .attr('class', 'axis-filter-rect')
+          .attr('class', 'parcoord-axis-filter-rect')
           .attr('cursor', 'crosshair')
           .attr('width', 12)
           .attr('height', axesFilters[i].pixels.end - axesFilters[i].pixels.start)

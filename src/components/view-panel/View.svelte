@@ -5,6 +5,7 @@
   import { Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
+  import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
   import type { View } from './ViewType';
 
   export let otherViews: View[];
@@ -55,9 +56,11 @@
 <div class="w-full h-full p-1 {showView ? 'block' : 'hidden'}">
   <div class="flex flex-row justify-between" style="height: 18px; font-size: 14px;">
     <span>{currView.title}</span>
-    <div>
+    <div class="w-1/2">
       {#if currView.id === 'parcoord'}
         <HistogramSettings />
+      {:else if currView.id === 'scatterplot'}
+        <DimensionPickers />
       {/if}
     </div>
     <div id="{currView.id}-expand-container">

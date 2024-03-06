@@ -12,7 +12,7 @@
   }
 </script>
 
-<div class="flex items-center">
+<div class="w-full flex items-center">
   <span class="text-xs mr-1">Show histograms: </span>
   <Checkbox
     bind:checked={$parcoordHistogramData.visible}
