@@ -2,7 +2,7 @@
   import { afterUpdate } from 'svelte';
   import { axisBottom, axisLeft } from 'd3-axis';
   import { select } from 'd3-selection';
-  import type { MarginType } from '../../util/types';
+  import type { MarginType } from '../../../util/types';
 
   export let width: number;
   export let height: number;

@@ -1,24 +1,35 @@
 <script lang="ts">
   import { Select } from 'flowbite-svelte';
-  let selected: string;
-  let countries = [
-    { value: 'us', name: 'United States' },
-    { value: 'ca', name: 'Canada' },
-    { value: 'fr', name: 'France' }
-  ];
+  import { numericalDimensionsStore, xDimStore, yDimStore } from '../../stores/scatterplot';
+  import { onDestroy } from 'svelte';
+
+  let numericalDimensions: { value: string; name: string }[] = [];
+  const unsubscribeNumericalDims = numericalDimensionsStore.subscribe((value: string[]) => {
+    numericalDimensions = [];
+    value.forEach((dim: string) => {
+      numericalDimensions.push({
+        value: dim,
+        name: dim
+      });
+    });
+  });
+
+  onDestroy(() => {
+    unsubscribeNumericalDims();
+  });
 </script>
 
 <div class="flex flex-row w-full">
-  <div class="flex flex-row w-full">
-    <span class="mr-1/2" style="font-size: 14px;">X:</span>
+  <div class="flex flex-row w-full mr-2">
+    <span class="mr-1/2" style="font-size: 14px;">Y:</span>
     <Select
-      class="mt-2 w-1/2"
+      class="w-1/2"
       size="sm"
-      items={countries}
-      bind:value={selected}
+      items={numericalDimensions}
+      bind:value={$yDimStore}
       placeholder=""
       style="height: 18px;
-            padding: 0 4px 0 4px;
+            padding: 0 16px 0 4px;
             margin: 0;
             display: flex;
             align-items: center;
@@ -26,19 +37,19 @@
             width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: '0.5em'};"
+            font-size: 12px;"
     />
   </div>
   <div class="flex flex-row w-full">
-    <span class="mr-1/2" style="font-size: 14px;">Y:</span>
+    <span class="mr-1/2" style="font-size: 14px;">X:</span>
     <Select
-      class="mt-2 w-1/2"
+      class="w-1/2"
       size="sm"
-      items={countries}
-      bind:value={selected}
+      items={numericalDimensions}
+      bind:value={$xDimStore}
       placeholder=""
       style="height: 18px;
-            padding: 0 4px 0 4px;
+            padding: 0 16px 0 4px;
             margin: 0;
             display: flex;
             align-items: center;
@@ -46,7 +57,7 @@
             width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
-            font-size: '0.5em'};"
+            font-size: 12px;"
     />
   </div>
 </div>

@@ -4,7 +4,7 @@
   import { scaleLinear } from 'd3-scale';
   import { Select } from 'flowbite-svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-  import Axes from '../scatterplot/Axes.svelte';
+  import Axes from '../scatterplot/axes/Axes.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { MarginType, TooltipType } from '../../util/types';

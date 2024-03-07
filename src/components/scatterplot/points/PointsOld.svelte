@@ -5,16 +5,16 @@
     POINT_MATERIAL_BRUSHED,
     POINT_MATERIAL_HOVERED,
     POINT_MATERIAL_MAP
-  } from '../../util/materials';
-  import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../util/colors';
-  import { areSetsEqual } from '../../util/util';
+  } from '../../../util/materials';
+  import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
+  import { areSetsEqual } from '../../../util/util';
   import {
     brushedArray,
     hoveredArray,
     previouslyBrushedArray,
     previouslyHoveredArray
-  } from '../../stores/brushing';
-  import type { MarginType, RecordDataType, TooltipType } from '../../util/types';
+  } from '../../../stores/brushing';
+  import type { MarginType, RecordDataType, TooltipType } from '../../../util/types';
 
   export let width: number;
   export let height: number;
