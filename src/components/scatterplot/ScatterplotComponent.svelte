@@ -2,21 +2,28 @@
   import { onDestroy } from 'svelte';
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
+  import Tooltip from '../tooltip/Tooltip.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { numericalDimensionsStore, xDimStore, yDimStore } from '../../stores/scatterplot';
   import { scaleLinear } from 'd3-scale';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { MarginType } from '../../util/types';
+  import type { MarginType, TooltipType } from '../../util/types';
 
   let width: number;
   let height: number;
   let dimensions: string[] = [];
   let numericalDimensions: string[] = [];
   let xDim: string, yDim: string;
-  let xScale: any, yScale: any;
+  let xScaleAxes: any, yScaleAxes: any, xScalePoints: any, yScalePoints: any;
   let pointsComponent: Points;
 
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
+  let tooltip: TooltipType = {
+    visible: false,
+    xPos: 0,
+    yPos: 0,
+    text: []
+  };
 
   let dataset: DSVParsedArray<any>;
   let xData: any, yData: any;
@@ -37,8 +44,11 @@
         yData = dataset.map((row) => row[yDim]);
       }
 
-      calculateXScale();
-      calculateYScale();
+      setTimeout(() => {
+        pointsComponent?.resetPoints();
+        calculateXScale();
+        calculateYScale();
+      }, 0);
     }
   });
 
@@ -73,7 +83,13 @@
   }
 
   function calculateXScale() {
-    xScale = scaleLinear()
+    xScaleAxes = scaleLinear()
+      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
+        number,
+        number
+      ])
+      .range([0, width - margin.right - margin.left]);
+    xScalePoints = scaleLinear()
       .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
         number,
         number
@@ -82,12 +98,22 @@
   }
 
   function calculateYScale() {
-    yScale = scaleLinear()
+    yScaleAxes = scaleLinear()
+      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
+        number,
+        number
+      ])
+      .range([height - margin.top - margin.bottom, 0]);
+    yScalePoints = scaleLinear()
       .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
         number,
         number
       ])
       .range([height - margin.top - margin.bottom - 3, 3]);
+  }
+
+  function setTooltipData(data: TooltipType) {
+    tooltip = data;
   }
 
   onDestroy(() => {
@@ -108,17 +134,28 @@
     bind:clientWidth={width}
     bind:clientHeight={height}
   >
-    <Axes {width} {height} {margin} {xScale} {yScale} viewTitle="scatterplot" />
-
-    <Points
-      bind:this={pointsComponent}
+    <Axes
       {width}
       {height}
       {margin}
-      {xScale}
-      {yScale}
+      xScale={xScaleAxes}
+      yScale={yScaleAxes}
+      viewTitle="scatterplot"
+    />
+
+    <Tooltip data={tooltip} viewTitle="scatterplot" />
+
+    <Points
+      bind:this={pointsComponent}
+      {dataset}
+      {width}
+      {height}
+      {margin}
+      xScale={xScalePoints}
+      yScale={yScalePoints}
       {xData}
       {yData}
+      {setTooltipData}
     />
   </div>
 {/if}

@@ -40,7 +40,6 @@
   let svgExportModal: SvgExportModal;
 
   let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
-
   let tooltip: TooltipType = {
     visible: false,
     xPos: 0,
@@ -74,8 +73,11 @@
       dimensions = Object.keys(dataset[0]);
       dimensionsInitial = dimensions;
 
-      calculateYScales();
-      calculateXScales();
+      setTimeout(() => {
+        linesComponent?.resetLines();
+        calculateYScales();
+        calculateXScales();
+      }, 0);
 
       dimensions.forEach((dim) => {
         customRanges && customRanges.set(dim, null);
@@ -354,6 +356,7 @@
 
     <Lines
       bind:this={linesComponent}
+      {dataset}
       {width}
       {height}
       {dimensions}

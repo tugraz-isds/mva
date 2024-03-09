@@ -168,7 +168,8 @@ function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
   drawBrushedLines();
   postMessage({
     function: 'setBrushed',
-    brushedIndices: brushedLinesIndices
+    brushedIndices: brushedLinesIndices,
+    previouslyBrushedIndices: previouslyBrushedLinesIndices
   });
 }
 

@@ -24,6 +24,7 @@
   import type { RecordDataType, TooltipType } from '../../../util/types';
   import type { AxesFilterType } from '../types';
 
+  export let dataset: DSVParsedArray<any>;
   export let width: number;
   export let height: number;
   export let dimensions: string[] = [];
@@ -71,18 +72,6 @@
     }, 0);
   });
 
-  let dataset: DSVParsedArray<any>;
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-    dataset = value;
-    initializeArrays();
-    setTimeout(() => {
-      worker?.postMessage({
-        function: 'resetLines',
-        lineShow
-      });
-    }, 0);
-  });
-
   const unsubscribeParcoordHistogramData = parcoordHistogramData.subscribe(() => {
     if (!worker) return;
     setTimeout(() => {
@@ -104,10 +93,15 @@
 
   const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value: Set<number>) => {
     if (!worker) return;
+    if (updatedHere) {
+      updatedHere = false;
+      return;
+    }
     worker.postMessage({
       function: 'updatePreviouslyBrushed',
       indices: value
     });
+    updatedHere = false;
   });
 
   const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
@@ -152,6 +146,14 @@
         ]);
       });
       lines.push(linePoints);
+    });
+  }
+
+  export function resetLines() {
+    initializeArrays();
+    worker?.postMessage({
+      function: 'resetLines',
+      lineShow
     });
   }
 
@@ -370,10 +372,13 @@
           setTooltip(data.hoveredIndices);
           break;
         case 'setBrushed':
+          updatedHere = true;
+          previouslyBrushedArray.set(data.previouslyBrushedIndices);
           brushedArray.set(data.brushedIndices);
           break;
         case 'setLineShow':
           lineShow = data.lineShow;
+          linkingArray.set(lineShow);
           break;
         case 'canvasResized':
           currWidth = data.width;
@@ -394,7 +399,6 @@
   onDestroy(() => {
     unsubscribeFilters();
     unsubscribeCustomRanges();
-    unsubscribeDataset();
     unsubscribeParcoordHistogramData();
     unsubscribeHovered();
     unsubscribeBrushed();

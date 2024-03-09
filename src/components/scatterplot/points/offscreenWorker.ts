@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {
   POINT_MATERIAL_ACTIVE,
   POINT_MATERIAL_BRUSHED,
+  POINT_MATERIAL_FILTERED,
   POINT_MATERIAL_HOVERED
 } from '../../../util/materials';
 import { areSetsEqual } from '../../../util/util';
@@ -32,6 +33,9 @@ self.onmessage = function (message) {
     case 'resetPoints':
       resetPoints(data.pointShow);
       break;
+    case 'setLinking':
+      setLinking(data.pointShow);
+      break;
     case 'drawPoints':
       drawPoints(data.points);
       break;
@@ -39,11 +43,21 @@ self.onmessage = function (message) {
       mouse = data.mouse;
       handleMouseMove();
       break;
+    case 'mouseDown':
+      mouse = data.mouse;
+      handleMouseDown(data.event);
+      break;
     case 'updateHovered':
       drawHoveredPoints(data.indices);
       break;
     case 'updatePreviouslyHovered':
       removePreviouslyHoveredPoints(data.indices);
+      break;
+    case 'updateBrushed':
+      drawBrushedPoints(data.indices);
+      break;
+    case 'updatePreviouslyBrushed':
+      removePreviouslyBrushedPoints(data.indices);
       break;
     case 'resizeCanvas':
       ({ width, height } = data);
@@ -69,6 +83,27 @@ function init() {
 function resetPoints(show: boolean[]) {
   pointShow = show;
   points = [];
+}
+
+function setLinking(show: boolean[]) {
+  pointShow.forEach((isPointShow: boolean, i: number) => {
+    if (isPointShow === show[i]) return;
+    const point = points[i];
+    if (show[i]) {
+      if (brushedPointsIndices.has(i)) {
+        point.material = POINT_MATERIAL_BRUSHED;
+        changePointPosition(point, 1);
+      } else {
+        point.material = POINT_MATERIAL_ACTIVE;
+        changePointPosition(point, 0);
+      }
+    } else {
+      point.material = POINT_MATERIAL_FILTERED;
+      changePointPosition(point, -1);
+    }
+    point.material.needsUpdate = false;
+  });
+  pointShow = show;
 }
 
 function drawPoints(inputPoints: number[][]) {
@@ -108,6 +143,40 @@ function handleMouseMove() {
   });
 }
 
+function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
+  previouslyBrushedPointsIndices = brushedPointsIndices;
+
+  // Add to brushed if Shift key is pressed
+  if (event.shiftKey) {
+    hoveredPointsIndices.forEach((i) => {
+      brushedPointsIndices.add(i);
+    });
+  }
+  // Toggle brushed if Ctrl key is pressed
+  else if (event.ctrlKey) {
+    hoveredPointsIndices.forEach((i) => {
+      if (brushedPointsIndices.has(i)) brushedPointsIndices.delete(i);
+      else brushedPointsIndices.add(i);
+    });
+  }
+  // Set brushed to hovered
+  else {
+    const newBrushedPointsIndices = new Set<number>();
+    hoveredPointsIndices.forEach((i) => {
+      if (!brushedPointsIndices.has(i) && pointShow[i]) newBrushedPointsIndices.add(i);
+    });
+    brushedPointsIndices = newBrushedPointsIndices;
+  }
+
+  removePreviouslyBrushedPoints();
+  drawBrushedPoints();
+  postMessage({
+    function: 'setBrushed',
+    brushedIndices: brushedPointsIndices,
+    previouslyBrushedIndices: previouslyBrushedPointsIndices
+  });
+}
+
 function drawHoveredPoints(hoveredIndices: Set<number> | null = null) {
   if (hoveredIndices) hoveredPointsIndices = hoveredIndices;
   hoveredPointsIndices.forEach((i) => {
@@ -131,6 +200,28 @@ function removePreviouslyHoveredPoints(hoveredIndices: Set<number> | null = null
       point.material = POINT_MATERIAL_ACTIVE;
       changePointPosition(point, 0);
     }
+    point.material.needsUpdate = false;
+  });
+}
+
+function drawBrushedPoints(brushedIndices: Set<number> | null = null) {
+  if (brushedIndices) brushedPointsIndices = brushedIndices;
+  brushedPointsIndices.forEach((i) => {
+    if (!pointShow[i]) return;
+    const point = points[i];
+    point.material = POINT_MATERIAL_BRUSHED;
+    changePointPosition(point, 1);
+    point.material.needsUpdate = true;
+  });
+}
+
+function removePreviouslyBrushedPoints(brushedIndices: Set<number> | null = null) {
+  if (brushedIndices) previouslyBrushedPointsIndices = brushedIndices;
+  previouslyBrushedPointsIndices.forEach((i) => {
+    if (!pointShow[i]) return;
+    const point = points[i];
+    point.material = POINT_MATERIAL_ACTIVE;
+    changePointPosition(point, 0);
     point.material.needsUpdate = false;
   });
 }

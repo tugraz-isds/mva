@@ -43,7 +43,8 @@
     hoveredRowsIndices = value;
   });
 
-  function handleRowClick(event: MouseEvent) {
+  function handleRowClick(event: MouseEvent, index: number) {
+    if (!rowShow[index]) return;
     previouslyBrushedArray.set(brushedRowsIndices);
     if (hoveredLineIndex === null) return;
 
@@ -84,11 +85,13 @@
   }
 
   function handleMouseEnter(index: number) {
+    if (!rowShow[index]) return;
     hoveredLineIndex = index;
     hoveredArray.set(new Set([hoveredLineIndex]));
   }
 
-  function handleMouseLeave() {
+  function handleMouseLeave(index: number) {
+    if (!rowShow[index]) return;
     hoveredArray.set(new Set());
     previouslyHoveredArray.set(new Set([hoveredLineIndex as number]));
     hoveredLineIndex = null;
@@ -127,8 +130,8 @@
             : ''}
 						{rowShow[index] ? 'text-black' : 'text-gray-400'}"
           on:mouseenter={() => handleMouseEnter(index)}
-          on:mouseleave={handleMouseLeave}
-          on:mousedown={handleRowClick}
+          on:mouseleave={() => handleMouseLeave(index)}
+          on:mousedown={(e) => handleRowClick(e, index)}
         >
           {#each Object.keys(row) as key, i}
             <td>{formatCell(row[key], i)}</td>
