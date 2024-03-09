@@ -13,6 +13,7 @@
 
   let contextMenu: ContextMenu;
 
+  let width: number, height: number;
   let rowShow: boolean[] = []; // Array of booleans that store info if each table row should be drawn
   let hoveredLineIndex: number | null = null; // Currently hovered line
   let hoveredRowsIndices: Set<number> = new Set(); // Currently hovered rows
@@ -25,7 +26,9 @@
   let dataset: DSVParsedArray<any>;
   const unsubscribeDataset = datasetStore.subscribe((value: any) => {
     dataset = value;
-    if (dataset?.length > 0) dimensions = Object.keys(dataset[0]);
+    if (dataset?.length > 0) {
+      dimensions = Object.keys(dataset[0]);
+    }
   });
 
   const unsubscribeLinking = linkingArray.subscribe((value: any) => {
@@ -113,36 +116,58 @@
 </script>
 
 <ContextMenu bind:this={contextMenu} />
-<div class="w-full h-full overflow-scroll-x" style="overflow-x: scroll !important;">
-  {#if dataset?.length > 0 && rowShow?.length > 0}
-    <table id="table-canvas" class="w-full">
-      <tr>
-        {#each Object.keys(dataset[0]) as key}
-          <th on:contextmenu={(e) => contextMenu.showContextMenu(e, key)}>{key}</th>
-        {/each}
-      </tr>
-      {#each dataset as row, index}
-        <tr
-          class="{hoveredLineIndex === index || hoveredRowsIndices.has(index)
-            ? 'bg-red-500'
-            : brushedRowsIndices.has(index)
-            ? 'bg-orange-400'
-            : ''}
-						{rowShow[index] ? 'text-black' : 'text-gray-400'}"
-          on:mouseenter={() => handleMouseEnter(index)}
-          on:mouseleave={() => handleMouseLeave(index)}
-          on:mousedown={(e) => handleRowClick(e, index)}
-        >
-          {#each Object.keys(row) as key, i}
-            <td>{formatCell(row[key], i)}</td>
+{#if dataset?.length > 0 && rowShow?.length > 0}
+  <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
+    <div class="w-full scrollable-div" style="height: {height - 20}px;">
+      <table id="table-canvas" class="w-full">
+        <thead>
+          <tr>
+            <th class="bg-gray-200 px-1">ID</th>
+            {#each Object.keys(dataset[0]) as key, i}
+              <th
+                class="bg-gray-200 px-1"
+                on:contextmenu={(e) => contextMenu.showContextMenu(e, key)}
+                style="text-align: {$dimensionDataStore.get(dimensions[i])?.type === 'categorical'
+                  ? 'left'
+                  : 'right'};">{key}</th
+              >
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each dataset as row, index}
+            <tr
+              class="{hoveredLineIndex === index || hoveredRowsIndices.has(index)
+                ? 'bg-red-500'
+                : brushedRowsIndices.has(index) && rowShow[index]
+                ? 'bg-orange-400'
+                : ''}
+              {rowShow[index] ? 'text-black' : 'text-gray-400'}"
+              on:mouseenter={() => handleMouseEnter(index)}
+              on:mouseleave={() => handleMouseLeave(index)}
+              on:mousedown={(e) => handleRowClick(e, index)}
+            >
+              <td style="text-align: left;">{index}</td>
+              {#each Object.keys(row) as key, i}
+                <td
+                  class="px-1"
+                  style="text-align: {$dimensionDataStore.get(dimensions[i])?.type === 'categorical'
+                    ? 'left'
+                    : 'right'};">{formatCell(row[key], i)}</td
+                >
+              {/each}
+            </tr>
           {/each}
-        </tr>
-      {/each}
-    </table>
-  {:else}
-    <span>No data available.</span>
-  {/if}
-</div>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex items-center" style="font-size: 12px;">
+      {dataset.length} rows | {brushedRowsIndices.size} selected |
+    </div>
+  </div>
+{:else}
+  <div class="w-full h-full"><span>No data available.</span></div>
+{/if}
 
 <style>
   table,
@@ -150,5 +175,20 @@
   td {
     border: 1px solid black;
     font-size: 0.9em;
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+  }
+
+  .scrollable-div {
+    border-top: 1px solid black;
+    scrollbar-width: thin;
+    overflow-x: auto !important;
+  }
+
+  .scrollable-div::-webkit-scrollbar {
+    height: 12px;
   }
 </style>

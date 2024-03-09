@@ -106,7 +106,7 @@ function drawLines(inputLines: number[][][]) {
       linePoints.push(new THREE.Vector3(...point));
     });
     const material = (
-      lines[i] ? lines[i].material : LINE_MATERIAL_MAP.get(COLOR_ACTIVE)
+      lines[i] ? lines[i].material : LINE_MATERIAL_ACTIVE
     ) as THREE.LineBasicMaterial;
     material.needsUpdate = false;
     const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);

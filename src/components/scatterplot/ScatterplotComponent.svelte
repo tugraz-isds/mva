@@ -45,6 +45,7 @@
       }
 
       setTimeout(() => {
+        pointsComponent?.setPointData();
         pointsComponent?.resetPoints();
         calculateXScale();
         calculateYScale();

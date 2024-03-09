@@ -110,10 +110,10 @@ function drawPoints(inputPoints: number[][]) {
   scene.children = [];
   const pointGeometry = new THREE.CircleGeometry(3, 16);
   inputPoints.forEach((currPoint: number[], i: number) => {
-    const material = POINT_MATERIAL_ACTIVE;
-    material.needsUpdate = false;
+    const material = points[i] ? points[i].material : POINT_MATERIAL_ACTIVE;
+    (material as THREE.Material).needsUpdate = false;
     const point: THREE.Mesh & { index?: number } = new THREE.Mesh(pointGeometry, material);
-    point.position.set(currPoint[0], currPoint[1], currPoint[2]);
+    point.position.set(currPoint[0], currPoint[1], points[i] ? points[i].position.z : currPoint[2]);
     point.index = i;
     points[i] = point;
     scene.add(point);

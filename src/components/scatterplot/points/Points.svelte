@@ -89,7 +89,7 @@
     updatedHere = false;
   });
 
-  function setPointData(): void {
+  export function setPointData(): void {
     points = [];
     let xPos: number, yPos: number;
     xData.forEach((x: any, i: number) => {
@@ -170,22 +170,26 @@
   }
 
   export function changeXData() {
-    let xPos: number;
-    xData.forEach((x: any, i: number) => {
-      xPos = margin.left + xScale(x);
-      points[i][0] = xPos;
-    });
+    setTimeout(() => {
+      let xPos: number;
+      xData.forEach((x: any, i: number) => {
+        xPos = margin.left + xScale(x);
+        points[i][0] = xPos;
+      });
 
-    debouncedDrawPoints();
+      debouncedDrawPoints();
+    }, 0);
   }
 
   export function changeYData() {
-    let yPos: number;
-    yData.forEach((y: any, i: number) => {
-      yPos = margin.top + yScale(y);
-      points[i][1] = yPos;
-    });
-    debouncedDrawPoints();
+    setTimeout(() => {
+      let yPos: number;
+      yData.forEach((y: any, i: number) => {
+        yPos = margin.top + yScale(y);
+        points[i][1] = yPos;
+      });
+      debouncedDrawPoints();
+    }, 0);
   }
 
   onMount(() => {
