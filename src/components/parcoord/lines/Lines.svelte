@@ -40,7 +40,12 @@
   let lineData: RecordDataType[] = [];
   let lineShow: boolean[] = [];
   let mouse: { x: number; y: number } = { x: 0, y: 0 };
-  let tooltipPos: { x: number; y: number } = { x: 0, y: 0 };
+  let tooltipPos: { x: number; y: number; clientX: number; clientY: number } = {
+    x: 0,
+    y: 0,
+    clientX: 0,
+    clientY: 0
+  };
   let updatedHere = false;
   let currWidth: number = width,
     currHeight: number = height;
@@ -178,7 +183,9 @@
 
     tooltipPos = {
       x: event.clientX - canvasRect.left,
-      y: event.clientY - canvasRect.top
+      y: event.clientY - canvasRect.top,
+      clientX: event.clientX,
+      clientY: event.clientY
     };
   }
 
@@ -200,7 +207,7 @@
       return;
 
     setTimeout(() => {
-      setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+      setTooltipData({ visible: false, posX: 0, posY: 0, clientX: 0, clientY: 0, text: [] });
 
       if (!$parcoordIsInteractable) return;
 
@@ -259,7 +266,7 @@
 
   function setTooltip(hoveredLinesSet: Set<number>) {
     if (hoveredLinesSet.size === 0) {
-      setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+      setTooltipData({ visible: false, posX: 0, posY: 0, clientX: 0, clientY: 0, text: [] });
     } else {
       let tooltipText: string[] = [];
       hoveredLinesSet.forEach((i) => {
@@ -267,8 +274,10 @@
       });
       setTooltipData({
         visible: true,
-        xPos: tooltipPos.x + 25,
-        yPos: tooltipPos.y,
+        posX: tooltipPos.x + 25,
+        posY: tooltipPos.y,
+        clientX: tooltipPos.clientX,
+        clientY: tooltipPos.clientY,
         text: tooltipText
       });
     }

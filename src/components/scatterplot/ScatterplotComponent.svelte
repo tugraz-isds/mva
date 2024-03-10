@@ -20,8 +20,10 @@
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
   let tooltip: TooltipType = {
     visible: false,
-    xPos: 0,
-    yPos: 0,
+    posX: 0,
+    posY: 0,
+    clientX: 0,
+    clientY: 0,
     text: []
   };
 
@@ -144,7 +146,7 @@
       viewTitle="scatterplot"
     />
 
-    <Tooltip data={tooltip} viewTitle="scatterplot" />
+    <Tooltip data={tooltip} maxWidth={120} />
 
     <Points
       bind:this={pointsComponent}

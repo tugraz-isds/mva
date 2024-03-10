@@ -14,10 +14,9 @@
   import Histograms from './histograms/Histograms.svelte';
   import Lines from './lines/Lines.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
-  import TooltipAxisTitle from './axes/TooltipAxisTitle.svelte';
   import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { TooltipAxisTitleType, CustomRangeType, HistogramsType } from './types';
+  import type { CustomRangeType, HistogramsType } from './types';
   import type { MarginType, TooltipType } from '../../util/types';
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
 
@@ -42,16 +41,13 @@
   let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
   let tooltip: TooltipType = {
     visible: false,
-    xPos: 0,
-    yPos: 0,
+    posX: 0,
+    posY: 0,
+    clientX: 0,
+    clientY: 0,
     text: []
   };
-  let tooltipAxisTitle: TooltipAxisTitleType = {
-    visible: false,
-    xPos: 0,
-    yPos: 0,
-    text: ''
-  };
+  let tooltipMaxWidth: number | null = null;
 
   let customRanges: Map<string, CustomRangeType>;
   const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
@@ -207,10 +203,19 @@
 
   function setTooltipData(data: TooltipType) {
     tooltip = data;
+    tooltipMaxWidth = 120;
   }
 
-  function setTooltipAxisTitleData(data: TooltipAxisTitleType) {
-    tooltipAxisTitle = data;
+  function setTooltipAxisTitleData(data: TooltipType) {
+    tooltip = {
+      visible: data.visible,
+      posX: data.posX,
+      posY: data.posY + 5,
+      clientX: data.clientX,
+      clientY: data.clientY,
+      text: data.text
+    };
+    tooltipMaxWidth = null;
   }
 
   function setMarginLeft() {
@@ -341,8 +346,8 @@
       <Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
     {/if}
 
-    <Tooltip data={tooltip} viewTitle="parcoord" />
-    <TooltipAxisTitle {width} data={tooltipAxisTitle} />
+    <Tooltip data={tooltip} maxWidth={tooltipMaxWidth} />
+
     <ContextMenuAxes
       bind:this={contextMenuAxes}
       bind:axesComponent

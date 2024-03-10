@@ -1,59 +1,43 @@
 <script lang="ts">
-  import { afterUpdate } from 'svelte';
-  import { select } from 'd3-selection';
-  import { getTextWidthArray } from '../../util/text';
   import type { TooltipType } from '../../util/types';
 
   export let data: TooltipType;
-  export let viewTitle: string;
+  export let maxWidth: number | null = null;
 
-  let tooltip: any; // Tooltip SVG element
-  let clipPath: any; // SVG clip path element
+  let tooltipWidth: number;
+  let leftPosition: number;
 
-  afterUpdate(() => {
-    const svg = select(`#${viewTitle}-canvas-axes`);
+  $: maxWidthString = maxWidth
+    ? `max-width: ${maxWidth}px; overflow: hidden; text-overflow: ellipsis;`
+    : '';
 
-    svg.select('#tooltip').remove();
-    svg.select('#tooltip-background').remove();
-    svg.select('#tooltip-clip').remove();
+  $: leftPosition = data.posX - 12; // Initial left position
 
-    if (data.text.length === 0) return;
-
-    const tooltipWidth = Math.min(getTextWidthArray(data.text, 10, 'sans-serif'), 120);
-
-    // Create a white background rect
-    svg
-      .append('rect')
-      .attr('id', 'tooltip-background')
-      .style('fill', 'lightgrey')
-      .style('display', data.visible ? 'block' : 'none')
-      .attr('x', data.xPos - 5)
-      .attr('y', data.yPos - 8)
-      .attr('width', tooltipWidth + 10)
-      .attr('height', (data.text.length + 1) * 10);
-
-    clipPath = svg.append('clipPath').attr('id', 'tooltip-clip');
-    clipPath
-      .append('rect')
-      .attr('x', data.xPos - 5)
-      .attr('y', data.yPos - 5)
-      .attr('width', 120)
-      .attr('height', (data.text.length + 1) * 10);
-
-    // Create the text element
-    tooltip = svg
-      .append('text')
-      .attr('id', 'tooltip')
-      .attr('x', data.xPos)
-      .attr('y', data.yPos + 5)
-      .style('display', data.visible ? 'block' : 'none')
-      .style('text-anchor', 'start')
-      .style('font-size', '10px')
-      .attr('clip-path', 'url(#tooltip-clip)')
-      .text(data.text[0]);
-
-    for (let i = 1; i < data.text.length; i++) {
-      tooltip.append('tspan').attr('x', data.xPos).attr('dy', '1em').text(data.text[i]);
+  $: {
+    if (data.visible && tooltipWidth) {
+      // Check if the tooltip overflows the window width
+      if (data.clientX + 12 + tooltipWidth > window.innerWidth) {
+        // Calculate the overflow amount
+        const overflowAmount = data.clientX + 12 + tooltipWidth - window.innerWidth;
+        // Adjust the left position to prevent overflow
+        leftPosition = data.posX - 30 - tooltipWidth;
+        console.log('overflows', overflowAmount);
+      } else {
+        // No adjustment needed if it doesn't overflow
+        leftPosition = data.posX - 12;
+        console.log('NOT overflows');
+      }
     }
-  });
+  }
 </script>
+
+{#if data.visible}
+  <div
+    bind:clientWidth={tooltipWidth}
+    class="bg-gray-200 py-0.5 px-1 rounded-sm whitespace-nowrap z-10"
+    style="font-size: 10px; position: absolute; top: {data.posY -
+      8}px; left: {leftPosition}px; {maxWidthString}"
+  >
+    {@html data.text.join('<br>')}
+  </div>
+{/if}

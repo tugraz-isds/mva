@@ -20,13 +20,6 @@ export type AxesFilterType = {
   };
 };
 
-export type TooltipAxisTitleType = {
-  visible: boolean;
-  xPos: number;
-  yPos: number;
-  text: string;
-};
-
 export type CustomRangeType = {
   start: number;
   end: number;

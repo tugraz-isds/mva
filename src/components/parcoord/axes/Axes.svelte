@@ -26,7 +26,7 @@
   } from '../../../util/icon-definitions';
   import { getAllTicks, reorderArray } from '../../../util/util';
   import type ContextMenuAxes from '../context-menu/ContextMenuAxes.svelte';
-  import type { AxesFilterType, DimensionMetadataType, TooltipAxisTitleType } from '../types';
+  import type { AxesFilterType, DimensionMetadataType } from '../types';
   import type { MarginType, TooltipType } from '../../../util/types';
 
   export let width: number;
@@ -38,7 +38,7 @@
   export let handleInvertAxis: (axisIndex: number) => void;
   export let handleMarginChanged: () => void;
   export let handleAutoscroll: (direction: 'left' | 'right') => void;
-  export let setTooltipAxisTitleData: (data: TooltipAxisTitleType) => void;
+  export let setTooltipAxisTitleData: (data: TooltipType) => void;
   export let setTooltipData: (data: TooltipType) => void;
   export let xScales: any[];
   export let yScales: any;
@@ -359,7 +359,7 @@
           )
           .on('mouseenter', () => {
             parcoordIsInteractable.set(false);
-            setTooltipData({ visible: false, xPos: 0, yPos: 0, text: [] });
+            setTooltipData({ visible: false, posX: 0, posY: 0, clientX: 0, clientY: 0, text: [] });
           })
           .on('mouseleave', () => {
             parcoordIsInteractable.set(true);
@@ -384,18 +384,22 @@
     if (isCurrentlyFiltering) return;
     setTooltipAxisTitleData({
       visible: true,
-      xPos: xScales[axisIndex],
-      yPos: margin.top - 20,
-      text: axisTitle
+      posX: xScales[axisIndex],
+      posY: margin.top - 20,
+      clientX: 0,
+      clientY: 0,
+      text: [axisTitle]
     });
   }
 
   function hideCustomTooltip() {
     setTooltipAxisTitleData({
       visible: false,
-      xPos: 0,
-      yPos: 0,
-      text: ''
+      posX: 0,
+      posY: 0,
+      clientX: 0,
+      clientY: 0,
+      text: ['']
     });
   }
 
