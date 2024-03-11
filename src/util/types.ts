@@ -20,6 +20,7 @@ export type TooltipType = {
   clientX: number; // Absolute X position
   clientY: number; // Absolute Y position
   text: string[]; // Text rows as array
+  overflowOffsetX: number;
 };
 
 export type DimensionDataType = {

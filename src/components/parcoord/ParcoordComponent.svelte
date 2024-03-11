@@ -45,7 +45,8 @@
     posY: 0,
     clientX: 0,
     clientY: 0,
-    text: []
+    text: [],
+    overflowOffsetX: 0
   };
   let tooltipMaxWidth: number | null = null;
 
@@ -213,7 +214,8 @@
       posY: data.posY + 5,
       clientX: data.clientX,
       clientY: data.clientY,
-      text: data.text
+      text: data.text,
+      overflowOffsetX: 0
     };
     tooltipMaxWidth = null;
   }

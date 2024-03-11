@@ -193,7 +193,7 @@
           .style('text-anchor', 'middle')
           .style('cursor', `url("data:image/svg+xml;base64,${cursorString}, pointer`)
           .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
-          .on('mouseenter', () => showCustomTooltip(dim, i))
+          .on('mouseenter', (e) => showCustomTooltip(e, dim, i))
           .on('mouseleave', hideCustomTooltip)
           .on('mousedown', hideCustomTooltip)
           .on('contextmenu', (e) => contextMenuAxes.showContextMenu(e, i))
@@ -359,7 +359,15 @@
           )
           .on('mouseenter', () => {
             parcoordIsInteractable.set(false);
-            setTooltipData({ visible: false, posX: 0, posY: 0, clientX: 0, clientY: 0, text: [] });
+            setTooltipData({
+              visible: false,
+              posX: 0,
+              posY: 0,
+              clientX: 0,
+              clientY: 0,
+              text: [],
+              overflowOffsetX: 0
+            });
           })
           .on('mouseleave', () => {
             parcoordIsInteractable.set(true);
@@ -380,15 +388,16 @@
     );
   }
 
-  function showCustomTooltip(axisTitle: string, axisIndex: number) {
+  function showCustomTooltip(event: MouseEvent, axisTitle: string, axisIndex: number) {
     if (isCurrentlyFiltering) return;
     setTooltipAxisTitleData({
       visible: true,
       posX: xScales[axisIndex],
       posY: margin.top - 20,
-      clientX: 0,
-      clientY: 0,
-      text: [axisTitle]
+      clientX: event.clientX,
+      clientY: event.clientY,
+      text: [axisTitle],
+      overflowOffsetX: 0
     });
   }
 
@@ -399,7 +408,8 @@
       posY: 0,
       clientX: 0,
       clientY: 0,
-      text: ['']
+      text: [''],
+      overflowOffsetX: 0
     });
   }
 

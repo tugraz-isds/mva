@@ -24,7 +24,8 @@
     posY: 0,
     clientX: 0,
     clientY: 0,
-    text: []
+    text: [],
+    overflowOffsetX: 0
   };
 
   let dataset: DSVParsedArray<any>;
