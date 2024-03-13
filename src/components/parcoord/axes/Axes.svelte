@@ -361,12 +361,9 @@
             parcoordIsInteractable.set(false);
             setTooltipData({
               visible: false,
-              posX: 0,
-              posY: 0,
               clientX: 0,
               clientY: 0,
-              text: [],
-              overflowOffsetX: 0
+              text: []
             });
           })
           .on('mouseleave', () => {
@@ -392,24 +389,18 @@
     if (isCurrentlyFiltering) return;
     setTooltipAxisTitleData({
       visible: true,
-      posX: xScales[axisIndex],
-      posY: margin.top - 20,
       clientX: event.clientX,
       clientY: event.clientY,
-      text: [axisTitle],
-      overflowOffsetX: 0
+      text: [axisTitle]
     });
   }
 
   function hideCustomTooltip() {
     setTooltipAxisTitleData({
       visible: false,
-      posX: 0,
-      posY: 0,
       clientX: 0,
       clientY: 0,
-      text: [''],
-      overflowOffsetX: 0
+      text: ['']
     });
   }
 

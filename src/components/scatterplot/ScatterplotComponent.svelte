@@ -20,12 +20,9 @@
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
   let tooltip: TooltipType = {
     visible: false,
-    posX: 0,
-    posY: 0,
     clientX: 0,
     clientY: 0,
-    text: [],
-    overflowOffsetX: 0
+    text: []
   };
 
   let dataset: DSVParsedArray<any>;

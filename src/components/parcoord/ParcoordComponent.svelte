@@ -41,12 +41,9 @@
   let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
   let tooltip: TooltipType = {
     visible: false,
-    posX: 0,
-    posY: 0,
     clientX: 0,
     clientY: 0,
-    text: [],
-    overflowOffsetX: 0
+    text: []
   };
   let tooltipMaxWidth: number | null = null;
 
@@ -210,12 +207,9 @@
   function setTooltipAxisTitleData(data: TooltipType) {
     tooltip = {
       visible: data.visible,
-      posX: data.posX,
-      posY: data.posY + 5,
       clientX: data.clientX,
       clientY: data.clientY,
-      text: data.text,
-      overflowOffsetX: 0
+      text: data.text
     };
     tooltipMaxWidth = null;
   }

@@ -15,12 +15,9 @@ export type RecordDataType = {
 
 export type TooltipType = {
   visible: boolean; // Is tooltip visible
-  posX: number; // X position
-  posY: number; // Y position
   clientX: number; // Absolute X position
   clientY: number; // Absolute Y position
   text: string[]; // Text rows as array
-  overflowOffsetX: number;
 };
 
 export type DimensionDataType = {
