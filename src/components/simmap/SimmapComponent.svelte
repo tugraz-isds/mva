@@ -1,13 +1,17 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { PCA } from 'ml-pca';
+  import { UMAP } from 'umap-js';
   import Axes from '../scatterplot/axes/Axes.svelte';
   import Points from '../scatterplot/points/Points.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
+  import { simmapMethodStore } from '../../stores/simmap';
   import { scaleLinear } from 'd3-scale';
+  import { isNumber } from '../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { MarginType, TooltipType } from '../../util/types';
+  import type { SimmapMethodsType, SimmapDataType } from './types';
 
   let width: number;
   let height: number;
@@ -26,6 +30,8 @@
     text: []
   };
 
+  let simmapMethodsData: Map<SimmapMethodsType, SimmapDataType> = new Map();
+
   let dataset: DSVParsedArray<any>;
   let matrix: number[][];
   const unsubscribeDataset = datasetStore.subscribe((value: any) => {
@@ -39,7 +45,9 @@
       );
 
       if (numericalDimensions.length >= 2) {
-        matrix = dataset.map((d) => numericalDimensions.map((dim) => d[dim]));
+        matrix = dataset.map((d) =>
+          numericalDimensions.map((dim) => (isNumber(d[dim]) ? d[dim] : 0))
+        );
         calculatePCA();
       }
 
@@ -52,20 +60,78 @@
 
       pointsComponent?.changeXData();
       pointsComponent?.changeYData();
+
+      calculateUMAP();
     }
   });
 
-  async function calculatePCA() {
+  const unsubscribeSimmap = simmapMethodStore.subscribe((value: SimmapMethodsType) => {
+    const data = simmapMethodsData.get(value);
+    if (!data) return;
+    xData = data.xData;
+    yData = data.yData;
+    xMin = data.xMin;
+    xMax = data.xMax;
+    yMin = data.yMin;
+    yMax = data.yMax;
+
+    setTimeout(() => {
+      pointsComponent?.setPointData();
+      pointsComponent?.resetPoints();
+      calculateXScale();
+      calculateYScale();
+    }, 0);
+
+    pointsComponent?.changeXData();
+    pointsComponent?.changeYData();
+  });
+
+  function calculatePCA() {
     const pca = new PCA(matrix);
     const pcaResult = pca.predict(matrix, { nComponents: 2 });
+    let xData: number[] = [],
+      yData: number[] = [];
     pcaResult.to2DArray().forEach((row) => {
       xData.push(row[0]);
       yData.push(row[1]);
     });
-    xMin = Math.min(...xData);
-    xMax = Math.max(...xData);
-    yMin = Math.min(...yData);
-    yMax = Math.max(...yData);
+    const xMin = Math.min(...xData);
+    const xMax = Math.max(...xData);
+    const yMin = Math.min(...yData);
+    const yMax = Math.max(...yData);
+
+    simmapMethodsData.set('PCA', {
+      xData,
+      yData,
+      xMin,
+      xMax,
+      yMin,
+      yMax
+    });
+  }
+
+  function calculateUMAP() {
+    const umap = new UMAP();
+    const embedding = umap.fit(matrix);
+    let xData: number[] = [],
+      yData: number[] = [];
+    embedding.forEach((row) => {
+      xData.push(row[0]);
+      yData.push(row[1]);
+    });
+    const xMin = Math.min(...xData);
+    const xMax = Math.max(...xData);
+    const yMin = Math.min(...yData);
+    const yMax = Math.max(...yData);
+
+    simmapMethodsData.set('UMAP', {
+      xData,
+      yData,
+      xMin,
+      xMax,
+      yMin,
+      yMax
+    });
   }
 
   $: {
@@ -104,6 +170,7 @@
 
   onDestroy(() => {
     unsubscribeDataset();
+    unsubscribeSimmap();
   });
 </script>
 
