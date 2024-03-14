@@ -209,12 +209,9 @@
     setTimeout(() => {
       setTooltipData({
         visible: false,
-        posX: 0,
-        posY: 0,
         clientX: 0,
         clientY: 0,
-        text: [],
-        overflowOffsetX: 0
+        text: []
       });
 
       if (!$parcoordIsInteractable) return;
@@ -276,12 +273,9 @@
     if (hoveredLinesSet.size === 0) {
       setTooltipData({
         visible: false,
-        posX: 0,
-        posY: 0,
         clientX: 0,
         clientY: 0,
-        text: [],
-        overflowOffsetX: 0
+        text: []
       });
     } else {
       let tooltipText: string[] = [];
@@ -290,12 +284,9 @@
       });
       setTooltipData({
         visible: true,
-        posX: tooltipPos.x + 12,
-        posY: tooltipPos.y,
         clientX: tooltipPos.clientX,
         clientY: tooltipPos.clientY,
-        text: tooltipText,
-        overflowOffsetX: 16
+        text: tooltipText
       });
     }
   }

@@ -6,6 +6,7 @@
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
+  import MethodPicker from '../simmap/MethodPicker.svelte';
   import type { View } from './ViewType';
 
   export let otherViews: View[];
@@ -61,6 +62,8 @@
         <HistogramSettings />
       {:else if currView.id === 'scatterplot'}
         <DimensionPickers />
+      {:else if currView.id === 'simmap'}
+        <MethodPicker />
       {/if}
     </div>
     <div id="{currView.id}-expand-container">
