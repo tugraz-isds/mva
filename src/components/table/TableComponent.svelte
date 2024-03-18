@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { ChevronDown, ChevronUp } from 'flowbite-svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { linkingArray } from '../../stores/linking';
   import {
@@ -9,25 +10,44 @@
     previouslyBrushedArray
   } from '../../stores/brushing';
   import ContextMenu from './ContextMenu.svelte';
+  import Tooltip from '../tooltip/Tooltip.svelte';
+  import { getTextWidth } from '../../util/text';
+  import { ascending, descending } from 'd3-array';
   import type { DSVParsedArray } from 'd3-dsv';
+  import type { TooltipType } from '../../util/types';
 
   let contextMenu: ContextMenu;
 
   let width: number, height: number;
-  let rowShow: boolean[] = []; // Array of booleans that store info if each table row should be drawn
-  let hoveredLineIndex: number | null = null; // Currently hovered line
-  let hoveredRowsIndices: Set<number> = new Set(); // Currently hovered rows
-  let brushedRowsIndices: Set<number> = new Set(); // Currently brushed rows
+  let rowShow: boolean[] = [];
+  let hoveredLineIndex: number | null = null;
+  let hoveredRowsIndices: Set<number> = new Set();
+  let brushedRowsIndices: Set<number> = new Set();
   let dimensions: string[] = [];
+  let rangeStart: number | null = null; // Selection range
+  let sorting: { dim: string | null; direction: 'ASC' | 'DESC' };
 
-  // Selection range
-  let rangeStart: number | null = null; // Start of range of rows
+  let tooltip: TooltipType = {
+    visible: false,
+    clientX: 0,
+    clientY: 0,
+    text: []
+  };
 
   let dataset: DSVParsedArray<any>;
   const unsubscribeDataset = datasetStore.subscribe((value: any) => {
     dataset = value;
     if (dataset?.length > 0) {
+      dataset = dataset.map((item, i) => {
+        return {
+          _i: i,
+          ...item
+        };
+      }) as DSVParsedArray<any>;
+
       dimensions = Object.keys(dataset[0]);
+
+      sorting = { dim: '_i', direction: 'ASC' };
     }
   });
 
@@ -101,6 +121,34 @@
     hoveredRowsIndices.clear();
   }
 
+  function sortDataset(dim: string) {
+    if (sorting.dim === dim) sorting.direction = sorting.direction === 'ASC' ? 'DESC' : 'ASC';
+    else sorting.direction = 'ASC';
+    sorting.dim = dim;
+
+    dataset = dataset.sort((a, b) => {
+      return sorting.direction === 'ASC' ? ascending(a[dim], b[dim]) : descending(a[dim], b[dim]);
+    });
+  }
+
+  function showTooltip(e: MouseEvent, dim: string) {
+    tooltip = {
+      visible: true,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      text: [dim]
+    };
+  }
+
+  function hideTooltip() {
+    tooltip = {
+      visible: false,
+      clientX: 0,
+      clientY: 0,
+      text: []
+    };
+  }
+
   function formatCell(value: string, dimIndex: number) {
     const dimData = $dimensionDataStore.get(dimensions[dimIndex]);
     if (!dimData || dimData.type === 'categorical') return value;
@@ -119,17 +167,40 @@
 {#if dataset?.length > 0 && rowShow?.length > 0}
   <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
-      <table id="table-canvas" class="w-full">
-        <thead>
+      <table id="table-canvas" class="w-full table-fixed">
+        <thead style="font-size: 14px;">
           <tr>
-            <th class="bg-gray-200 px-1">ID</th>
-            {#each Object.keys(dataset[0]) as key, i}
+            {#each Object.keys(dataset[0]) as dim, i}
               <th
-                class="bg-gray-200 px-1"
-                on:contextmenu={(e) => contextMenu.showContextMenu(e, key)}
-                style="text-align: {$dimensionDataStore.get(dimensions[i])?.type === 'categorical'
+                on:click={() => sortDataset(dim)}
+                on:mouseenter={(e) => showTooltip(e, dim)}
+                on:mouseleave={hideTooltip}
+                class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
+                on:contextmenu={(e) => contextMenu.showContextMenu(e, dim)}
+                style="font-size: 12px; overflow: hidden; text-align: {$dimensionDataStore.get(
+                  dimensions[i]
+                )?.type === 'categorical'
                   ? 'left'
-                  : 'right'};">{key}</th
+                  : 'right'}; width: {getTextWidth(
+                  dim === '_i'
+                    ? (dataset.length - 1).toString()
+                    : $dimensionDataStore.get(dim)?.longestString ?? '',
+                  12,
+                  'sans-serif'
+                ) + 8}px;"
+              >
+                <div class="flex flex-col">
+                  {#if dim === sorting.dim}
+                    {#if sorting.direction === 'ASC'}
+                      <ChevronDown class="self-center" size="8" />
+                    {:else}
+                      <ChevronUp class="self-center" size="8" />
+                    {/if}
+                  {:else}
+                    <ChevronUp class="self-center invisible" size="8" />
+                  {/if}
+                  <span class="self-start">{dim}</span>
+                </div></th
               >
             {/each}
           </tr>
@@ -147,11 +218,11 @@
               on:mouseleave={() => handleMouseLeave(index)}
               on:mousedown={(e) => handleRowClick(e, index)}
             >
-              <td style="text-align: left;">{index}</td>
               {#each Object.keys(row) as key, i}
                 <td
                   class="px-1"
-                  style="text-align: {$dimensionDataStore.get(dimensions[i])?.type === 'categorical'
+                  style="font-size: 12px; text-align: {$dimensionDataStore.get(dimensions[i])
+                    ?.type === 'categorical'
                     ? 'left'
                     : 'right'};">{formatCell(row[key], i)}</td
                 >
@@ -168,6 +239,8 @@
 {:else}
   <div class="w-full h-full"><span>No data available.</span></div>
 {/if}
+
+<Tooltip data={tooltip} color="bg-gray-300" />
 
 <style>
   table,

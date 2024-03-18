@@ -46,6 +46,7 @@
     text: []
   };
   let tooltipMaxWidth: number | null = null;
+  let tooltipColor: string;
 
   let customRanges: Map<string, CustomRangeType>;
   const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
@@ -202,6 +203,7 @@
   function setTooltipData(data: TooltipType) {
     tooltip = data;
     tooltipMaxWidth = 120;
+    tooltipColor = 'bg-gray-100';
   }
 
   function setTooltipAxisTitleData(data: TooltipType) {
@@ -212,6 +214,7 @@
       text: data.text
     };
     tooltipMaxWidth = null;
+    tooltipColor = 'bg-gray-300';
   }
 
   function setMarginLeft() {
@@ -342,7 +345,7 @@
       <Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
     {/if}
 
-    <Tooltip data={tooltip} maxWidth={tooltipMaxWidth} />
+    <Tooltip data={tooltip} maxWidth={tooltipMaxWidth} color={tooltipColor} />
 
     <ContextMenuAxes
       bind:this={contextMenuAxes}

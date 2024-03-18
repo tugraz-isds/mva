@@ -3,8 +3,8 @@
   import { extent, max } from 'd3-array';
   import { autoType, csvParse, type DSVParsedArray } from 'd3-dsv';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
-  import type { DimensionDataType } from '../../util/types';
   import { parcoordIsInteractable } from '../../stores/parcoord';
+  import type { DimensionDataType } from '../../util/types';
 
   export let isOpen: boolean;
 
@@ -34,30 +34,33 @@
       const dimensions = Object.keys(dataset[0]);
       const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
       dimensions.forEach((dim: string) => {
+        const dimData = dataset.map((d) => d[dim]);
+        const longestString = dimData.reduce((longest, currentStr) => {
+          currentStr = currentStr ?? '';
+          return currentStr.toString().length > longest.toString().length ? currentStr : longest;
+        }, '');
         if (isNumber(dataset[0][dim])) {
           const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-          let maxNumberOfDecimals = max(
-            dataset.map((d) => d[dim]),
-            (number: number) => {
-              const numberOfDecimals = number?.toString().includes('.')
-                ? number.toString().split('.')[1].length
-                : 0;
-              return numberOfDecimals;
-            }
-          );
-
+          const maxNumberOfDecimals = max(dimData, (number: number) => {
+            const numberOfDecimals = number?.toString().includes('.')
+              ? number.toString().split('.')[1].length
+              : 0;
+            return numberOfDecimals;
+          });
           dimensionTypeMap.set(dim, {
             type: 'numerical',
             min: dimExtent[0],
             max: dimExtent[1],
-            numberOfDecimals: maxNumberOfDecimals ?? null
+            numberOfDecimals: maxNumberOfDecimals ?? null,
+            longestString: longestString ?? ''
           });
         } else
           dimensionTypeMap.set(dim, {
             type: 'categorical',
             min: null,
             max: null,
-            numberOfDecimals: null
+            numberOfDecimals: null,
+            longestString: longestString ?? ''
           });
       });
       dimensionDataStore.set(dimensionTypeMap);

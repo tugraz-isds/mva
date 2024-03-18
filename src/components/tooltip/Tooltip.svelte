@@ -3,6 +3,7 @@
 
   export let data: TooltipType;
   export let maxWidth: number | null = null;
+  export let color: string = 'bg-gray-100';
 
   let tooltipElement: HTMLDivElement;
   let tooltipStyle = `position: fixed; display: none;`;
@@ -37,7 +38,7 @@
   {#key tooltipKey}
     <div
       bind:this={tooltipElement}
-      class="bg-gray-200 py-0.5 px-1 rounded-sm whitespace-nowrap z-10"
+      class="{color} py-0.5 px-1 rounded-sm whitespace-nowrap z-10"
       style={tooltipStyle}
     >
       {@html data.text.join('<br>')}

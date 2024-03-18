@@ -49,24 +49,20 @@
           numericalDimensions.map((dim) => (isNumber(d[dim]) ? d[dim] : 0))
         );
         calculatePCA();
+        simmapMethodStore.set('PCA');
+        redrawPoints('PCA');
       }
-
-      setTimeout(() => {
-        pointsComponent?.setPointData();
-        pointsComponent?.resetPoints();
-        calculateXScale();
-        calculateYScale();
-      }, 0);
-
-      pointsComponent?.changeXData();
-      pointsComponent?.changeYData();
 
       calculateUMAP();
     }
   });
 
   const unsubscribeSimmap = simmapMethodStore.subscribe((value: SimmapMethodsType) => {
-    const data = simmapMethodsData.get(value);
+    redrawPoints(value);
+  });
+
+  function redrawPoints(simmapMethod: SimmapMethodsType) {
+    const data = simmapMethodsData.get(simmapMethod);
     if (!data) return;
     xData = data.xData;
     yData = data.yData;
@@ -84,7 +80,7 @@
 
     pointsComponent?.changeXData();
     pointsComponent?.changeYData();
-  });
+  }
 
   function calculatePCA() {
     const pca = new PCA(matrix);

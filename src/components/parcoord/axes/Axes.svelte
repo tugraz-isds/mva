@@ -9,7 +9,7 @@
     parcoordIsInteractable
   } from '../../../stores/parcoord';
   import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
-  import { calculateMaxLength, getLongestStringLen, getTextWidth } from '../../../util/text';
+  import { calculateMaxLength, getTextWidth } from '../../../util/text';
   import {
     arrow_invert_down_icon,
     arrow_invert_up_icon,
@@ -133,9 +133,8 @@
     dimensions.forEach((dim: string, i: number) => {
       const step = xScales[1] - xScales[0];
       // Format ticks so they dont overflow
-      const longestString = getLongestStringLen(yScales[dim].domain());
       const maxTickLength = calculateMaxLength(
-        longestString,
+        $dimensionDataStore.get(dim)?.longestString ?? '',
         12,
         'sans-serif',
         i === 0 ? 100 : step
@@ -721,8 +720,12 @@
 
   export function calculateMarginLeft() {
     if (dimensionsMetadata.get(dimensions[0])?.showLabels) {
-      const longestString = getLongestStringLen(yScales[dimensions[0]].domain());
-      const longestStringWidth = getTextWidth(longestString, 12, 'sans-serif') + 8;
+      const longestStringWidth =
+        getTextWidth(
+          $dimensionDataStore.get(dimensions[0])?.longestString ?? '',
+          12,
+          'sans-serif'
+        ) + 8;
       margin.left =
         longestStringWidth < 100 ? (longestStringWidth < 30 ? 30 : longestStringWidth) : 100;
     } else margin.left = 30;
