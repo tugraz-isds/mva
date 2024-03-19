@@ -169,13 +169,14 @@
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
       <table id="table-canvas" class="w-full table-fixed">
         <thead style="font-size: 14px;">
-          <tr>
+          <tr
+            class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
+          >
             {#each Object.keys(dataset[0]) as dim, i}
               <th
                 on:click={() => sortDataset(dim)}
                 on:mouseenter={(e) => showTooltip(e, dim)}
                 on:mouseleave={hideTooltip}
-                class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
                 on:contextmenu={(e) => contextMenu.showContextMenu(e, dim)}
                 style="font-size: 12px; overflow: hidden; text-align: {$dimensionDataStore.get(
                   dimensions[i]

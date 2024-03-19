@@ -1,39 +1,95 @@
 <script lang="ts">
-  import { Button, Modal, Label, Input, Fileupload, Helper } from 'flowbite-svelte';
+  import {
+    Button,
+    Modal,
+    Label,
+    Input,
+    Fileupload,
+    Helper,
+    Select,
+    Spinner
+  } from 'flowbite-svelte';
   import { extent, max } from 'd3-array';
-  import { autoType, csvParse, type DSVParsedArray } from 'd3-dsv';
+  import { autoType, dsvFormat, type DSVParsedArray } from 'd3-dsv';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
   import { parcoordIsInteractable } from '../../stores/parcoord';
-  import type { DimensionDataType } from '../../util/types';
+  import { isNumber } from '../../util/util';
+  import { capitalizeString, clearStringQuotes } from '../../util/text';
+  import type { DimensionType, DimensionDataType } from '../../util/types';
 
   export let isOpen: boolean;
 
   const HEADER_ROW_NO = 10;
+  const SELECT_DEFAULT_STYLE =
+    'w-1/2 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500';
+
+  let files: FileList;
+  let headHeaderString = '';
+  let headHeader: { title: string; type: DimensionType | null }[] = [];
+  let headRowsString: string[] = [];
+  let headRows: string[][] = [];
+  let validUpload = true;
+  let errorMessage = 'Upload valid CSV file.';
+  let selectedColumn: number | null = null;
+  let isLoading = false;
+
+  let cellSeparator = ',';
+  const cellSeparatorList = [
+    { value: ',', name: 'Comma' },
+    { value: ';', name: 'Semicolon' },
+    { value: '\t', name: 'Tab' },
+    { value: ' ', name: 'Space' },
+    { value: 'other', name: 'Other' }
+  ];
+  let cellSeparatorOther = ',';
+
+  let decimalSeparator = '.';
+  const decimalSeparatorList = [
+    { value: '.', name: 'Dot' },
+    { value: ',', name: 'Comma' }
+  ];
+
+  let columnType: DimensionType;
+  const columnTypeList = [
+    { value: 'numerical', name: 'Numerical' },
+    { value: 'categorical', name: 'Categorical' }
+  ];
 
   $: if (!isOpen) {
     $parcoordIsInteractable = true;
   }
 
-  let files: FileList;
-  let headHeader = '';
-  let headRows: string[] = [];
-  let validUpload = true;
-  let separator = ',';
-
   $: if (files?.length > 0) {
-    readHead(files[0]);
+    readDatasetHead(files[0]);
+    selectedColumn = null;
+    validUpload = true;
   }
 
-  async function readHead(file: File) {
+  $: if (
+    cellSeparator &&
+    cellSeparatorOther &&
+    headHeaderString.length > 0 &&
+    headRowsString.length > 0
+  ) {
+    const separator = cellSeparator === 'other' ? cellSeparatorOther : cellSeparator;
+    headRows = headRowsString.map((row) => row.split(separator));
+
+    headHeader = headHeaderString.split(separator).map((header, i) => ({
+      title: header,
+      type: isNumber(headRows[0][i]) ? 'numerical' : 'categorical'
+    }));
+  }
+
+  async function readDatasetHead(file: File) {
     const reader = file.stream().getReader();
-    headRows = [];
-    headHeader = '';
+    headRowsString = [];
+    headHeaderString = '';
     let decoder = new TextDecoder();
     let { value: chunk, done } = await reader.read();
     let textChunk = decoder.decode(chunk, { stream: true });
     let startIndex = 0;
 
-    while (!done && headRows.length < HEADER_ROW_NO + 1) {
+    while (!done && headRowsString.length < HEADER_ROW_NO) {
       let endIndex = textChunk.indexOf('\n', startIndex);
       if (endIndex === -1) {
         ({ value: chunk, done } = await reader.read());
@@ -41,24 +97,32 @@
         continue;
       }
 
-      if (startIndex === 0) headHeader = textChunk.substring(startIndex, endIndex);
-      else headRows.push(textChunk.substring(startIndex, endIndex));
+      if (startIndex === 0) headHeaderString = textChunk.substring(startIndex, endIndex);
+      else headRowsString.push(textChunk.substring(startIndex, endIndex));
       startIndex = endIndex + 1;
 
-      if (headRows.length === HEADER_ROW_NO + 1) break;
+      if (headRowsString.length === HEADER_ROW_NO) break;
     }
-
-    console.log(headHeader);
-    console.log(headRows);
   }
 
   async function importDataset() {
-    if (files?.length === 0) return;
+    if (!files || files.length === 0) {
+      errorMessage = 'Upload valid CSV file.';
+      validUpload = false;
+      return;
+    }
 
+    if (cellSeparator === decimalSeparator) {
+      errorMessage = 'Cell separator cannot be the same as decimal separator.';
+      validUpload = false;
+      return;
+    }
+
+    isLoading = true;
     const file = files[0];
     let text = await file.text();
-    if (separator !== ',') text = text.replace(new RegExp(separator, 'g'), ',');
-    let dataset: DSVParsedArray<any> = csvParse(text, autoType);
+    const parser = dsvFormat(cellSeparator);
+    let dataset: DSVParsedArray<any> = parser.parse(text, autoType);
 
     const dimensions = Object.keys(dataset[0]);
     const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
@@ -102,57 +166,119 @@
     labelDimension.set(labelDim);
     localStorage.setItem('labelDimension', labelDim);
 
+    isLoading = false;
     validUpload = true;
     isOpen = false;
   }
 
-  // Helper function that returns whether item is a number
-  function isNumber(item: any) {
-    if (typeof item === 'number') return true;
-    if (typeof item === 'string') return !isNaN(+item);
-    return false;
+  function checkValidUpload() {
+    if (!validUpload) validUpload = true;
+  }
+
+  function selectColumn(i: number): void {
+    selectedColumn = selectedColumn === i ? null : i;
+    columnType = headHeader[i].type ?? 'numerical';
+  }
+
+  function changeColumnType(): void {
+    if (selectedColumn === null) return;
+    headHeader[selectedColumn].type = columnType;
   }
 </script>
 
 <Modal bind:open={isOpen} size="xs" class="w-full">
-  <form class="flex flex-col space-y-6">
+  {#if isLoading}
+    <div class="w-full h-full flex items-center justify-center"><Spinner /></div>
+  {/if}
+  <form class="flex flex-col space-y-4 {isLoading ? 'invisible' : 'visible'}">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Import Dataset</h3>
     <div class="mb-6 flex items-center">
       <Label for="upload-input" class="w-1/5">Upload File:</Label>
-      <Fileupload bind:files id="upload-input" class="block ml-2 w-3/4" accept=".csv" />
+      <Fileupload bind:files id="upload-input" class="block ml-2 w-4/5" accept=".csv" />
     </div>
-    <div class="mb-6 flex items-center">
-      <Label for="separator-input" class="w-1/5">Cell Separator:</Label>
-      <Input
-        id="separator-input"
-        defaultClass="block ml-2 w-1/5"
+    <div class="border-b-2 border-gray-200" />
+    <div class="mb-6 flex items-center space-x-2">
+      <Label for="cell-separator-select" class="w-1/5">Cell Separator:</Label>
+      <Select
+        id="cell-separator-select"
         size="sm"
-        bind:value={separator}
+        defaultClass={SELECT_DEFAULT_STYLE}
+        bind:value={cellSeparator}
+        on:change={checkValidUpload}
+        items={cellSeparatorList}
+        placeholder=""
+      />
+      {#if cellSeparator === 'other'}
+        <Input
+          id="cell-other-separator-input"
+          defaultClass="block ml-2 w-1/2"
+          size="sm"
+          bind:value={cellSeparatorOther}
+        />
+      {/if}
+    </div>
+    <div class="mb-6 flex items-center space-x-2">
+      <Label for="separator-select" class="w-1/5">Decimal Separator:</Label>
+      <Select
+        id="decimal-separator-select"
+        size="sm"
+        defaultClass={SELECT_DEFAULT_STYLE}
+        bind:value={decimalSeparator}
+        on:change={checkValidUpload}
+        items={decimalSeparatorList}
+        placeholder=""
+      />
+    </div>
+    <div class="border-b-2 border-gray-200" />
+    <div class="mb-6 flex items-center space-x-2">
+      <Label for="cell-type-select" class="w-1/5">Column Type:</Label>
+      <Select
+        id="cell-type-select"
+        size="sm"
+        defaultClass={SELECT_DEFAULT_STYLE}
+        bind:value={columnType}
+        on:change={changeColumnType}
+        items={columnTypeList}
+        placeholder=""
       />
     </div>
     {#if !validUpload}
-      <Helper color="red"><span class="font-medium">Upload valid CSV file.</span></Helper>
+      <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
     {/if}
-    <div class="bg-red-100 w-full scrollable-div">
-      <table id="dataset-header" class="w-full">
-        <thead style="font-size: 14px;">
-          <tr>
-            {#each headHeader.split(separator) as header}
-              <th>{header}</th>
-            {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each headRows as row}
-            <tr class="text-black px-1" style="font-size: 12px;">
-              {#each row.split(separator) as cell}
-                <td>{cell}</td>
+    {#if headHeader.length > 0 && headRowsString.length > 0}
+      <div class="w-full scrollable-div">
+        <table id="dataset-header" class="w-full">
+          <thead style="font-size: 14px;">
+            <tr class="bg-gray-100 select-none hover:cursor-pointer">
+              {#each headHeader as header, i}
+                <th
+                  class="px-1 hover:bg-gray-200 {selectedColumn === i
+                    ? 'bg-blue-200 hover:bg-blue-300'
+                    : ''}"
+                  on:click={() => selectColumn(i)}>{clearStringQuotes(header.title)}</th
+                >
               {/each}
             </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {#each headHeader as header, i}
+              <th class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}"
+                >{capitalizeString(header.type ?? '')}</th
+              >
+            {/each}
+            {#each headRows as row}
+              <tr class="text-black" style="font-size: 12px;">
+                {#each row as cell, i}
+                  <td class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}"
+                    >{clearStringQuotes(cell)}</td
+                  >
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
     <Button type="submit" class="w-full" on:click={importDataset}>Import Dataset</Button>
   </form>
 </Modal>
@@ -166,7 +292,6 @@
   }
 
   .scrollable-div {
-    border-top: 1px solid black;
     scrollbar-width: thin;
     overflow-x: auto !important;
   }

@@ -2,7 +2,7 @@
   import { Select } from 'flowbite-svelte';
   import { simmapMethodStore } from '../../stores/simmap';
 
-  let simmapMethods = [
+  const simmapMethods = [
     { value: 'PCA', name: 'PCA' },
     { value: 'UMAP', name: 'UMAP' }
   ];

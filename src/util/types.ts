@@ -20,8 +20,10 @@ export type TooltipType = {
   text: string[]; // Text rows as array
 };
 
+export type DimensionType = 'numerical' | 'categorical';
+
 export type DimensionDataType = {
-  type: 'numerical' | 'categorical';
+  type: DimensionType;
   min: number | null;
   max: number | null;
   numberOfDecimals: number | null;

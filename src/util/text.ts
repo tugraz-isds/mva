@@ -57,3 +57,12 @@ export function getLongestStringLen(arr: string[]) {
     return a.length > b.length ? a : b;
   });
 }
+
+export function clearStringQuotes(str: string): string {
+  return str.trim().replace(new RegExp('^"', 'g'), '').replace(new RegExp('"$', 'g'), '');
+}
+
+export function capitalizeString(str: string): string {
+  if (str.length === 0) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
