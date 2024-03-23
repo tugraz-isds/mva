@@ -34,7 +34,9 @@ function cleanBuildFolder() {
 }
 
 function cleanAll() {
-  return deleteAsync(['.svelte-kit', 'build', 'node_modules'], { force: true });
+  return deleteAsync(['.svelte-kit', 'build', 'node_modules', 'package-lock.json'], {
+    force: true
+  });
 }
 
 export { cleanBuildFolder as clean, cleanAll, optimizeIcons };

@@ -29,7 +29,6 @@
     "@types/d3-selection": "^3.0.10",
     "@types/d3-shape": "^3.1.6",
     "@types/three": "^0.156.0",
-    "@types/winbox": "^0.2.1",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "autoprefixer": "^10.4.14",
@@ -56,10 +55,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@pixi/graphics-smooth": "^1.1.0",
-    "@pixi/layers": "^2.1.0",
-    "@popperjs/core": "^2.11.8",
-    "@types/pixi.js": "^5.0.0",
     "d3-array": "^3.2.4",
     "d3-axis": "^3.0.0",
     "d3-drag": "^3.0.0",
@@ -70,12 +65,10 @@
     "flowbite": "^1.6.6",
     "flowbite-svelte": "^0.38.5",
     "ml-pca": "^4.1.1",
-    "pixi.js": "^7.2.4",
     "svelte-window-system": "^0.1.0",
     "tailwind-merge": "^1.13.2",
     "three": "^0.156.1",
     "umap-js": "^1.3.3",
-    "winbox": "^0.2.6",
     "xml-formatter": "^3.6.0"
   }
 }
