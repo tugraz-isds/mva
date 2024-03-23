@@ -167,22 +167,18 @@
 {#if dataset?.length > 0 && rowShow?.length > 0}
   <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
-      <table id="table-canvas" class="w-full table-fixed">
+      <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
         <thead style="font-size: 14px;">
           <tr
             class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
           >
-            {#each Object.keys(dataset[0]) as dim, i}
+            {#each Object.keys(dataset[0]) as dim}
               <th
                 on:click={() => sortDataset(dim)}
                 on:mouseenter={(e) => showTooltip(e, dim)}
                 on:mouseleave={hideTooltip}
                 on:contextmenu={(e) => contextMenu.showContextMenu(e, dim)}
-                style="font-size: 12px; overflow: hidden; text-align: {$dimensionDataStore.get(
-                  dimensions[i]
-                )?.type === 'categorical'
-                  ? 'left'
-                  : 'right'}; width: {getTextWidth(
+                style="font-size: 12px; overflow: hidden; width: {getTextWidth(
                   dim === '_i'
                     ? (dataset.length - 1).toString()
                     : $dimensionDataStore.get(dim)?.longestString ?? '',
@@ -190,7 +186,11 @@
                   'sans-serif'
                 ) + 8}px;"
               >
-                <div class="flex flex-col">
+                <div
+                  class="flex flex-col text-{$dimensionDataStore.get(dim)?.type === 'numerical'
+                    ? 'right'
+                    : 'left'}"
+                >
                   {#if dim === sorting.dim}
                     {#if sorting.direction === 'ASC'}
                       <ChevronDown class="self-center" size="8" />
@@ -200,7 +200,7 @@
                   {:else}
                     <ChevronUp class="self-center invisible" size="8" />
                   {/if}
-                  <span class="self-start">{dim}</span>
+                  <span>{dim}</span>
                 </div></th
               >
             {/each}
@@ -219,13 +219,12 @@
               on:mouseleave={() => handleMouseLeave(index)}
               on:mousedown={(e) => handleRowClick(e, index)}
             >
-              {#each Object.keys(row) as key, i}
+              {#each Object.keys(row) as dim, i}
                 <td
-                  class="px-1"
-                  style="font-size: 12px; text-align: {$dimensionDataStore.get(dimensions[i])
-                    ?.type === 'categorical'
-                    ? 'left'
-                    : 'right'};">{formatCell(row[key], i)}</td
+                  class="px-1 text-{$dimensionDataStore.get(dim)?.type === 'numerical'
+                    ? 'right'
+                    : 'left'}"
+                  style="font-size: 12px;">{formatCell(row[dim], i)}</td
                 >
               {/each}
             </tr>
@@ -247,17 +246,31 @@
   table,
   th,
   td {
-    border: 1px solid black;
     font-size: 0.9em;
+  }
+
+  table th {
+    border-top: 1px solid;
+  }
+
+  table td,
+  table th {
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+
+  table th:first-child,
+  table td:first-child {
+    border-left: 1px solid;
   }
 
   thead {
     position: sticky;
+    border: 2px solid red;
     top: 0;
   }
 
   .scrollable-div {
-    border-top: 1px solid black;
     scrollbar-width: thin;
     overflow-x: auto !important;
   }

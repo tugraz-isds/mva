@@ -73,7 +73,7 @@
           size="16"
           class="text-grey-900 cursor-pointer hover:bg-sky-100"
         />
-        <Tooltip type="light">Swap View</Tooltip>
+        <Tooltip style="z-index: 1000;" type="light">Swap View</Tooltip>
         <Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 1000;">
           <div slot="header" class="py-1 px-2">
             <span class="font-medium block text-sm text-gray-900">Swap View With</span>
@@ -91,7 +91,7 @@
           class="text-grey-900 cursor-pointer hover:bg-sky-100"
           on:click={openWinbox}
         />
-        <Tooltip type="light">Expand View</Tooltip>
+        <Tooltip style="z-index: 1000;" type="light">Expand View</Tooltip>
         {#if currView.id === 'parcoord'}
           <BookmarkSquare
             id="{currView.id}-save"
@@ -99,7 +99,7 @@
             class="text-grey-900 cursor-pointer hover:bg-sky-100"
             on:click={saveSVG}
           />
-          <Tooltip type="light">Save SVG</Tooltip>
+          <Tooltip style="z-index: 1000;" type="light">Save SVG</Tooltip>
         {/if}
       </div>
     </div>

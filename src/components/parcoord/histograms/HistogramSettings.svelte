@@ -23,7 +23,7 @@
     class="text-grey-900 cursor-pointer hover:bg-sky-100"
     on:click={toggleModal}
   />
-  <Tooltip type="light">Histogram Settings</Tooltip>
+  <Tooltip style="z-index: 1000;" type="light">Histogram Settings</Tooltip>
 </div>
 
 <HistogramSettingsModal isOpen={isHistogramSettingsModalOpen} />

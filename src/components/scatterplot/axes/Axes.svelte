@@ -21,17 +21,20 @@
 
     const svg = select(`#${viewTitle}-canvas-axes`);
 
+    const xAxis = viewTitle === 'simmap' ? axisBottom(xScale).tickValues([]) : axisBottom(xScale);
+    const yAxis = viewTitle === 'simmap' ? axisLeft(yScale).tickValues([]) : axisLeft(yScale);
+
     svg
       .append('g')
       .attr('class', `${viewTitle}-x-axis`)
       .attr('transform', `translate(${margin.left}, ${height - margin.bottom})`)
-      .call(axisBottom(xScale));
+      .call(xAxis);
 
     svg
       .append('g')
       .attr('class', `${viewTitle}-y-axis`)
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
-      .call(axisLeft(yScale));
+      .call(yAxis);
   }
 
   afterUpdate(() => {

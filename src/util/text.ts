@@ -4,9 +4,7 @@ export function getTextWidth(text: string, fontSize: number, fontFamily: string)
   if (!context) return 0;
   context.font = `${fontSize}px ${fontFamily}`;
 
-  // Measure the text width
   const textWidth = context.measureText(text).width;
-
   return textWidth;
 }
 

@@ -9,6 +9,7 @@
     Select,
     Spinner
   } from 'flowbite-svelte';
+  import ContextMenu from './ContextMenu.svelte';
   import { extent, max } from 'd3-array';
   import { autoType, dsvFormat, type DSVParsedArray } from 'd3-dsv';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../stores/dataset';
@@ -23,7 +24,9 @@
   const SELECT_DEFAULT_STYLE =
     'w-1/2 text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500';
 
+  let contextMenu: ContextMenu;
   let files: FileList;
+  let fileName: string;
   let headHeaderString = '';
   let headHeader: { title: string; type: DimensionType | null }[] = [];
   let headRowsString: string[] = [];
@@ -59,7 +62,7 @@
     $parcoordIsInteractable = true;
   }
 
-  $: if (files?.length > 0) {
+  $: if (files && files.length > 0) {
     readDatasetHead(files[0]);
     selectedColumn = null;
     validUpload = true;
@@ -175,69 +178,85 @@
     if (!validUpload) validUpload = true;
   }
 
-  function selectColumn(i: number): void {
-    selectedColumn = selectedColumn === i ? null : i;
+  function selectColumn(i: number, calledFrom: 'click' | 'contextMenu'): void {
+    selectedColumn = selectedColumn === i && calledFrom === 'click' ? null : i;
     columnType = headHeader[i].type ?? 'numerical';
   }
 
-  function changeColumnType(): void {
-    if (selectedColumn === null) return;
-    headHeader[selectedColumn].type = columnType;
+  function changeColumnType(idx: number | null, newColumnType: DimensionType | null = null): void {
+    if (idx === null) return;
+    if (newColumnType !== null) columnType = newColumnType;
+
+    headHeader[idx].type = columnType;
   }
 </script>
 
-<Modal bind:open={isOpen} size="xs" class="w-full">
+<ContextMenu bind:this={contextMenu} {changeColumnType} />
+<Modal bind:open={isOpen} size="xl">
   {#if isLoading}
     <div class="w-full h-full flex items-center justify-center"><Spinner /></div>
   {/if}
   <form class="flex flex-col space-y-4 {isLoading ? 'invisible' : 'visible'}">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Import Dataset</h3>
-    <div class="mb-6 flex items-center">
-      <Label for="upload-input" class="w-1/5">Upload File:</Label>
-      <Fileupload bind:files id="upload-input" class="block ml-2 w-4/5" accept=".csv" />
-    </div>
-    <div class="border-b-2 border-gray-200" />
-    <div class="mb-6 flex items-center space-x-2">
-      <Label for="cell-separator-select" class="w-1/5">Cell Separator:</Label>
-      <Select
-        id="cell-separator-select"
-        size="sm"
-        defaultClass={SELECT_DEFAULT_STYLE}
-        bind:value={cellSeparator}
-        on:change={checkValidUpload}
-        items={cellSeparatorList}
-        placeholder=""
-      />
-      {#if cellSeparator === 'other'}
-        <Input
-          id="cell-other-separator-input"
-          defaultClass="block ml-2 w-1/2"
-          size="sm"
-          bind:value={cellSeparatorOther}
+    <div class="flex flex-row mb-6">
+      <div class="flex items-center w-1/2">
+        <Label for="upload-input" class="w-1/4">Upload File:</Label>
+        <Fileupload
+          bind:value={fileName}
+          bind:files
+          id="upload-input"
+          class="block ml-2 w-3/4"
+          accept=".csv"
         />
+      </div>
+      {#if fileName?.length > 0}
+        <Label class="ml-4 self-center">Dataset: {fileName.replace('C:\\fakepath\\', '')}</Label>
       {/if}
     </div>
-    <div class="mb-6 flex items-center space-x-2">
-      <Label for="separator-select" class="w-1/5">Decimal Separator:</Label>
-      <Select
-        id="decimal-separator-select"
-        size="sm"
-        defaultClass={SELECT_DEFAULT_STYLE}
-        bind:value={decimalSeparator}
-        on:change={checkValidUpload}
-        items={decimalSeparatorList}
-        placeholder=""
-      />
+    <div class="border-b-2 border-gray-200" />
+    <div class="flex flex-row mb-6">
+      <div class="flex items-center space-x-2 w-1/2">
+        <Label for="cell-separator-select" class="w-1/4">Cell Separator:</Label>
+        <Select
+          id="cell-separator-select"
+          size="sm"
+          defaultClass={SELECT_DEFAULT_STYLE}
+          bind:value={cellSeparator}
+          on:change={checkValidUpload}
+          items={cellSeparatorList}
+          placeholder=""
+        />
+        {#if cellSeparator === 'other'}
+          <Input
+            id="cell-other-separator-input"
+            defaultClass="block ml-2 w-1/2"
+            size="sm"
+            bind:value={cellSeparatorOther}
+          />
+        {/if}
+      </div>
+      <div class="flex items-center space-x-2 w-1/2 ml-2">
+        <Label for="separator-select" class="w-1/4">Decimal Separator:</Label>
+        <Select
+          id="decimal-separator-select"
+          size="sm"
+          defaultClass={SELECT_DEFAULT_STYLE}
+          bind:value={decimalSeparator}
+          on:change={checkValidUpload}
+          items={decimalSeparatorList}
+          placeholder=""
+        />
+      </div>
     </div>
     <div class="border-b-2 border-gray-200" />
-    <div class="mb-6 flex items-center space-x-2">
-      <Label for="cell-type-select" class="w-1/5">Column Type:</Label>
+    <div class="mb-6 flex items-center space-x-2 w-1/2">
+      <Label for="cell-type-select" class="w-1/4">Column Type:</Label>
       <Select
         id="cell-type-select"
         size="sm"
         defaultClass={SELECT_DEFAULT_STYLE}
         bind:value={columnType}
-        on:change={changeColumnType}
+        on:change={() => changeColumnType(selectedColumn)}
         items={columnTypeList}
         placeholder=""
       />
@@ -252,10 +271,14 @@
             <tr class="bg-gray-100 select-none hover:cursor-pointer">
               {#each headHeader as header, i}
                 <th
-                  class="px-1 hover:bg-gray-200 {selectedColumn === i
+                  class="px-1 {selectedColumn === i
                     ? 'bg-blue-200 hover:bg-blue-300'
-                    : ''}"
-                  on:click={() => selectColumn(i)}>{clearStringQuotes(header.title)}</th
+                    : 'hover:bg-gray-200'} text-{header.type === 'numerical' ? 'right' : 'left'}"
+                  on:click={() => selectColumn(i, 'click')}
+                  on:contextmenu={(e) => {
+                    selectColumn(i, 'contextMenu');
+                    contextMenu.showContextMenu(e, i, header);
+                  }}>{clearStringQuotes(header.title)}</th
                 >
               {/each}
             </tr>
@@ -269,8 +292,11 @@
             {#each headRows as row}
               <tr class="text-black" style="font-size: 12px;">
                 {#each row as cell, i}
-                  <td class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}"
-                    >{clearStringQuotes(cell)}</td
+                  <td
+                    class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''} text-{headHeader[i]
+                      .type === 'numerical'
+                      ? 'right'
+                      : 'left'}">{clearStringQuotes(cell)}</td
                   >
                 {/each}
               </tr>
@@ -279,7 +305,9 @@
         </table>
       </div>
     {/if}
-    <Button type="submit" class="w-full" on:click={importDataset}>Import Dataset</Button>
+    <div class="w-full flex justify-center">
+      <Button class="w-1/2" on:click={importDataset}>Import Dataset</Button>
+    </div>
   </form>
 </Modal>
 

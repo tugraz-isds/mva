@@ -133,8 +133,10 @@
     on:mouseenter={handleMouseEnter}
     on:mouseleave={handleMouseLeave}
   >
-    <DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Axis</DropdownItem>
-    <DropdownItem defaultClass={activeClass} on:click={invertDimension}>Invert Axis</DropdownItem>
+    <DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Dimension</DropdownItem>
+    <DropdownItem defaultClass={activeClass} on:click={invertDimension}
+      >Invert Dimension</DropdownItem
+    >
     <DropdownDivider />
     <DropdownItem defaultClass="{activeClass} flex items-center justify-between">
       Show<ChevronRight class="w-3 h-3 ms-2" />
@@ -241,6 +243,6 @@
     border: 1px solid #ccc;
     padding: 5px;
     z-index: 1000;
-    width: 100px;
+    width: 120px;
   }
 </style>

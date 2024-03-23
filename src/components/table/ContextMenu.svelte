@@ -3,13 +3,13 @@
   import { DropdownItem } from 'flowbite-svelte';
   import { labelDimension } from '../../stores/dataset';
 
-  let showMenu = false; // Flag if context is visible
-  let menuStyle = ''; // Menu style string
-  let dim = ''; // Current dimension
-  let labelDim: string; // Dataset label dimension
-  const activeClass = 'font-medium py-1 px-1 text-sm hover:bg-gray-100';
+  let showMenu = false;
+  let dim = '';
+  let menuStyle = '';
+  let labelDim: string;
+  const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
   const disabledClass =
-    'font-medium py-1 px-1 text-sm hover:bg-gray-100 text-gray-400 cursor-not-allowed';
+    'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 text-gray-400 cursor-not-allowed';
 
   const unsubscribeLabelDim = labelDimension.subscribe((value: string) => {
     labelDim = value;
@@ -50,7 +50,6 @@
       defaultClass={dim === labelDim ? disabledClass : activeClass}
       on:click={setLabel}>Use as label</DropdownItem
     >
-    <DropdownItem defaultClass={activeClass}>Set as categorical</DropdownItem>
   </div>
 {/if}
 
