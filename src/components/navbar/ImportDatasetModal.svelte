@@ -17,6 +17,7 @@
   import { isNumber } from '../../util/util';
   import { capitalizeString, clearStringQuotes } from '../../util/text';
   import type { DimensionType, DimensionDataType } from '../../util/types';
+  import { tableDimensionsStore } from '../../stores/table';
 
   export let isOpen: boolean;
 
@@ -128,6 +129,9 @@
     let dataset: DSVParsedArray<any> = parser.parse(text, autoType);
 
     const dimensions = Object.keys(dataset[0]);
+    const tableDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));
+    tableDimensionsStore.set(tableDimensions);
+    localStorage.setItem('tableDimensions', JSON.stringify(tableDimensions));
     const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
     dimensions.forEach((dim: string) => {
       const dimData = dataset.map((d) => d[dim]);

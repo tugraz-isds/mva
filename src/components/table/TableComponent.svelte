@@ -9,12 +9,14 @@
     previouslyHoveredArray,
     previouslyBrushedArray
   } from '../../stores/brushing';
+  import { tableDimensionsStore } from '../../stores/table';
   import ContextMenu from './ContextMenu.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { getTextWidth } from '../../util/text';
   import { ascending, descending } from 'd3-array';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { TooltipType } from '../../util/types';
+  import type { TableDimensionsType } from './types';
 
   let contextMenu: ContextMenu;
 
@@ -65,6 +67,13 @@
     previouslyHoveredArray.set(hoveredRowsIndices);
     hoveredRowsIndices = value;
   });
+
+  let tableDimensions: TableDimensionsType[] = [];
+  const unsubscribeTableDimensions = tableDimensionsStore.subscribe(
+    (value: TableDimensionsType[]) => {
+      tableDimensions = value;
+    }
+  );
 
   function handleRowClick(event: MouseEvent, index: number) {
     if (!rowShow[index]) return;
@@ -160,6 +169,7 @@
     unsubscribeLinking();
     unsubscribeBrushing();
     unsubscribeHovered();
+    unsubscribeTableDimensions();
   });
 </script>
 
@@ -172,37 +182,40 @@
           <tr
             class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
           >
-            {#each Object.keys(dataset[0]) as dim}
-              <th
-                on:click={() => sortDataset(dim)}
-                on:mouseenter={(e) => showTooltip(e, dim)}
-                on:mouseleave={hideTooltip}
-                on:contextmenu={(e) => contextMenu.showContextMenu(e, dim)}
-                style="font-size: 12px; overflow: hidden; width: {getTextWidth(
-                  dim === '_i'
-                    ? (dataset.length - 1).toString()
-                    : $dimensionDataStore.get(dim)?.longestString ?? '',
-                  12,
-                  'sans-serif'
-                ) + 8}px;"
-              >
-                <div
-                  class="flex flex-col text-{$dimensionDataStore.get(dim)?.type === 'numerical'
-                    ? 'right'
-                    : 'left'}"
+            {#each tableDimensions as dim}
+              {#if dim.visible}
+                <th
+                  on:click={() => sortDataset(dim.title)}
+                  on:mouseenter={(e) => showTooltip(e, dim.title)}
+                  on:mouseleave={hideTooltip}
+                  on:contextmenu={(e) => contextMenu.showContextMenu(e, dim.title)}
+                  style="font-size: 12px; overflow: hidden; width: {getTextWidth(
+                    dim.title === '_i'
+                      ? (dataset.length - 1).toString()
+                      : $dimensionDataStore.get(dim.title)?.longestString ?? '',
+                    12,
+                    'sans-serif'
+                  ) + 8}px;"
                 >
-                  {#if dim === sorting.dim}
-                    {#if sorting.direction === 'ASC'}
-                      <ChevronDown class="self-center" size="8" />
+                  <div
+                    class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type ===
+                    'numerical'
+                      ? 'right'
+                      : 'left'}"
+                  >
+                    {#if dim.title === sorting.dim}
+                      {#if sorting.direction === 'ASC'}
+                        <ChevronDown class="self-center" size="8" />
+                      {:else}
+                        <ChevronUp class="self-center" size="8" />
+                      {/if}
                     {:else}
-                      <ChevronUp class="self-center" size="8" />
+                      <ChevronUp class="self-center invisible" size="8" />
                     {/if}
-                  {:else}
-                    <ChevronUp class="self-center invisible" size="8" />
-                  {/if}
-                  <span>{dim}</span>
-                </div></th
-              >
+                    <span>{dim.title}</span>
+                  </div></th
+                >
+              {/if}
             {/each}
           </tr>
         </thead>
@@ -219,13 +232,15 @@
               on:mouseleave={() => handleMouseLeave(index)}
               on:mousedown={(e) => handleRowClick(e, index)}
             >
-              {#each Object.keys(row) as dim, i}
-                <td
-                  class="px-1 text-{$dimensionDataStore.get(dim)?.type === 'numerical'
-                    ? 'right'
-                    : 'left'}"
-                  style="font-size: 12px;">{formatCell(row[dim], i)}</td
-                >
+              {#each tableDimensions as dim, i}
+                {#if dim.visible}
+                  <td
+                    class="px-1 text-{$dimensionDataStore.get(dim.title)?.type === 'numerical'
+                      ? 'right'
+                      : 'left'}"
+                    style="font-size: 12px;">{formatCell(row[dim.title], i)}</td
+                  >
+                {/if}
               {/each}
             </tr>
           {/each}

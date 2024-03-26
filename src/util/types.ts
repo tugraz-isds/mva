@@ -28,4 +28,5 @@ export type DimensionDataType = {
   max: number | null;
   numberOfDecimals: number | null;
   longestString: string;
+  active: boolean;
 };
