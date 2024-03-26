@@ -25,7 +25,6 @@
   let hoveredLineIndex: number | null = null;
   let hoveredRowsIndices: Set<number> = new Set();
   let brushedRowsIndices: Set<number> = new Set();
-  let dimensions: string[] = [];
   let rangeStart: number | null = null; // Selection range
   let sorting: { dim: string | null; direction: 'ASC' | 'DESC' };
 
@@ -35,6 +34,13 @@
     clientY: 0,
     text: []
   };
+
+  let tableDimensions: TableDimensionsType[] = [];
+  const unsubscribeTableDimensions = tableDimensionsStore.subscribe(
+    (value: TableDimensionsType[]) => {
+      tableDimensions = value;
+    }
+  );
 
   let dataset: DSVParsedArray<any>;
   const unsubscribeDataset = datasetStore.subscribe((value: any) => {
@@ -47,7 +53,7 @@
         };
       }) as DSVParsedArray<any>;
 
-      dimensions = Object.keys(dataset[0]);
+      tableDimensions?.unshift({ title: '_i', visible: true });
 
       sorting = { dim: '_i', direction: 'ASC' };
     }
@@ -67,13 +73,6 @@
     previouslyHoveredArray.set(hoveredRowsIndices);
     hoveredRowsIndices = value;
   });
-
-  let tableDimensions: TableDimensionsType[] = [];
-  const unsubscribeTableDimensions = tableDimensionsStore.subscribe(
-    (value: TableDimensionsType[]) => {
-      tableDimensions = value;
-    }
-  );
 
   function handleRowClick(event: MouseEvent, index: number) {
     if (!rowShow[index]) return;
@@ -159,7 +158,7 @@
   }
 
   function formatCell(value: string, dimIndex: number) {
-    const dimData = $dimensionDataStore.get(dimensions[dimIndex]);
+    const dimData = $dimensionDataStore.get(tableDimensions[dimIndex].title);
     if (!dimData || dimData.type === 'categorical') return value;
     return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
   }

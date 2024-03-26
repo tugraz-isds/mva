@@ -152,7 +152,8 @@
           min: dimExtent[0],
           max: dimExtent[1],
           numberOfDecimals: maxNumberOfDecimals ?? null,
-          longestString: longestString ?? ''
+          longestString: longestString ?? '',
+          active: true
         });
       } else
         dimensionTypeMap.set(dim, {
@@ -160,7 +161,8 @@
           min: null,
           max: null,
           numberOfDecimals: null,
-          longestString: longestString ?? ''
+          longestString: longestString ?? '',
+          active: true
         });
     });
     dimensionDataStore.set(dimensionTypeMap);
