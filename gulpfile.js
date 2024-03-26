@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { deleteAsync } from 'del';
+import os from 'os';
+import gulp from 'gulp';
 
 let iconsData = '';
 function readFiles(dir) {
@@ -30,13 +32,33 @@ function optimizeIcons(done) {
 }
 
 function cleanBuildFolder() {
-  return deleteAsync('build', { force: true });
+  return deleteAsync(['build', 'build-tauri', 'src-tauri/target'], { force: true });
 }
 
 function cleanAll() {
-  return deleteAsync(['.svelte-kit', 'build', 'node_modules', 'package-lock.json'], {
-    force: true
-  });
+  return deleteAsync(
+    [
+      '.svelte-kit',
+      'build',
+      'build-tauri',
+      'src-tauri/target',
+      'node_modules',
+      'package-lock.json'
+    ],
+    {
+      force: true
+    }
+  );
 }
 
-export { cleanBuildFolder as clean, cleanAll, optimizeIcons };
+function copyTauriFiles() {
+  const filesToCopy = [
+    'src-tauri/target/release/mva.exe',
+    'src-tauri/target/release/bundle/msi/mva_0.1.0_x64_en-US.msi',
+    'src-tauri/target/release/bundle/nsis/mva_0.1.0_x64-setup.exe'
+  ];
+
+  return gulp.src(filesToCopy).pipe(gulp.dest(`./build-tauri/${os.platform}`));
+}
+
+export { cleanBuildFolder as clean, cleanAll, optimizeIcons, copyTauriFiles };

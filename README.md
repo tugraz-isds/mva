@@ -45,7 +45,7 @@ Once you've installed all Tauri prerequisites, install dependencies and start a 
 
 ```bash
 npm install
-npm run tauri dev
+npm run dev-tauri
 ```
 
 You can find more detailed information in the official [Tauri guide for SvelteKit](https://tauri.app/v1/guides/getting-started/setup/sveltekit).
@@ -55,10 +55,10 @@ You can find more detailed information in the official [Tauri guide for SvelteKi
 To create a production version of your app:
 
 ```bash
-npm run tauri build
+npm run build-tauri
 ```
 
-This command creates `src-tauri/target/release/mva.exe` executable.
+This command creates `build-tauri/win32/` folder with executables and installables.
 
 You can find more detailed information in the official [Tauri guide for building](https://tauri.app/v1/guides/building/).
 
@@ -72,11 +72,11 @@ We defined a few custom Gulp scripts in `gulpfile.js`:
 
 1. `npm run clean` or `npx gulp clean`
 
-Removes the existing `build/` directory to enable a clean rebuild of the project.
+Removes the existing `build/`, `build-tauri`, and `src-tauri/target` directories to enable a clean rebuild of the project.
 
 2. `npm run clean-all` or `npx gulp cleanAll`
 
-Removes existing `.svelte-kit/`, `build/`, and `node_modules/` directories to enable a clean reinitialization of the project.
+Removes existing `.svelte-kit/`, `build/`, `build-tauri`, `node_modules/` and `src-tauri/target` directories to enable a clean reinitialization of the project.
 
 3. `npm run optimize-icons` or `npx gulp optimizeIcons`
 
