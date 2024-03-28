@@ -15,10 +15,10 @@
   import Lines from './lines/Lines.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
+  import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { CustomRangeType, HistogramsType } from './types';
-  import type { MarginType, TooltipType } from '../../util/types';
-  import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
+  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
 
   let isBrowser = false; // Flag to see if we are in browser
 
@@ -64,10 +64,6 @@
   const unsubscribeDataset = datasetStore.subscribe((value: any) => {
     dataset = value;
     if (dataset?.length > 0) {
-      // Get correct dimensions
-      dimensions = Object.keys(dataset[0]);
-      dimensionsInitial = dimensions;
-
       setTimeout(() => {
         linesComponent?.resetLines();
         calculateYScales();
@@ -93,6 +89,16 @@
       if (parcoordDiv) parcoordDiv.scrollLeft = 0;
     }
   });
+
+  const unsubscribeDimensionData = dimensionDataStore.subscribe(
+    (value: Map<string, DimensionDataType>) => {
+      if (value?.size === 0) return;
+      dimensions = Array.from(value.keys()).filter((dim) => value.get(dim)?.active);
+      dimensionsInitial = dimensions;
+
+      setMarginLeft();
+    }
+  );
 
   let histogramsVisible: boolean;
   const unsubscribeHistograms = parcoordHistogramData.subscribe((value: HistogramsType) => {
@@ -308,6 +314,7 @@
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeCustomRanges();
+    unsubscribeDimensionData();
     unsubscribeHistograms();
     isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
   });

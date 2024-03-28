@@ -52,10 +52,12 @@
       );
       return;
     }
-    const dimData = $dimensionDataStore.get(dim);
-    if (!dimData) return;
-    dimData.active = !dimData.active;
-    $dimensionDataStore.set(dim, dimData);
+    const dimData = $dimensionDataStore;
+    const currDimData = dimData.get(dim);
+    if (!currDimData) return;
+    currDimData.active = !currDimData.active;
+    dimData.set(dim, currDimData);
+    dimensionDataStore.set(dimData);
   }
 
   onDestroy(() => {

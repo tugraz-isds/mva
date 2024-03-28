@@ -4,7 +4,7 @@
   import Points from './points/Points.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-  import { numericalDimensionsStore, xDimStore, yDimStore } from '../../stores/scatterplot';
+  import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { scaleLinear } from 'd3-scale';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { MarginType, TooltipType } from '../../util/types';
@@ -34,7 +34,6 @@
       numericalDimensions = dimensions.filter(
         (dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
       );
-      numericalDimensionsStore.set(numericalDimensions);
       if (numericalDimensions.length >= 2) {
         yDim = numericalDimensions[0];
         xDim = numericalDimensions[1];

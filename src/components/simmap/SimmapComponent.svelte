@@ -10,12 +10,11 @@
   import { scaleLinear } from 'd3-scale';
   import { isNumber } from '../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { MarginType, TooltipType } from '../../util/types';
+  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
   import type { SimmapMethodsType, SimmapDataType } from './types';
 
   let width: number;
   let height: number;
-  let dimensions: string[] = [];
   let numericalDimensions: string[] = [];
   let xData: number[], yData: number[];
   let xScaleAxes: any, yScaleAxes: any, xScalePoints: any, yScalePoints: any;
@@ -38,24 +37,30 @@
     xData = [];
     yData = [];
     dataset = value;
-    if (dataset?.length > 0) {
-      dimensions = Object.keys(dataset[0]);
-      numericalDimensions = dimensions.filter(
-        (dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
+
+    simmapMethodStore.set('PCA');
+  });
+
+  const unsubscribeDimensionData = dimensionDataStore.subscribe(
+    (value: Map<string, DimensionDataType>) => {
+      if (value?.size === 0) return;
+      numericalDimensions = Array.from(value.keys()).filter(
+        (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
       );
 
       if (numericalDimensions.length >= 2) {
         matrix = dataset.map((d) =>
           numericalDimensions.map((dim) => (isNumber(d[dim]) ? d[dim] : 0))
         );
-        calculatePCA();
-        simmapMethodStore.set('PCA');
-        redrawPoints('PCA');
-      }
 
-      calculateUMAP();
+        console.log('Here', dataset);
+
+        calculatePCA();
+        calculateUMAP();
+        redrawPoints($simmapMethodStore);
+      }
     }
-  });
+  );
 
   const unsubscribeSimmap = simmapMethodStore.subscribe((value: SimmapMethodsType) => {
     redrawPoints(value);
@@ -63,6 +68,7 @@
 
   function redrawPoints(simmapMethod: SimmapMethodsType) {
     const data = simmapMethodsData.get(simmapMethod);
+    console.log('Redrawing', simmapMethodsData);
     if (!data) return;
     xData = data.xData;
     yData = data.yData;
@@ -93,6 +99,7 @@
     });
     const xMin = Math.min(...xData);
     const xMax = Math.max(...xData);
+    console.log('Redrawing', simmapMethodsData);
     const yMin = Math.min(...yData);
     const yMax = Math.max(...yData);
 
@@ -151,6 +158,7 @@
       .range([3, width - margin.right - margin.left - 3]);
   }
 
+  console.log('Redrawing', simmapMethodsData);
   function calculateYScale() {
     yScaleAxes = scaleLinear()
       .domain([yMax, yMin])
@@ -166,6 +174,7 @@
 
   onDestroy(() => {
     unsubscribeDataset();
+    unsubscribeDimensionData();
     unsubscribeSimmap();
   });
 </script>
