@@ -16,6 +16,7 @@ let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let points: (THREE.Mesh & { index?: number })[] = [];
+let pointSize: number;
 
 let hoveredPointsIndices = new Set<number>(),
   previouslyHoveredPointsIndices = new Set<number>(),
@@ -27,7 +28,7 @@ self.onmessage = function (message) {
   const data = message.data;
   switch (data.function) {
     case 'init':
-      ({ canvas, width, height } = data);
+      ({ canvas, width, height, pointSize } = data);
       init();
       break;
     case 'resetPoints':
@@ -108,7 +109,7 @@ function setLinking(show: boolean[]) {
 
 function drawPoints(inputPoints: number[][]) {
   scene.children = [];
-  const pointGeometry = new THREE.CircleGeometry(3, 16);
+  const pointGeometry = new THREE.CircleGeometry(pointSize, 16);
   inputPoints.forEach((currPoint: number[], i: number) => {
     const material = points[i] ? points[i].material : POINT_MATERIAL_ACTIVE;
     (material as THREE.Material).needsUpdate = false;

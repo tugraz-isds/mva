@@ -322,8 +322,8 @@
 
 <div
   id="parcoord-canvas"
-  class="w-full h-full overflow-scroll-x scrollable-div"
-  style="overflow-x: auto !important; box-sizing: border-box;"
+  class="w-full h-full overflow-x-auto scrollable-div"
+  style="box-sizing: border-box;"
   bind:this={parcoordDiv}
   bind:clientWidth={originalWidth}
   bind:clientHeight={height}

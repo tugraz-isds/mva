@@ -374,7 +374,8 @@
         function: 'init',
         canvas: offscreenCanvasEl,
         width,
-        height
+        height,
+        pointSize: 3
       },
       [offscreenCanvasEl]
     );

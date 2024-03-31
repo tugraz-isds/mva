@@ -186,7 +186,7 @@
       axisTitles.push(
         svg
           .append('text')
-          .attr('class', `parcoord-axis-title`)
+          .attr('class', 'parcoord-axis-title')
           .attr('transform', `translate(${xScales[i]}, ${margin.top - 30})`)
           .attr('font-size', '10px')
           .style('text-anchor', 'middle')
