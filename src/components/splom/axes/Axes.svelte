@@ -73,7 +73,7 @@
         .attr('class', 'splom-axis-line-horizontal')
         .attr('x1', margin.left)
         .attr('y1', margin.top + i * spacing)
-        .attr('x2', size - margin.right)
+        .attr('x2', margin.left + gridSize)
         .attr('y2', margin.top + i * spacing)
         .attr('stroke', 'black')
         .attr('stroke-width', '0.5px');
@@ -87,7 +87,7 @@
         .attr('x1', margin.left + i * spacing)
         .attr('y1', margin.top)
         .attr('x2', margin.left + i * spacing)
-        .attr('y2', size - margin.bottom)
+        .attr('y2', margin.top + gridSize)
         .attr('stroke', 'black')
         .attr('stroke-width', '0.5px');
     }

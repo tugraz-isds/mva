@@ -1,28 +1,27 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
+  import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import type { DimensionDataType, MarginType } from '../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
-  import { xDimStore, yDimStore } from '../../stores/scatterplot';
 
   const TILE_SIZE = 60;
 
-  let width = 0;
-  let originalWidth = 0;
+  let width: number;
+  let originalWidth: number;
   let numericalDimensions: string[] = [];
   let activeDim: { x: number; y: number } = { x: 0, y: 0 };
   let hoveredDim: { x: number; y: number };
   let splomDiv: HTMLDivElement;
 
-  let margin: MarginType = { top: 20, right: 5, bottom: 5, left: 20 };
+  let margin: MarginType = { top: 20, right: 2, bottom: 5, left: 20 };
 
-  $: if (originalWidth > 0)
-    width =
-      originalWidth < TILE_SIZE * numericalDimensions.length + margin.left + margin.right
-        ? TILE_SIZE * numericalDimensions.length + margin.left + margin.right
-        : originalWidth;
+  $: {
+    if (width && width < TILE_SIZE * numericalDimensions.length + margin.left + margin.right)
+      width = TILE_SIZE * numericalDimensions.length + margin.left + margin.right;
+  }
 
   let gridSize = 0;
   $: gridSize = width - margin.left - margin.right;
@@ -109,6 +108,10 @@
     };
   }
 
+  onMount(() => {
+    originalWidth = splomDiv.clientWidth;
+  });
+
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeDimensionData();
@@ -129,9 +132,9 @@
     e.preventDefault();
   }}
 >
-  {#if dataset && width > 0}
-    <Axes dimensions={numericalDimensions} size={width} {margin} {activeDim} {hoveredDim} />
-    <Points {dataset} dimensions={numericalDimensions} size={width} {margin} />
+  {#if dataset?.length > 0 && width > 0}
+    <Axes dimensions={numericalDimensions} size={width - 12} {margin} {activeDim} {hoveredDim} />
+    <Points {dataset} dimensions={numericalDimensions} size={width - 12} {margin} />
   {/if}
 </div>
 

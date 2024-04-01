@@ -23,6 +23,7 @@
   $: gridSize = size - margin.left - margin.right;
 
   $: if (size && dimensions && margin && debouncedDrawPoints) {
+    worker.postMessage({ function: 'resizeCanvas', width: size, height: size });
     debouncedDrawPoints();
   }
 

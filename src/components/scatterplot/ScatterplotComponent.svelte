@@ -127,13 +127,14 @@
   <span>No data available.</span>
 {:else if numericalDimensions.length < 2}
   <div><span>Not enough numerical dimensions.</span></div>
-{:else}
-  <div
-    id="scatterplot-canvas"
-    class="w-full h-full"
-    bind:clientWidth={width}
-    bind:clientHeight={height}
-  >
+{/if}
+<div
+  id="scatterplot-canvas"
+  class="w-full h-full"
+  bind:clientWidth={width}
+  bind:clientHeight={height}
+>
+  {#if dataset?.length > 0 && width}
     <Axes
       {width}
       {height}
@@ -157,5 +158,5 @@
       {yData}
       {setTooltipData}
     />
-  </div>
-{/if}
+  {/if}
+</div>

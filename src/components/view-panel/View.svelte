@@ -162,10 +162,6 @@
     </div>
   </div>
   <div class="view-content" style="height: 95%;">
-    {#if currView.id === 'parcoord'}
-      <svelte:component this={currView.component} />
-    {:else}
-      <svelte:component this={currView.component} />
-    {/if}
+    <svelte:component this={currView.component} />
   </div>
 </div>
