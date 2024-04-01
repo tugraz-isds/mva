@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
-  import ImportDatasetModal from './ImportDatasetModal.svelte';
+  import ImportDatasetModal from './dataset-import/ImportDatasetModal.svelte';
   import { parcoordIsInteractable } from '../../stores/parcoord';
 
   let isImportDatasetModalOpen = false;

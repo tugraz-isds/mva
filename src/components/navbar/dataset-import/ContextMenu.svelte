@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DropdownItem } from 'flowbite-svelte';
-  import type { DimensionType } from '../../util/types';
+  import type { DimensionType } from '../../../util/types';
 
   export let changeColumnType: (idx: number | null, newColumnType: DimensionType | null) => void;
 
@@ -16,9 +16,8 @@
   ) {
     event.preventDefault();
     showMenu = true;
-
     const { clientX, clientY } = event;
-    menuStyle = `left: ${clientX}px; top: ${clientY}px;`;
+    menuStyle = `left: ${clientX}px; top: ${clientY}px; z-index: 1000;`;
     currIdx = idx;
     currHeader = header;
   }
@@ -30,7 +29,7 @@
 
 {#if showMenu}
   <div
-    class="context-menu"
+    class="context-menu fixed bg-white border border-gray-300 p-1 w-38"
     style={menuStyle}
     on:click={hideContextMenu}
     on:mouseleave={hideContextMenu}
@@ -44,14 +43,3 @@
     >
   </div>
 {/if}
-
-<style>
-  .context-menu {
-    position: fixed;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 5px;
-    z-index: 1000;
-    width: 150px;
-  }
-</style>
