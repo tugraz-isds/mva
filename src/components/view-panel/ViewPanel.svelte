@@ -2,25 +2,24 @@
   import { onDestroy } from 'svelte';
   import type { View } from './ViewType';
   import { activeViewsStore, isCurrentlyResizing } from '../../stores/views';
+  import { isInteractableStore } from '../../stores/brushing';
   import Layout_1 from './Layout-1.svelte';
   import Layout_2 from './Layout-2.svelte';
   import Layout_3 from './Layout-3.svelte';
   import Layout_4 from './Layout-4.svelte';
   import Layout_5 from './Layout-5.svelte';
+  import Layout_6 from './Layout-6.svelte';
 
-  // Initialize views from store
   let activeViews: View[];
   const unsubscribeActive = activeViewsStore.subscribe((value: any) => {
     activeViews = value;
   });
 
-  // Variables to handle dragging
   let disableTextSelection = false;
   let isDraggingVertical = false;
   let isDraggingHorizontal = false;
   let activeHorizonalDivider: number | null = null;
 
-  /* --- HANDLE RESIZING --- */
   const handleVerticalMouseDown = () => {
     $isCurrentlyResizing = true;
     isDraggingVertical = true;
@@ -37,6 +36,7 @@
   };
 
   const handleMouseUp = () => {
+    $isInteractableStore = true;
     $isCurrentlyResizing = false;
     disableTextSelection = false;
     isDraggingVertical = false;
@@ -67,32 +67,38 @@
       const windowWidth = window.innerWidth;
       const dragX = e.clientX;
       if (activeHorizonalDivider === 1) {
-        if (activeViews.length === 5) {
-          activeViews[0].width = (dragX / windowWidth) * 100;
-          activeViews[1].width = 100 - (activeViews[0].width + activeViews[2].width + 0.5);
-        } else if (activeViews.length === 3 || activeViews.length === 4) {
+        if (activeViews.length === 3 || activeViews.length === 4) {
           activeViews[0].width = (dragX / windowWidth) * 100;
           activeViews[1].width = ((windowWidth - dragX) / windowWidth) * 100;
+        } else if (activeViews.length === 5) {
+          activeViews[0].width = (dragX / windowWidth) * 100;
+          activeViews[1].width = 100 - (activeViews[0].width + activeViews[2].width + 0.5);
         }
       } else if (activeHorizonalDivider === 2) {
         activeViews[1].width = (dragX / windowWidth) * 100 - activeViews[0].width;
         activeViews[2].width = 100 - (activeViews[0].width + activeViews[1].width + 0.5);
       } else if (activeHorizonalDivider === 3) {
-        if (activeViews.length === 5) {
-          activeViews[3].width = (dragX / windowWidth) * 100 - 0.5;
-          activeViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
+        if (activeViews.length === 2) {
+          activeViews[0].width = (dragX / windowWidth) * 100 - 0.5;
+          activeViews[1].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
         } else if (activeViews.length === 4) {
           activeViews[2].width = (dragX / windowWidth) * 100 - 0.5;
           activeViews[3].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
-        } else if (activeViews.length === 2) {
-          activeViews[0].width = (dragX / windowWidth) * 100 - 0.5;
-          activeViews[1].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
+        } else if (activeViews.length === 5) {
+          activeViews[3].width = (dragX / windowWidth) * 100 - 0.5;
+          activeViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
+        } else if (activeViews.length === 6) {
+          activeViews[3].width = (dragX / windowWidth) * 100 - 0.5;
+          activeViews[4].width =
+            ((windowWidth - dragX) / windowWidth) * 100 - activeViews[5].width + 0.25;
         }
+      } else if (activeHorizonalDivider === 4 && activeViews.length === 6) {
+        activeViews[4].width = (dragX / windowWidth) * 100 - activeViews[3].width;
+        activeViews[5].width = 100 - (activeViews[3].width + activeViews[4].width + 0.5);
       }
-    } else return;
+    }
   };
 
-  /* --- HANDLE SWAP --- */
   const handleSwap = (title: string, e: Event) => {
     // Find the indices of the two objects to swap
     const index1 = activeViews.findIndex((view: View) => view.title === title);
@@ -116,11 +122,16 @@
 
 <div
   style="user-select: {disableTextSelection ? 'none' : 'auto'}; height: 95.5%"
+  on:mousedown={() => ($isInteractableStore = false)}
   on:mousemove={handleResize}
   on:mouseup={handleMouseUp}
 >
-  {#if activeViews.length === 5}
-    <Layout_5
+  {#if activeViews.length === 1}
+    <Layout_1 views={activeViews} {handleSwap} />
+  {:else if activeViews.length === 2}
+    <Layout_2 views={activeViews} {handleSwap} {handleHorizontalMouseDown} />
+  {:else if activeViews.length === 3}
+    <Layout_3
       views={activeViews}
       {handleSwap}
       {handleHorizontalMouseDown}
@@ -133,16 +144,19 @@
       {handleHorizontalMouseDown}
       {handleVerticalMouseDown}
     />
-  {:else if activeViews.length === 3}
-    <Layout_3
+  {:else if activeViews.length === 5}
+    <Layout_5
       views={activeViews}
       {handleSwap}
       {handleHorizontalMouseDown}
       {handleVerticalMouseDown}
     />
-  {:else if activeViews.length === 2}
-    <Layout_2 views={activeViews} {handleSwap} {handleHorizontalMouseDown} />
-  {:else if activeViews.length === 1}
-    <Layout_1 views={activeViews} {handleSwap} />
+  {:else if activeViews.length === 6}
+    <Layout_6
+      views={activeViews}
+      {handleSwap}
+      {handleHorizontalMouseDown}
+      {handleVerticalMouseDown}
+    />
   {/if}
 </div>

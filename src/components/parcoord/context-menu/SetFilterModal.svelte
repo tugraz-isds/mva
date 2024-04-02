@@ -1,10 +1,7 @@
 <script lang="ts">
   import { Button, Modal, Label, NumberInput, Helper } from 'flowbite-svelte';
-  import {
-    parcoordDimMetadata,
-    parcoordIsInteractable,
-    filtersArray
-  } from '../../../stores/parcoord';
+  import { parcoordDimMetadata, filtersArray } from '../../../stores/parcoord';
+  import { isInteractableStore } from '../../../stores/brushing';
   import { dimensionDataStore } from '../../../stores/dataset';
 
   export let isOpen: boolean;
@@ -18,7 +15,7 @@
   let errorMessage = '';
 
   $: if (!isOpen) {
-    $parcoordIsInteractable = true;
+    $isInteractableStore = true;
   }
 
   function loadData() {

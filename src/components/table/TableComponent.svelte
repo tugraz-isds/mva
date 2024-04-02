@@ -7,7 +7,8 @@
     brushedArray,
     hoveredArray,
     previouslyHoveredArray,
-    previouslyBrushedArray
+    previouslyBrushedArray,
+    isInteractableStore
   } from '../../stores/brushing';
   import { tableDimensionsStore } from '../../stores/table';
   import ContextMenu from './ContextMenu.svelte';
@@ -116,7 +117,7 @@
   }
 
   function handleMouseEnter(index: number) {
-    if (!rowShow[index]) return;
+    if (!rowShow[index] || !$isInteractableStore) return;
     hoveredLineIndex = index;
     hoveredArray.set(new Set([hoveredLineIndex]));
   }
@@ -140,6 +141,7 @@
   }
 
   function showTooltip(e: MouseEvent, dim: string) {
+    if (!$isInteractableStore) return;
     tooltip = {
       visible: true,
       clientX: e.clientX,

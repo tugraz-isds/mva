@@ -1,16 +1,16 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
-  import { datasetStore, dimensionDataStore, labelDimension } from '../../../stores/dataset';
+  import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
   import {
     filtersArray,
     parcoordCustomAxisRanges,
-    parcoordHistogramData,
-    parcoordIsInteractable
+    parcoordHistogramData
   } from '../../../stores/parcoord';
   import {
     brushedArray,
     hoveredArray,
+    isInteractableStore,
     previouslyBrushedArray,
     previouslyHoveredArray
   } from '../../../stores/brushing';
@@ -179,7 +179,7 @@
     )
       return;
 
-    worker.postMessage({ function: 'mouseMove', mouse, interactable: $parcoordIsInteractable });
+    worker.postMessage({ function: 'mouseMove', mouse, interactable: $isInteractableStore });
 
     tooltipPos = {
       x: event.clientX - canvasRect.left,
@@ -214,7 +214,7 @@
         text: []
       });
 
-      if (!$parcoordIsInteractable) return;
+      if (!$isInteractableStore) return;
 
       worker.postMessage({
         function: 'mouseDown',
@@ -384,7 +384,7 @@
       const data = message.data;
       switch (data.function) {
         case 'setHovered':
-          if (!$parcoordIsInteractable) break;
+          if (!$isInteractableStore) break;
           updatedHere = true;
           hoveredArray.set(data.hoveredIndices);
           setTooltip(data.hoveredIndices);

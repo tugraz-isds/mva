@@ -8,7 +8,6 @@ import type {
 
 export const filtersArray = writable<AxesFilterType[]>([]);
 export const parcoordCustomAxisRanges = writable<Map<string, CustomRangeType>>(new Map());
-export const parcoordIsInteractable = writable<boolean>(true);
 export const parcoordDimMetadata = writable<Map<string, DimensionMetadataType>>(new Map());
 export const parcoordHistogramData = writable<HistogramsType>({
   visible: true,

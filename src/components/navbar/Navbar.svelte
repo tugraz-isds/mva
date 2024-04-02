@@ -1,14 +1,14 @@
 <script lang="ts">
   import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
   import ImportDatasetModal from './dataset-import/ImportDatasetModal.svelte';
-  import { parcoordIsInteractable } from '../../stores/parcoord';
+  import { isInteractableStore } from '../../stores/brushing';
 
   let isImportDatasetModalOpen = false;
 
   function openModal() {
     isImportDatasetModalOpen = false;
     isImportDatasetModalOpen = true;
-    $parcoordIsInteractable = false;
+    $isInteractableStore = false;
   }
 </script>
 

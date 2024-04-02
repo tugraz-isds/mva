@@ -3,7 +3,8 @@
   import { Check } from 'svelte-heros-v2';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
-  import { parcoordCustomAxisRanges, parcoordIsInteractable } from '../../../stores/parcoord';
+  import { parcoordCustomAxisRanges } from '../../../stores/parcoord';
+  import { isInteractableStore } from '../../../stores/brushing';
   import SetRangeModal from './SetRangeModal.svelte';
   import SetBinNoModal from './SetBinNoModal.svelte';
   import SetFilterModal from './SetFilterModal.svelte';
@@ -31,7 +32,7 @@
 
   export function showContextMenu(event: MouseEvent, index: number) {
     event.preventDefault();
-    $parcoordIsInteractable = false;
+    $isInteractableStore = false;
     isContextMenuShown = true;
     dimIndex = index;
     isFilterSet =
@@ -44,7 +45,7 @@
 
   export function hideContextMenu() {
     isContextMenuShown = false;
-    $parcoordIsInteractable = true;
+    $isInteractableStore = true;
   }
 
   function hideDimension() {
@@ -81,7 +82,7 @@
     hideContextMenu();
     isSetRangeModalOpen = false;
     isSetRangeModalOpen = true;
-    $parcoordIsInteractable = false;
+    $isInteractableStore = false;
   }
 
   function resetDimensionRange() {
@@ -99,7 +100,7 @@
     hideContextMenu();
     isSetFilterModalOpen = false;
     isSetFilterModalOpen = true;
-    $parcoordIsInteractable = false;
+    $isInteractableStore = false;
   }
 
   function resetFilter() {
@@ -112,7 +113,7 @@
     hideContextMenu();
     isSetBinNoModalOpen = false;
     isSetBinNoModalOpen = true;
-    $parcoordIsInteractable = false;
+    $isInteractableStore = false;
   }
 
   function handleMouseLeave() {

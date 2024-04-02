@@ -2,6 +2,7 @@ import type { View } from './ViewType';
 import SplomComponent from '../splom/SPLOMComponent.svelte';
 import ScatterplotComponent from '../scatterplot/ScatterplotComponent.svelte';
 import SimmapComponent from '../simmap/SimmapComponent.svelte';
+import PartitionsComponent from '../partitions/PartitionsComponent.svelte';
 import TableComponent from '../table/TableComponent.svelte';
 import ParcoordComponent from '../parcoord/ParcoordComponent.svelte';
 
@@ -28,16 +29,23 @@ export const views: View[] = [
     component: SimmapComponent
   },
   {
+    id: 'partitions',
+    title: 'Partitions',
+    width: 20,
+    height: 44.5,
+    component: PartitionsComponent
+  },
+  {
     id: 'table',
     title: 'Table',
-    width: 33,
+    width: 30,
     height: 44.5,
     component: TableComponent
   },
   {
     id: 'parcoord',
     title: 'Parallel Coordinates',
-    width: 66.66,
+    width: 49,
     height: 44.5,
     component: ParcoordComponent
   }

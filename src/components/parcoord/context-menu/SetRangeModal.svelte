@@ -3,9 +3,9 @@
   import {
     parcoordCustomAxisRanges,
     parcoordDimMetadata,
-    parcoordIsInteractable,
     filtersArray
   } from '../../../stores/parcoord';
+  import { isInteractableStore } from '../../../stores/brushing';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { scaleLinear } from 'd3-scale';
 
@@ -16,7 +16,7 @@
   export let handleResetDimensionRange: () => void;
 
   $: if (!isOpen) {
-    $parcoordIsInteractable = true;
+    $isInteractableStore = true;
   }
 
   let rangeMin: number, rangeMax: number;

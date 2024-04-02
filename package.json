@@ -67,6 +67,8 @@
     "flowbite": "^1.6.6",
     "flowbite-svelte": "^0.38.5",
     "ml-pca": "^4.1.1",
+    "svelte-awesome-color-picker": "^3.0.6",
+    "svelte-portal": "^2.2.1",
     "svelte-window-system": "^0.1.0",
     "tailwind-merge": "^1.13.2",
     "three": "^0.156.1",

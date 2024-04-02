@@ -6,6 +6,7 @@
   import {
     brushedArray,
     hoveredArray,
+    isInteractableStore,
     previouslyBrushedArray,
     previouslyHoveredArray
   } from '../../../stores/brushing';
@@ -112,7 +113,7 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    if (!canvasEl) return;
+    if (!canvasEl || !$isInteractableStore) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
     mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
@@ -139,7 +140,7 @@
   }
 
   function handleMouseDown(event: MouseEvent) {
-    if (!canvasEl) return;
+    if (!canvasEl || !$isInteractableStore) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
     mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;

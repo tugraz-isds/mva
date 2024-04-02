@@ -10,7 +10,7 @@
     Spinner
   } from 'flowbite-svelte';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
-  import { parcoordIsInteractable } from '../../../stores/parcoord';
+  import { isInteractableStore } from '../../../stores/brushing';
   import { tableDimensionsStore } from '../../../stores/table';
   import { isNumber } from '../../../util/util';
   import {
@@ -45,7 +45,7 @@
   let selectedColumn: number | null = null;
 
   $: if (!isOpen) {
-    $parcoordIsInteractable = true;
+    $isInteractableStore = true;
   }
 
   $: if (previewHeaderString.length > 0 && previewRowsString.length > 0) {

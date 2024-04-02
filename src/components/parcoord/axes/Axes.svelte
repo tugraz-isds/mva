@@ -3,11 +3,8 @@
   import { axisLeft } from 'd3-axis';
   import { select } from 'd3-selection';
   import { drag } from 'd3-drag';
-  import {
-    filtersArray,
-    parcoordDimMetadata,
-    parcoordIsInteractable
-  } from '../../../stores/parcoord';
+  import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
+  import { isInteractableStore } from '../../../stores/brushing';
   import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
   import { calculateMaxLength, getTextWidth } from '../../../util/text';
   import {
@@ -357,7 +354,7 @@
             )}") 7 5, pointer`
           )
           .on('mouseenter', () => {
-            parcoordIsInteractable.set(false);
+            isInteractableStore.set(false);
             setTooltipData({
               visible: false,
               clientX: 0,
@@ -366,7 +363,7 @@
             });
           })
           .on('mouseleave', () => {
-            parcoordIsInteractable.set(true);
+            isInteractableStore.set(true);
           })
       );
     });
@@ -411,7 +408,7 @@
       const dragBehavior = drag<SVGTextElement, unknown, any>()
         .subject(() => ({ x: xScales[dimensions.indexOf(dim)], y: margin.top - 20 }))
         .on('start', (event) => {
-          parcoordIsInteractable.set(false);
+          isInteractableStore.set(false);
           draggingIndex = dimensions.indexOf(dim);
           event.subject.x = xScales[dimensions.indexOf(dim)];
           isCurrentlyFiltering = true;
@@ -501,7 +498,7 @@
           }
         })
         .on('end', () => {
-          parcoordIsInteractable.set(true);
+          isInteractableStore.set(true);
           // Snap elements into correct place
           axisLines[draggingIndex].attr(
             'transform',
@@ -572,7 +569,7 @@
     dimensions.forEach((dim: string, idx: number) => {
       const dragBehavior = drag<SVGTextElement, unknown, any>()
         .on('start', () => {
-          parcoordIsInteractable.set(false);
+          isInteractableStore.set(false);
         })
         .on('drag', (event) => {
           const minY = margin.top - 8;
@@ -598,7 +595,7 @@
           filtersArray.set(axesFilters);
         })
         .on('end', () => {
-          parcoordIsInteractable.set(true);
+          isInteractableStore.set(true);
         });
 
       axisUpperFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
@@ -609,7 +606,7 @@
     dimensions.forEach((dim: string, idx: number) => {
       const dragBehavior = drag<SVGTextElement, unknown, any>()
         .on('start', () => {
-          parcoordIsInteractable.set(false);
+          isInteractableStore.set(false);
         })
         .on('drag', (event) => {
           const minY = axesFilters[idx].pixels.start + margin.top + 8;
@@ -633,7 +630,7 @@
           filtersArray.set(axesFilters);
         })
         .on('end', () => {
-          parcoordIsInteractable.set(true);
+          isInteractableStore.set(true);
         });
 
       axisLowerFilters[dimensions.indexOf(dim)]?.call(dragBehavior);
@@ -646,7 +643,7 @@
       let rectangleStart: number;
       const dragBehavior = drag<SVGTextElement, unknown, any>()
         .on('start', (event) => {
-          parcoordIsInteractable.set(false);
+          isInteractableStore.set(false);
           startY = event.y;
           rectangleStart = +axisFilterRectangles[i].attr('y');
         })
@@ -691,7 +688,7 @@
             .text(getAxisDomainValue(i, axesFilters[i].percentages.end as number));
         })
         .on('end', () => {
-          parcoordIsInteractable.set(true);
+          isInteractableStore.set(true);
           startY = 0;
         });
 
