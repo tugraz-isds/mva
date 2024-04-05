@@ -1,5 +1,7 @@
 import { range } from 'd3-array';
 
+export const DEFAULT_PARTITION = 'Default';
+
 // Helper function to reorder an array
 export function reorderArray(arr: any[], fromIndex: number, toIndex: number) {
   const result = [...arr];

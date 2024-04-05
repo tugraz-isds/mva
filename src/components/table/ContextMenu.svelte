@@ -75,11 +75,16 @@
     on:keydown={hideContextMenu}
   >
     <DropdownItem
-      disabled={dim === labelDim}
-      defaultClass={dim === labelDim ? disabledClass : activeClass}
+      disabled={dim === labelDim || dim === '_i' || dim === '_partition'}
+      defaultClass={dim === labelDim || dim === '_i' || dim === '_partition'
+        ? disabledClass
+        : activeClass}
       on:click={setLabel}>Use as Label</DropdownItem
     >
-    <DropdownItem defaultClass={activeClass} on:click={setDimensionActive}
+    <DropdownItem
+      disabled={dim === '_i' || dim === '_partition'}
+      defaultClass={dim === '_i' || dim === '_partition' ? disabledClass : activeClass}
+      on:click={setDimensionActive}
       >Set as {dimensionData.get(dim)?.active ? 'Inactive' : 'Active'}</DropdownItem
     >
   </div>

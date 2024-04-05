@@ -50,7 +50,7 @@ export function calculateMaxLengthArray(
   return Math.max(...maxLengths);
 }
 
-export function getLongestStringLen(arr: string[]) {
+export function getLongestString(arr: string[]) {
   return arr.reduce(function (a, b) {
     return a.length > b.length ? a : b;
   });

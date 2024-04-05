@@ -1,11 +1,21 @@
 import * as THREE from 'three';
 import {
-  POINT_MATERIAL_ACTIVE,
   POINT_MATERIAL_BRUSHED,
   POINT_MATERIAL_FILTERED,
   POINT_MATERIAL_HOVERED
 } from '../../../util/materials';
+import {
+  drawPoint,
+  getPartitionGeometry,
+  getPartitionMaterial,
+  getPartitionRecordsByName,
+  getUpdatedPartition,
+  initScene,
+  resetPoints,
+  type PointType
+} from './drawingUtil';
 import { areSetsEqual } from '../../../util/util';
+import type { PartitionType } from '../../partitions/types';
 
 let width: number, height: number;
 
@@ -15,7 +25,7 @@ let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
-let points: (THREE.Mesh & { index?: number })[] = [];
+let points: PointType[] = [];
 let pointSize: number;
 
 let hoveredPointsIndices = new Set<number>(),
@@ -23,15 +33,18 @@ let hoveredPointsIndices = new Set<number>(),
   brushedPointsIndices = new Set<number>(),
   previouslyBrushedPointsIndices = new Set<number>();
 let pointShow: boolean[] = [];
+let partitionsData: string[] = [];
+let partitions: Map<string, PartitionType> = new Map();
 
 self.onmessage = function (message) {
   const data = message.data;
   switch (data.function) {
     case 'init':
       ({ canvas, width, height, pointSize } = data);
-      init();
+      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       break;
     case 'resetPoints':
+      ({ pointShow, points } = resetPoints(pointShow));
       resetPoints(data.pointShow);
       break;
     case 'setLinking':
@@ -62,61 +75,44 @@ self.onmessage = function (message) {
       break;
     case 'resizeCanvas':
       ({ width, height } = data);
-      init();
+      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       resizeCanvas(canvas, width, height);
+      break;
+    case 'setPartitionsData':
+      partitionsData = data.partitionsData;
+      break;
+    case 'setPartitions':
+      updatePartitions(data.partitions);
       break;
     default:
       break;
   }
 };
 
-function init() {
-  scene = new THREE.Scene();
-  camera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
-  camera.position.set(0, 0, 5);
-  renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-  renderer.setClearColor(0xffffff);
-  renderer.setSize(width, height, false);
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-}
-
-function resetPoints(show: boolean[]) {
-  pointShow = show;
-  points = [];
-}
-
 function setLinking(show: boolean[]) {
   pointShow.forEach((isPointShow: boolean, i: number) => {
     if (isPointShow === show[i]) return;
-    const point = points[i];
     if (show[i]) {
-      if (brushedPointsIndices.has(i)) {
-        point.material = POINT_MATERIAL_BRUSHED;
-        changePointPosition(point, 1);
-      } else {
-        point.material = POINT_MATERIAL_ACTIVE;
-        changePointPosition(point, 0);
-      }
-    } else {
-      point.material = POINT_MATERIAL_FILTERED;
-      changePointPosition(point, -1);
-    }
-    point.material.needsUpdate = false;
+      if (brushedPointsIndices.has(i)) drawPoint(points[i], POINT_MATERIAL_BRUSHED, false, 1);
+      else drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
+    } else drawPoint(points[i], POINT_MATERIAL_FILTERED, false, -1);
   });
   pointShow = show;
 }
 
 function drawPoints(inputPoints: number[][]) {
   scene.children = [];
-  const pointGeometry = new THREE.CircleGeometry(pointSize, 16);
   inputPoints.forEach((currPoint: number[], i: number) => {
-    const material = points[i] ? points[i].material : POINT_MATERIAL_ACTIVE;
-    (material as THREE.Material).needsUpdate = false;
-    const point: THREE.Mesh & { index?: number } = new THREE.Mesh(pointGeometry, material);
+    const partition = partitions.get(partitionsData[i]);
+    const pointGeometry = getPartitionGeometry(pointSize, partition);
+    const material = points[i]
+      ? (points[i].material as THREE.Material)
+      : getPartitionMaterial(partition);
+    material.needsUpdate = false;
+    const point: PointType = new THREE.Mesh(pointGeometry, material) as PointType;
     point.position.set(currPoint[0], currPoint[1], points[i] ? points[i].position.z : currPoint[2]);
     point.index = i;
-    points[i] = point;
+    points[i] = point as PointType;
     scene.add(point);
   });
 
@@ -182,10 +178,7 @@ function drawHoveredPoints(hoveredIndices: Set<number> | null = null) {
   if (hoveredIndices) hoveredPointsIndices = hoveredIndices;
   hoveredPointsIndices.forEach((i) => {
     if (!pointShow[i]) return;
-    const point = points[i];
-    point.material = POINT_MATERIAL_HOVERED;
-    changePointPosition(point, 2);
-    point.material.needsUpdate = true;
+    drawPoint(points[i], POINT_MATERIAL_HOVERED, true, 2);
   });
 }
 
@@ -193,15 +186,8 @@ function removePreviouslyHoveredPoints(hoveredIndices: Set<number> | null = null
   if (hoveredIndices) previouslyHoveredPointsIndices = hoveredIndices;
   previouslyHoveredPointsIndices.forEach((i) => {
     if (!pointShow[i] || hoveredPointsIndices.has(i)) return;
-    const point = points[i];
-    if (brushedPointsIndices.has(i)) {
-      point.material = POINT_MATERIAL_BRUSHED;
-      changePointPosition(point, 1);
-    } else {
-      point.material = POINT_MATERIAL_ACTIVE;
-      changePointPosition(point, 0);
-    }
-    point.material.needsUpdate = false;
+    if (brushedPointsIndices.has(i)) drawPoint(points[i], POINT_MATERIAL_BRUSHED, false, 1);
+    else drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
 }
 
@@ -209,10 +195,7 @@ function drawBrushedPoints(brushedIndices: Set<number> | null = null) {
   if (brushedIndices) brushedPointsIndices = brushedIndices;
   brushedPointsIndices.forEach((i) => {
     if (!pointShow[i]) return;
-    const point = points[i];
-    point.material = POINT_MATERIAL_BRUSHED;
-    changePointPosition(point, 1);
-    point.material.needsUpdate = true;
+    drawPoint(points[i], POINT_MATERIAL_BRUSHED, true, 1);
   });
 }
 
@@ -220,16 +203,29 @@ function removePreviouslyBrushedPoints(brushedIndices: Set<number> | null = null
   if (brushedIndices) previouslyBrushedPointsIndices = brushedIndices;
   previouslyBrushedPointsIndices.forEach((i) => {
     if (!pointShow[i]) return;
-    const point = points[i];
-    point.material = POINT_MATERIAL_ACTIVE;
-    changePointPosition(point, 0);
-    point.material.needsUpdate = false;
+    drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
 }
 
-function changePointPosition(point: THREE.Mesh & { index?: number }, newZPosition: number) {
-  point.position.z = newZPosition;
-  point.geometry.attributes.position.needsUpdate = true;
+function updatePartitions(partitionsNew: Map<string, PartitionType>) {
+  if (JSON.stringify(partitions.keys()) !== JSON.stringify(partitionsNew.keys())) return;
+  if (partitions.size === 0 || partitionsNew.size === 0) {
+    partitions = partitionsNew;
+    return;
+  }
+
+  const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
+  partitions = partitionsNew;
+  if (updatedPartition !== null && updatedProperty !== null) updatePartitionColor(updatedPartition);
+}
+
+function updatePartitionColor(partitionName: string) {
+  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  partitionRecords.forEach((i) => {
+    if (!pointShow[i]) return;
+    const partition = partitions.get(partitionsData[i]);
+    drawPoint(points[i], getPartitionMaterial(partition), true);
+  });
 }
 
 function render() {

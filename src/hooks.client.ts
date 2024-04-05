@@ -1,4 +1,5 @@
 import { datasetStore, labelDimension, dimensionDataStore } from './stores/dataset';
+import { partitionsDataStore, partitionsStore } from './stores/partitions';
 import { tableDimensionsStore } from './stores/table';
 
 const localDataset = localStorage.getItem('MVA_dataset');
@@ -12,3 +13,9 @@ dimensionTypes && dimensionDataStore.set(new Map(JSON.parse(dimensionTypes)));
 
 const tableDimensions = localStorage.getItem('tableDimensions');
 tableDimensions && tableDimensionsStore.set(JSON.parse(tableDimensions));
+
+const partitions = localStorage.getItem('partitions');
+partitions && partitionsStore.set(new Map(JSON.parse(partitions)));
+
+const partitionsData = localStorage.getItem('partitionsData');
+partitionsData && partitionsDataStore.set(JSON.parse(partitionsData));

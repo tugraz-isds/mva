@@ -11,9 +11,10 @@
     isInteractableStore
   } from '../../stores/brushing';
   import { tableDimensionsStore } from '../../stores/table';
+  import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
   import ContextMenu from './ContextMenu.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
-  import { getTextWidth } from '../../util/text';
+  import { getLongestString, getTextWidth } from '../../util/text';
   import { ascending, descending } from 'd3-array';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { TooltipType } from '../../util/types';
@@ -54,6 +55,7 @@
         };
       }) as DSVParsedArray<any>;
 
+      tableDimensions?.unshift({ title: '_partition', visible: true });
       tableDimensions?.unshift({ title: '_i', visible: true });
 
       sorting = { dim: '_i', direction: 'ASC' };
@@ -165,6 +167,12 @@
     return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
   }
 
+  function getHeaderLength(title: string): string {
+    if (title === '_i') return (dataset.length - 1).toString();
+    else if (title === '_partition') return getLongestString(Array.from($partitionsStore.keys()));
+    else return $dimensionDataStore.get(title)?.longestString ?? '';
+  }
+
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeLinking();
@@ -191,9 +199,7 @@
                   on:mouseleave={hideTooltip}
                   on:contextmenu={(e) => contextMenu.showContextMenu(e, dim.title)}
                   style="font-size: 12px; overflow: hidden; width: {getTextWidth(
-                    dim.title === '_i'
-                      ? (dataset.length - 1).toString()
-                      : $dimensionDataStore.get(dim.title)?.longestString ?? '',
+                    getHeaderLength(dim.title),
                     12,
                     'sans-serif'
                   ) + 8}px;"
@@ -239,7 +245,10 @@
                     class="px-1 text-{$dimensionDataStore.get(dim.title)?.type === 'numerical'
                       ? 'right'
                       : 'left'}"
-                    style="font-size: 12px;">{formatCell(row[dim.title], i)}</td
+                    style="font-size: 12px;"
+                    >{dim.title === '_partition'
+                      ? $partitionsDataStore[index]
+                      : formatCell(row[dim.title], i)}</td
                   >
                 {/if}
               {/each}

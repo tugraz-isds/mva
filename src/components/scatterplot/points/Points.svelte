@@ -13,6 +13,7 @@
   import { labelDimension } from '../../../stores/dataset';
   import type { TooltipType } from '../../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
+  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -40,6 +41,24 @@
     currHeight: number = height;
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
+
+  const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
+    setTimeout(() => {
+      worker?.postMessage({
+        function: 'setPartitionsData',
+        partitionsData: value
+      });
+    }, 0);
+  });
+
+  const unsubscribePartitions = partitionsStore.subscribe((value) => {
+    setTimeout(() => {
+      worker?.postMessage({
+        function: 'setPartitions',
+        partitions: value
+      });
+    }, 0);
+  });
 
   const unsubscribeLinking = linkingArray.subscribe((value: boolean[]) => {
     worker?.postMessage({
@@ -279,6 +298,8 @@
   });
 
   onDestroy(() => {
+    unsubscribePartitionsData();
+    unsubscribePartitions();
     unsubscribeLinking();
     unsubscribePreviouslyHovered();
     unsubscribePreviouslyBrushed();
