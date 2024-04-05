@@ -99,12 +99,12 @@
     }
   }
 
-  function selectColumn(i: number, calledFrom: 'click' | 'contextMenu'): void {
+  function selectColumn(i: number, calledFrom: 'click' | 'contextMenu') {
     selectedColumn = selectedColumn === i && calledFrom === 'click' ? null : i;
     columnType = previewHeader[i].type ?? 'numerical';
   }
 
-  function changeColumnType(idx: number | null, newColumnType: DimensionType | null = null): void {
+  function changeColumnType(idx: number | null, newColumnType: DimensionType | null = null) {
     if (idx === null) return;
     if (newColumnType !== null) columnType = newColumnType;
 

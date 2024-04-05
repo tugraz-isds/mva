@@ -12,9 +12,6 @@
   let currDimData: DimensionMetadataType;
   let binNo = 0;
 
-  $: if (!isOpen) {
-  }
-
   function loadData() {
     dimData = $parcoordDimMetadata;
     currDimData = dimData.get(dimension) as DimensionMetadataType;

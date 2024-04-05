@@ -39,7 +39,7 @@ export function getAllTicks(domainValues: any, ticks: any) {
   return ticks;
 }
 
-export function isOffscreenCanvasSupported(canvas: HTMLCanvasElement): boolean {
+export function isOffscreenCanvasSupported(canvas: HTMLCanvasElement) {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   let supportOffScreenWebGL = 'transferControlToOffscreen' in canvas;
 

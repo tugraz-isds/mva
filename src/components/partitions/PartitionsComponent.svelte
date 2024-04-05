@@ -14,7 +14,7 @@
 
   let isBrowser = false;
   let validUpload = true;
-  let partitionName: string = '';
+  let partitionName: string;
 
   let tooltip: TooltipType = {
     visible: false,

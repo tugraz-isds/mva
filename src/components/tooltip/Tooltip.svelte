@@ -3,7 +3,7 @@
 
   export let data: TooltipType;
   export let maxWidth: number | null = null;
-  export let color: string = 'bg-gray-100';
+  export let color = 'bg-gray-100';
 
   let tooltipElement: HTMLDivElement;
   let tooltipStyle = `position: fixed; display: none;`;

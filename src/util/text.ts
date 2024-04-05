@@ -56,11 +56,11 @@ export function getLongestString(arr: string[]) {
   });
 }
 
-export function clearStringQuotes(str: string): string {
+export function clearStringQuotes(str: string) {
   return str.trim().replace(new RegExp('^"', 'g'), '').replace(new RegExp('"$', 'g'), '');
 }
 
-export function capitalizeString(str: string): string {
+export function capitalizeString(str: string) {
   if (str.length === 0) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }

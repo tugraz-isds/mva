@@ -167,7 +167,7 @@
     return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
   }
 
-  function getHeaderLength(title: string): string {
+  function getHeaderLength(title: string) {
     if (title === '_i') return (dataset.length - 1).toString();
     else if (title === '_partition') return getLongestString(Array.from($partitionsStore.keys()));
     else return $dimensionDataStore.get(title)?.longestString ?? '';

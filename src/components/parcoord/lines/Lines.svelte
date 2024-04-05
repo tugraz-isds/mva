@@ -135,7 +135,7 @@
     updatedHere = false;
   });
 
-  function setLineData(): void {
+  function setLineData() {
     lines = [];
     dataset.forEach((dataRow: any, i: number) => {
       const linePoints: number[][] = [];

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { get_current_component } from 'svelte/internal';
   import { portal } from 'svelte-portal';
   import { colorPickerOpenedStore, colorPickerPositionStore } from '../../stores/partitions';
 

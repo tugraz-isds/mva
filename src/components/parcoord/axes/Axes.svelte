@@ -189,7 +189,7 @@
           .style('text-anchor', 'middle')
           .style('cursor', `url("data:image/svg+xml;base64,${cursorString}, pointer`)
           .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'))
-          .on('mouseenter', (e) => showCustomTooltip(e, dim, i))
+          .on('mouseenter', (e) => showCustomTooltip(e, dim))
           .on('mouseleave', hideCustomTooltip)
           .on('mousedown', hideCustomTooltip)
           .on('contextmenu', (e) => contextMenuAxes.showContextMenu(e, i))
@@ -381,7 +381,7 @@
     );
   }
 
-  function showCustomTooltip(event: MouseEvent, axisTitle: string, axisIndex: number) {
+  function showCustomTooltip(event: MouseEvent, axisTitle: string) {
     if (isCurrentlyFiltering) return;
     setTooltipAxisTitleData({
       visible: true,

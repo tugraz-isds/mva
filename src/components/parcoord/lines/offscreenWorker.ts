@@ -3,10 +3,8 @@ import {
   LINE_MATERIAL_ACTIVE,
   LINE_MATERIAL_BRUSHED,
   LINE_MATERIAL_FILTERED,
-  LINE_MATERIAL_HOVERED,
-  LINE_MATERIAL_MAP
+  LINE_MATERIAL_HOVERED
 } from '../../../util/materials';
-import { COLOR_ACTIVE } from '../../../util/colors';
 import { areSetsEqual } from '../../../util/util';
 import type { AxesFilterType } from '../types';
 import type { MarginType } from '../../../util/types';

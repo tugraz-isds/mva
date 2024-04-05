@@ -215,6 +215,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
   }
 
   const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
+  console.log(updatedPartition, updatedProperty);
   partitions = partitionsNew;
   if (updatedPartition !== null && updatedProperty !== null) updatePartitionColor(updatedPartition);
 }

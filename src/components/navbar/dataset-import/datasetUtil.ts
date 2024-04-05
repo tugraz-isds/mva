@@ -26,13 +26,13 @@ export async function parseDatasetPreview(file: File) {
   const reader = file.stream().getReader();
   let previewHeaderString = '';
   const previewRowsString = [];
-  let decoder = new TextDecoder();
+  const decoder = new TextDecoder();
   let { value: chunk, done } = await reader.read();
   let textChunk = decoder.decode(chunk, { stream: true });
   let startIndex = 0;
 
   while (!done && previewRowsString.length < PREVIEW_ROW_NO) {
-    let endIndex = textChunk.indexOf('\n', startIndex);
+    const endIndex = textChunk.indexOf('\n', startIndex);
     if (endIndex === -1) {
       ({ value: chunk, done } = await reader.read());
       textChunk += decoder.decode(chunk, { stream: !done });
@@ -59,9 +59,9 @@ export async function parseDataset(
     throw new Error('Cell separator cannot be the same as decimal separator.');
 
   const file = files[0];
-  let text = await file.text();
+  const text = await file.text();
   const parser = dsvFormat(cellSeparator);
-  let dataset: DSVParsedArray<any> = parser.parse(text, autoType);
+  const dataset: DSVParsedArray<any> = parser.parse(text, autoType);
 
   const dimensions = Object.keys(dataset[0]);
   const tableDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));

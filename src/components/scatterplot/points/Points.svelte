@@ -114,7 +114,7 @@
     updatedHere = false;
   });
 
-  export function setPointData(): void {
+  export function setPointData() {
     points = [];
     let xPos: number, yPos: number;
     xData.forEach((x: any, i: number) => {

@@ -9,7 +9,6 @@
   let dim = '';
   let menuStyle = '';
   let labelDim: string;
-  let validActive = true;
 
   const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
   const disabledClass =
