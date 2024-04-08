@@ -73,24 +73,19 @@
       const binHeight = Math.abs(binsStart - binsEnd) / bins.length;
       const longestBinHeight = bins.reduce((max, array) => Math.max(max, array.length), 0);
       bins.forEach((bin, j) => {
-        const binWidth =
-          (bin.length / longestBinHeight) * ((step - 16) * $parcoordHistogramData.width);
+        const binWidth = (bin.length / longestBinHeight) * ((step - 16) * $parcoordHistogramData.width);
         binGroup
           .append('rect')
           .attr('class', 'axis-bin axis-bins-0-bin')
           .attr(
             'width',
-            binWidth < $parcoordHistogramData.widthLimits.min
-              ? $parcoordHistogramData.widthLimits.min
-              : binWidth
+            binWidth < $parcoordHistogramData.widthLimits.min ? $parcoordHistogramData.widthLimits.min : binWidth
           )
           .attr('height', binHeight)
           .attr(
             'transform',
             `translate(${xScales[i] + 8}, ${
-              margin.top +
-              binsEnd +
-              binHeight * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
+              margin.top + binsEnd + binHeight * ($parcoordDimMetadata.get(dim)?.inverted ? j : bins.length - j - 1)
             })`
           )
           .attr('fill', 'grey')

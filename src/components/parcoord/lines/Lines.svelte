@@ -2,11 +2,7 @@
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
   import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
-  import {
-    filtersArray,
-    parcoordCustomAxisRanges,
-    parcoordHistogramData
-  } from '../../../stores/parcoord';
+  import { filtersArray, parcoordCustomAxisRanges, parcoordHistogramData } from '../../../stores/parcoord';
   import {
     brushedArray,
     hoveredArray,
@@ -72,7 +68,7 @@
   });
 
   let axesFilters: AxesFilterType[] = [];
-  const unsubscribeFilters = filtersArray.subscribe((value: any) => {
+  const unsubscribeFilters = filtersArray.subscribe((value) => {
     axesFilters = value;
     if (worker && dataset?.length > 0 && dimensions?.length > 0 && !$isCurrentlyResizing) {
       setTimeout(() => {
@@ -107,7 +103,7 @@
     }, 0);
   });
 
-  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value: Set<number>) => {
+  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value) => {
     if (!worker) return;
     worker.postMessage({
       function: 'updatePreviouslyHovered',
@@ -115,7 +111,7 @@
     });
   });
 
-  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value: Set<number>) => {
+  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;
@@ -128,7 +124,7 @@
     updatedHere = false;
   });
 
-  const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+  const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;
@@ -141,7 +137,7 @@
     updatedHere = false;
   });
 
-  const unsubscribeBrushed = brushedArray.subscribe((value: Set<number>) => {
+  const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;
@@ -319,9 +315,7 @@
 
   export const saveSVG = () => {
     const tempContainer = document.createElement('div');
-    const svgContainer = select(tempContainer)
-      .append('svg')
-      .attr('viewBox', `0 0 ${width} ${height}`);
+    const svgContainer = select(tempContainer).append('svg').attr('viewBox', `0 0 ${width} ${height}`);
 
     const lineGenerator = lineD3()
       .x((d: any) => d[0])
@@ -339,14 +333,10 @@
         const dim = dimensions[i];
 
         let yPos;
-        if ($dimensionDataStore.get(dim)?.type === 'numerical')
-          yPos = yScales[dim](dataRow[dim as any]);
+        if ($dimensionDataStore.get(dim)?.type === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
         else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
 
-        linePoints.push([
-          xScales[i],
-          isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top
-        ]);
+        linePoints.push([xScales[i], isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top]);
       }
 
       svgContainer

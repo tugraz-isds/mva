@@ -1,11 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import {
-    ArrowsRightLeft,
-    ArrowsPointingOut,
-    BookmarkSquare,
-    EllipsisVertical
-  } from 'svelte-heros-v2';
+  import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare, EllipsisVertical } from 'svelte-heros-v2';
   import { openWindow } from 'svelte-window-system';
   import { Checkbox, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { activeViewsStore } from '../../stores/views';
@@ -28,17 +23,15 @@
 
   // Get active views from store
   let activeViews: View[];
-  const unsubscribeActive = activeViewsStore.subscribe((value: View[]) => {
+  const unsubscribeActive = activeViewsStore.subscribe((value) => {
     activeViews = value;
   });
 
   let tableDimensions: TableDimensionsType[] = [];
-  const unsubscribeTableDimensions = tableDimensionsStore.subscribe(
-    (value: TableDimensionsType[]) => {
-      if (updatedHere) updatedHere = false;
-      else tableDimensions = value;
-    }
-  );
+  const unsubscribeTableDimensions = tableDimensionsStore.subscribe((value) => {
+    if (updatedHere) updatedHere = false;
+    else tableDimensions = value;
+  });
 
   $: otherViews = otherViews?.filter((view: View) => view.title !== currView.title);
 
@@ -105,10 +98,7 @@
         >
           {#each tableDimensions as dim, i}
             <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">
-              <Checkbox
-                checked={dim.visible}
-                on:change={() => updateTableDimensions(i)}
-              />{dim.title}</DropdownItem
+              <Checkbox checked={dim.visible} on:change={() => updateTableDimensions(i)} />{dim.title}</DropdownItem
             >
           {/each}
         </Dropdown>
@@ -125,11 +115,7 @@
     </div>
     <div id="{currView.id}-expand-container">
       <div class="flex flex-row gap-1">
-        <ArrowsRightLeft
-          id="{currView.id}-swap"
-          size="16"
-          class="text-grey-900 cursor-pointer hover:bg-sky-100"
-        />
+        <ArrowsRightLeft id="{currView.id}-swap" size="16" class="text-grey-900 cursor-pointer hover:bg-sky-100" />
         <Tooltip style="z-index: 1000;" type="light">Swap View</Tooltip>
         <Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 1000;">
           <div slot="header" class="py-1 px-2">

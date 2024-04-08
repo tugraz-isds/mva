@@ -1,10 +1,6 @@
 <script lang="ts">
   import { Button, Modal, Label, Helper, NumberInput } from 'flowbite-svelte';
-  import {
-    parcoordCustomAxisRanges,
-    parcoordDimMetadata,
-    filtersArray
-  } from '../../../stores/parcoord';
+  import { parcoordCustomAxisRanges, parcoordDimMetadata, filtersArray } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { scaleLinear } from 'd3-scale';
@@ -110,9 +106,7 @@
       </div>
     </div>
     <div>
-      <div class="text-sm font-medium block text-gray-400 dark:text-gray-500 w-1/4">
-        Original Range:
-      </div>
+      <div class="text-sm font-medium block text-gray-400 dark:text-gray-500 w-1/4">Original Range:</div>
       <div class="mb-6 flex items-center">
         <div class="flex flex-row items-center mr-4">
           <Label for="original-range-min" class="w-1/4">Min:</Label>

@@ -10,7 +10,7 @@
   import { scaleLinear } from 'd3-scale';
   import { isNumber } from '../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
+  import type { MarginType, TooltipType } from '../../util/types';
   import type { SimmapMethodsType, SimmapDataType } from './types';
 
   let width: number;
@@ -33,36 +33,32 @@
 
   let dataset: DSVParsedArray<any>;
   let matrix: number[][];
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
     xData = [];
     yData = [];
-    dataset = value;
+    dataset = value as DSVParsedArray<any>;
 
     simmapMethodStore.set('PCA');
   });
 
-  const unsubscribeDimensionData = dimensionDataStore.subscribe(
-    (value: Map<string, DimensionDataType>) => {
-      setTimeout(() => {
-        if (value?.size === 0) return;
-        numericalDimensions = Array.from(value.keys()).filter(
-          (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
-        );
+  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
+    setTimeout(() => {
+      if (value?.size === 0) return;
+      numericalDimensions = Array.from(value.keys()).filter(
+        (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
+      );
 
-        if (numericalDimensions.length >= 2) {
-          matrix = dataset.map((d) =>
-            numericalDimensions.map((dim) => (isNumber(d[dim]) ? d[dim] : 0))
-          );
+      if (numericalDimensions.length >= 2) {
+        matrix = dataset.map((d) => numericalDimensions.map((dim) => (isNumber(d[dim]) ? d[dim] : 0)));
 
-          calculatePCA();
-          calculateUMAP();
-          redrawPoints($simmapMethodStore);
-        }
-      }, 0);
-    }
-  );
+        calculatePCA();
+        calculateUMAP();
+        redrawPoints($simmapMethodStore);
+      }
+    }, 0);
+  });
 
-  const unsubscribeSimmap = simmapMethodStore.subscribe((value: SimmapMethodsType) => {
+  const unsubscribeSimmap = simmapMethodStore.subscribe((value) => {
     redrawPoints(value);
   });
 

@@ -1,9 +1,5 @@
 import * as THREE from 'three';
-import {
-  LINE_MATERIAL_BRUSHED,
-  LINE_MATERIAL_FILTERED,
-  LINE_MATERIAL_HOVERED
-} from '../../../util/materials';
+import { LINE_MATERIAL_BRUSHED, LINE_MATERIAL_FILTERED, LINE_MATERIAL_HOVERED } from '../../../util/materials';
 import {
   changeLinePosition,
   drawLine,

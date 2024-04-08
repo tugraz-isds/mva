@@ -38,15 +38,13 @@
   };
 
   let tableDimensions: TableDimensionsType[] = [];
-  const unsubscribeTableDimensions = tableDimensionsStore.subscribe(
-    (value: TableDimensionsType[]) => {
-      tableDimensions = value;
-    }
-  );
+  const unsubscribeTableDimensions = tableDimensionsStore.subscribe((value) => {
+    tableDimensions = value;
+  });
 
   let dataset: DSVParsedArray<any>;
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-    dataset = value;
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
+    dataset = value as DSVParsedArray<any>;
     if (dataset?.length > 0) {
       dataset = dataset.map((item, i) => {
         return {
@@ -62,17 +60,17 @@
     }
   });
 
-  const unsubscribeLinking = linkingArray.subscribe((value: any) => {
+  const unsubscribeLinking = linkingArray.subscribe((value) => {
     if (dataset?.length > 0) {
       rowShow = value;
     }
   });
 
-  const unsubscribeBrushing = brushedArray.subscribe((value: any) => {
+  const unsubscribeBrushing = brushedArray.subscribe((value) => {
     if (dataset?.length > 0) brushedRowsIndices = value;
   });
 
-  const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+  const unsubscribeHovered = hoveredArray.subscribe((value) => {
     previouslyHoveredArray.set(hoveredRowsIndices);
     hoveredRowsIndices = value;
   });
@@ -105,8 +103,7 @@
       }
     } else {
       // Select a single item without Ctrl or Shift
-      if (brushedRowsIndices.size === 1 && brushedRowsIndices.has(hoveredLineIndex))
-        brushedRowsIndices.clear();
+      if (brushedRowsIndices.size === 1 && brushedRowsIndices.has(hoveredLineIndex)) brushedRowsIndices.clear();
       else {
         brushedRowsIndices.clear();
         brushedRowsIndices.add(hoveredLineIndex);
@@ -188,9 +185,7 @@
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
       <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
         <thead style="font-size: 14px;">
-          <tr
-            class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer"
-          >
+          <tr class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer">
             {#each tableDimensions as dim}
               {#if dim.visible}
                 <th
@@ -205,8 +200,7 @@
                   ) + 8}px;"
                 >
                   <div
-                    class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type ===
-                    'numerical'
+                    class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type === 'numerical'
                       ? 'right'
                       : 'left'}"
                   >
@@ -242,13 +236,9 @@
               {#each tableDimensions as dim, i}
                 {#if dim.visible}
                   <td
-                    class="px-1 text-{$dimensionDataStore.get(dim.title)?.type === 'numerical'
-                      ? 'right'
-                      : 'left'}"
+                    class="px-1 text-{$dimensionDataStore.get(dim.title)?.type === 'numerical' ? 'right' : 'left'}"
                     style="font-size: 12px;"
-                    >{dim.title === '_partition'
-                      ? $partitionsDataStore[index]
-                      : formatCell(row[dim.title], i)}</td
+                    >{dim.title === '_partition' ? $partitionsDataStore[index] : formatCell(row[dim.title], i)}</td
                   >
                 {/if}
               {/each}

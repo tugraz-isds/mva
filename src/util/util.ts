@@ -24,15 +24,11 @@ export function areSetsEqual(set1: Set<number>, set2: Set<number>) {
 
 export function getAllTicks(domainValues: any, ticks: any) {
   if (ticks.indexOf(domainValues[0]) === -1) {
-    if (((ticks[0] - domainValues[0]) * 100) / (domainValues[1] - domainValues[0]) < 10)
-      ticks[0] = domainValues[0];
+    if (((ticks[0] - domainValues[0]) * 100) / (domainValues[1] - domainValues[0]) < 10) ticks[0] = domainValues[0];
     else ticks.unshift(domainValues[0]);
   }
   if (ticks.indexOf(domainValues[1]) === -1) {
-    if (
-      ((domainValues[1] - ticks[ticks.length - 1]) * 100) / (domainValues[1] - domainValues[0]) <
-      10
-    )
+    if (((domainValues[1] - ticks[ticks.length - 1]) * 100) / (domainValues[1] - domainValues[0]) < 10)
       ticks[ticks.length - 1] = domainValues[1];
     else ticks.push(domainValues[1]);
   }
@@ -80,12 +76,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   };
 };
 
-export function generateEvenlySpacedNumbers(
-  min: number,
-  max: number,
-  n: number,
-  isInverted: boolean
-) {
+export function generateEvenlySpacedNumbers(min: number, max: number, n: number, isInverted: boolean) {
   return isInverted
     ? range(0, n).map((i) => max + (i / n) * (min - max))
     : range(0, n).map((i) => min + (i / n) * (max - min));

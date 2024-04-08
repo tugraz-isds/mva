@@ -35,9 +35,7 @@
     $isInteractableStore = false;
     isContextMenuShown = true;
     dimIndex = index;
-    isFilterSet =
-      $filtersArray[dimIndex].percentages.start !== 0 ||
-      $filtersArray[dimIndex].percentages.end !== 1;
+    isFilterSet = $filtersArray[dimIndex].percentages.start !== 0 || $filtersArray[dimIndex].percentages.end !== 1;
     const { clientX, clientY } = event;
     const clientXNew = clientX + 150 < window.innerWidth ? clientX : clientX - 150;
     menuStyle = `left: ${clientXNew}px; top: ${clientY}px;`;
@@ -68,8 +66,7 @@
     } else if (field === 'histograms') {
       currDimData.showHistograms = !currDimData.showHistograms;
       const step = xScales[1] - xScales[0];
-      if (dimIndex === dimensions.length - 1)
-        margin.right = currDimData.showHistograms ? 10 + step / 2 : 40;
+      if (dimIndex === dimensions.length - 1) margin.right = currDimData.showHistograms ? 10 + step / 2 : 40;
     } else if (field === 'filter') currDimData.showFilter = !currDimData.showFilter;
     else if (field === 'filterValues') currDimData.showFilterValues = !currDimData.showFilterValues;
 
@@ -128,16 +125,9 @@
 </script>
 
 {#if isContextMenuShown}
-  <div
-    class="context-menu"
-    style={menuStyle}
-    on:mouseenter={handleMouseEnter}
-    on:mouseleave={handleMouseLeave}
-  >
+  <div class="context-menu" style={menuStyle} on:mouseenter={handleMouseEnter} on:mouseleave={handleMouseLeave}>
     <DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Dimension</DropdownItem>
-    <DropdownItem defaultClass={activeClass} on:click={invertDimension}
-      >Invert Dimension</DropdownItem
-    >
+    <DropdownItem defaultClass={activeClass} on:click={invertDimension}>Invert Dimension</DropdownItem>
     <DropdownDivider />
     <DropdownItem defaultClass="{activeClass} flex items-center justify-between">
       Show<ChevronRight class="w-3 h-3 ms-2" />
@@ -149,9 +139,7 @@
         on:click={() => handleShow('labels')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showLabels
-            ? 'visible'
-            : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showLabels ? 'visible' : 'hidden'}"
         />Labels</DropdownItem
       >
       <DropdownItem
@@ -160,9 +148,7 @@
         on:click={() => handleShow('histograms')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showHistograms
-            ? 'visible'
-            : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showHistograms ? 'visible' : 'hidden'}"
         />Histogram</DropdownItem
       >
       <DropdownItem
@@ -171,9 +157,7 @@
         on:click={() => handleShow('filter')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilter
-            ? 'visible'
-            : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilter ? 'visible' : 'hidden'}"
         />Filter</DropdownItem
       >
       {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
@@ -191,31 +175,23 @@
     </Dropdown>
     {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
       <DropdownDivider />
-      <DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}
-        >Set Range...</DropdownItem
-      >
+      <DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}>Set Range...</DropdownItem>
     {/if}
     {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
-      <DropdownItem defaultClass={activeClass} on:click={() => resetDimensionRange()}
-        >Reset Range</DropdownItem
-      >
+      <DropdownItem defaultClass={activeClass} on:click={() => resetDimensionRange()}>Reset Range</DropdownItem>
     {/if}
     {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' || isFilterSet}
       <DropdownDivider />
     {/if}
     {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
-      <DropdownItem defaultClass={activeClass} on:click={() => openSetFilterModal()}
-        >Set Filter...</DropdownItem
-      >
+      <DropdownItem defaultClass={activeClass} on:click={() => openSetFilterModal()}>Set Filter...</DropdownItem>
     {/if}
     {#if isFilterSet}
       <DropdownItem defaultClass={activeClass} on:click={resetFilter}>Reset Filter</DropdownItem>
     {/if}
     {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
       <DropdownDivider />
-      <DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}
-        >Set Bin Num...</DropdownItem
-      >
+      <DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}>Set Bin Num...</DropdownItem>
     {/if}
   </div>
 {/if}
@@ -230,12 +206,7 @@
 
 <SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
 
-<SetFilterModal
-  isOpen={isSetFilterModalOpen}
-  dimension={dimensions[dimIndex]}
-  {yScales}
-  {dimIndex}
-/>
+<SetFilterModal isOpen={isSetFilterModalOpen} dimension={dimensions[dimIndex]} {yScales} {dimIndex} />
 
 <style>
   .context-menu {

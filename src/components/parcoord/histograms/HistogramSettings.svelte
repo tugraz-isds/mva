@@ -14,15 +14,8 @@
 
 <div class="flex justify-center items-center">
   <span class="text-xs mr-1">Show histograms: </span>
-  <Checkbox
-    bind:checked={$parcoordHistogramData.visible}
-    style="height: 10px; width: 10px; margin-right: 8px;"
-  />
-  <Cog8Tooth
-    size="16"
-    class="text-grey-900 cursor-pointer hover:bg-sky-100"
-    on:click={toggleModal}
-  />
+  <Checkbox bind:checked={$parcoordHistogramData.visible} style="height: 10px; width: 10px; margin-right: 8px;" />
+  <Cog8Tooth size="16" class="text-grey-900 cursor-pointer hover:bg-sky-100" on:click={toggleModal} />
   <Tooltip style="z-index: 1000;" type="light">Histogram Settings</Tooltip>
 </div>
 

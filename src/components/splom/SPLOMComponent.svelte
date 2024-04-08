@@ -27,31 +27,25 @@
   $: gridSize = width - margin.left - margin.right;
 
   let dataset: DSVParsedArray<any>;
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-    dataset = value;
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
+    dataset = value as DSVParsedArray<any>;
   });
 
-  const unsubscribeDimensionData = dimensionDataStore.subscribe(
-    (value: Map<string, DimensionDataType>) => {
-      if (value?.size === 0) return;
-      const numericalDimensionsNew = Array.from(value.keys()).filter(
-        (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
-      );
-      activeDim.x = numericalDimensionsNew.findIndex(
-        (dim) => dim === numericalDimensions[activeDim.x]
-      );
-      activeDim.y = numericalDimensionsNew.findIndex(
-        (dim) => dim === numericalDimensions[activeDim.y]
-      );
-      numericalDimensions = numericalDimensionsNew;
-    }
-  );
+  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
+    if (value?.size === 0) return;
+    const numericalDimensionsNew = Array.from(value.keys()).filter(
+      (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
+    );
+    activeDim.x = numericalDimensionsNew.findIndex((dim) => dim === numericalDimensions[activeDim.x]);
+    activeDim.y = numericalDimensionsNew.findIndex((dim) => dim === numericalDimensions[activeDim.y]);
+    numericalDimensions = numericalDimensionsNew;
+  });
 
-  const unsubscribeXDim = xDimStore.subscribe((value: string) => {
+  const unsubscribeXDim = xDimStore.subscribe((value) => {
     activeDim.x = numericalDimensions.findIndex((dim) => dim === value);
   });
 
-  const unsubscribeYDim = yDimStore.subscribe((value: string) => {
+  const unsubscribeYDim = yDimStore.subscribe((value) => {
     activeDim.y = numericalDimensions.findIndex((dim) => dim === value);
   });
 
@@ -74,12 +68,7 @@
     const xIndex = Math.floor((event.offsetX - margin.left) / spacing);
     const yIndex = Math.floor((event.offsetY - margin.top) / spacing);
 
-    if (
-      xIndex < 0 ||
-      xIndex >= numericalDimensions.length ||
-      yIndex < 0 ||
-      yIndex >= numericalDimensions.length
-    )
+    if (xIndex < 0 || xIndex >= numericalDimensions.length || yIndex < 0 || yIndex >= numericalDimensions.length)
       return;
     activeDim = {
       x: xIndex,

@@ -12,22 +12,12 @@
 <!-- Lower Row -->
 <div class="lower-row flex flex-row" style="height: 90%;">
   <div class="view-{views[0].id}" style="width: {views[0].width}%;">
-    <ViewComponent
-      otherViews={views}
-      {handleSwap}
-      currView={views[0]}
-      parentHeight={views[0].height}
-    />
+    <ViewComponent otherViews={views} {handleSwap} currView={views[0]} parentHeight={views[0].height} />
   </div>
 
   <HorizontalDivider id={3} {handleHorizontalMouseDown} />
 
   <div class="view-{views[1].id}" style="width: {views[1].width}%;">
-    <ViewComponent
-      otherViews={views}
-      {handleSwap}
-      currView={views[1]}
-      parentHeight={views[1].height}
-    />
+    <ViewComponent otherViews={views} {handleSwap} currView={views[1]} parentHeight={views[1].height} />
   </div>
 </div>

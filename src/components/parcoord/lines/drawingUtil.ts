@@ -37,12 +37,7 @@ export function changeLinePosition(line: THREE.Line, newZPosition: number) {
   line.geometry.attributes.position.needsUpdate = true;
 }
 
-export function drawLine(
-  line: THREE.Line,
-  material: THREE.Material,
-  needsUpdate?: boolean,
-  newPosition?: number
-) {
+export function drawLine(line: THREE.Line, material: THREE.Material, needsUpdate?: boolean, newPosition?: number) {
   line.material = material;
   if (needsUpdate !== undefined) material.needsUpdate = needsUpdate;
   if (newPosition !== undefined) changeLinePosition(line, newPosition);

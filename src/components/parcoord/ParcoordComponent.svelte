@@ -17,8 +17,8 @@
   import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { CustomRangeType, HistogramsType } from './types';
-  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
+  import type { CustomRangeType } from './types';
+  import type { MarginType, TooltipType } from '../../util/types';
 
   let isBrowser = false; // Flag to see if we are in browser
 
@@ -49,20 +49,18 @@
   let tooltipColor: string;
 
   let customRanges: Map<string, CustomRangeType>;
-  const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe(
-    (value: Map<string, CustomRangeType>) => {
-      customRanges = value;
-      calculateYScales();
-      setTimeout(() => {
-        linesComponent?.drawLines();
-      }, 0);
-    }
-  );
+  const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe((value) => {
+    customRanges = value;
+    calculateYScales();
+    setTimeout(() => {
+      linesComponent?.drawLines();
+    }, 0);
+  });
 
   // Set dataset and handle new dataset upload
   let dataset: DSVParsedArray<any>;
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-    dataset = value;
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
+    dataset = value as DSVParsedArray<any>;
     if (dataset?.length > 0) {
       setTimeout(() => {
         linesComponent?.resetLines();
@@ -90,18 +88,16 @@
     }
   });
 
-  const unsubscribeDimensionData = dimensionDataStore.subscribe(
-    (value: Map<string, DimensionDataType>) => {
-      if (value?.size === 0) return;
-      dimensions = Array.from(value.keys()).filter((dim) => value.get(dim)?.active);
-      dimensionsInitial = dimensions;
+  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
+    if (value?.size === 0) return;
+    dimensions = Array.from(value.keys()).filter((dim) => value.get(dim)?.active);
+    dimensionsInitial = dimensions;
 
-      setMarginLeft();
-    }
-  );
+    setMarginLeft();
+  });
 
   let histogramsVisible: boolean;
-  const unsubscribeHistograms = parcoordHistogramData.subscribe((value: HistogramsType) => {
+  const unsubscribeHistograms = parcoordHistogramData.subscribe((value) => {
     histogramsVisible = value.visible;
     setMarginRight(histogramsVisible);
   });
@@ -129,19 +125,12 @@
         if ($dimensionDataStore.get(dim)?.type === 'numerical') {
           if (customRanges.get(dim) === null) {
             acc[dim] = scaleLinear()
-              .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [
-                number,
-                number
-              ])
+              .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [number, number])
               .range([height - margin.top - margin.bottom, 0]);
-            if ($parcoordDimMetadata.get(dim)?.inverted)
-              acc[dim].domain(acc[dim].domain().reverse());
+            if ($parcoordDimMetadata.get(dim)?.inverted) acc[dim].domain(acc[dim].domain().reverse());
           } else {
             acc[dim] = scaleLinear()
-              .domain([
-                customRanges.get(dim)?.start as number,
-                customRanges.get(dim)?.end as number
-              ])
+              .domain([customRanges.get(dim)?.start as number, customRanges.get(dim)?.end as number])
               .range([height - margin.top - margin.bottom, 0]);
           }
         } else {
@@ -231,16 +220,14 @@
     const step = xScales[1] - xScales[0];
     if (!step) return;
     margin.right =
-      histogramsVisible &&
-      $parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms
+      histogramsVisible && $parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms
         ? 10 + (step - 16) * $parcoordHistogramData.width
         : 40;
   }
 
   function setMarginBottom(bottom: number) {
     const isFirefox = navigator.userAgent.includes('Firefox');
-    const isSafari =
-      navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+    const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
     if (!isFirefox && !isSafari) return;
     margin.bottom = bottom;
     calculateYScales();

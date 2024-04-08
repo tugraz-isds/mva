@@ -49,14 +49,9 @@ export async function parseDatasetPreview(file: File) {
   return { previewHeaderString, previewRowsString };
 }
 
-export async function parseDataset(
-  files: FileList,
-  cellSeparator: string,
-  decimalSeparator: string
-) {
+export async function parseDataset(files: FileList, cellSeparator: string, decimalSeparator: string) {
   if (!files || files.length === 0) throw new Error('Upload valid CSV file.');
-  if (cellSeparator === decimalSeparator)
-    throw new Error('Cell separator cannot be the same as decimal separator.');
+  if (cellSeparator === decimalSeparator) throw new Error('Cell separator cannot be the same as decimal separator.');
 
   const file = files[0];
   const text = await file.text();
@@ -75,9 +70,7 @@ export async function parseDataset(
     if (isNumber(dataset[0][dim])) {
       const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
       const maxNumberOfDecimals = max(dimData, (number: number) => {
-        const numberOfDecimals = number?.toString().includes('.')
-          ? number.toString().split('.')[1].length
-          : 0;
+        const numberOfDecimals = number?.toString().includes('.') ? number.toString().split('.')[1].length : 0;
         return numberOfDecimals;
       });
       dimensionTypeMap.set(dim, {

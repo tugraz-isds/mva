@@ -17,12 +17,7 @@ export function getTextWidthArray(textArray: string[], fontSize: number, fontFam
   return Math.max(...textWidths);
 }
 
-export function calculateMaxLength(
-  text: string,
-  fontSize: number,
-  fontFamily: string,
-  maxWidth: number
-) {
+export function calculateMaxLength(text: string, fontSize: number, fontFamily: string, maxWidth: number) {
   let maxLength = 0;
 
   for (let i = 0; i < text.length; i++) {
@@ -36,12 +31,7 @@ export function calculateMaxLength(
   return maxLength;
 }
 
-export function calculateMaxLengthArray(
-  textArray: string[],
-  fontSize: number,
-  fontFamily: string,
-  maxWidth: number
-) {
+export function calculateMaxLengthArray(textArray: string[], fontSize: number, fontFamily: string, maxWidth: number) {
   const maxLengths = [];
   for (const text of textArray) {
     maxLengths.push(calculateMaxLength(text, fontSize, fontFamily, maxWidth));

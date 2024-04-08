@@ -11,19 +11,16 @@
   let labelDim: string;
 
   const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
-  const disabledClass =
-    'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 text-gray-400 cursor-not-allowed';
+  const disabledClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 text-gray-400 cursor-not-allowed';
 
-  const unsubscribeLabelDim = labelDimension.subscribe((value: string) => {
+  const unsubscribeLabelDim = labelDimension.subscribe((value) => {
     labelDim = value;
   });
 
   let dimensionData: Map<string, DimensionDataType> = new Map();
-  const unsubscribeDimensionData = dimensionDataStore.subscribe(
-    (value: Map<string, DimensionDataType>) => {
-      dimensionData = value;
-    }
-  );
+  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
+    dimensionData = value;
+  });
 
   export function showContextMenu(event: MouseEvent, dimension: string) {
     event.preventDefault();
@@ -75,16 +72,13 @@
   >
     <DropdownItem
       disabled={dim === labelDim || dim === '_i' || dim === '_partition'}
-      defaultClass={dim === labelDim || dim === '_i' || dim === '_partition'
-        ? disabledClass
-        : activeClass}
+      defaultClass={dim === labelDim || dim === '_i' || dim === '_partition' ? disabledClass : activeClass}
       on:click={setLabel}>Use as Label</DropdownItem
     >
     <DropdownItem
       disabled={dim === '_i' || dim === '_partition'}
       defaultClass={dim === '_i' || dim === '_partition' ? disabledClass : activeClass}
-      on:click={setDimensionActive}
-      >Set as {dimensionData.get(dim)?.active ? 'Inactive' : 'Active'}</DropdownItem
+      on:click={setDimensionActive}>Set as {dimensionData.get(dim)?.active ? 'Inactive' : 'Active'}</DropdownItem
     >
   </div>
 {/if}

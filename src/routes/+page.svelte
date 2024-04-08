@@ -22,8 +22,7 @@
     <div class="w-1/2 w-full text-center pt-2 bg-red-200">
       <b>Your browser does not support OffscreenCanvas with a WebGL Context</b>
       <p>
-        To use the MVA app you need to download a browser that supports OffscreenCanvas. Check the
-        browser support on
+        To use the MVA app you need to download a browser that supports OffscreenCanvas. Check the browser support on
         <a href="https://caniuse.com/#feat=offscreencanvas" target="_blank" class="text-blue-600"
           >https://caniuse.com/#feat=offscreencanvas</a
         >.

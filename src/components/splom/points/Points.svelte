@@ -60,19 +60,13 @@
 
   function calculateXScale(dim: string, max: number) {
     return scaleLinear()
-      .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [number, number])
       .range([3, max - 3]);
   }
 
   function calculateYScale(dim: string, max: number) {
     return scaleLinear()
-      .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [number, number])
       .range([max - 3, 3]);
   }
 

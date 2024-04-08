@@ -60,14 +60,14 @@
     }, 10);
   });
 
-  const unsubscribeLinking = linkingArray.subscribe((value: boolean[]) => {
+  const unsubscribeLinking = linkingArray.subscribe((value) => {
     worker?.postMessage({
       function: 'setLinking',
       pointShow: value
     });
   });
 
-  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value: Set<number>) => {
+  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value) => {
     if (!worker) return;
     worker.postMessage({
       function: 'updatePreviouslyHovered',
@@ -75,7 +75,7 @@
     });
   });
 
-  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value: Set<number>) => {
+  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;
@@ -88,7 +88,7 @@
     updatedHere = false;
   });
 
-  const unsubscribeHovered = hoveredArray.subscribe((value: Set<number>) => {
+  const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;
@@ -101,7 +101,7 @@
     updatedHere = false;
   });
 
-  const unsubscribeBrushed = brushedArray.subscribe((value: Set<number>) => {
+  const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
       updatedHere = false;

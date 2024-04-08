@@ -34,16 +34,13 @@
     </thead>
     <tbody>
       {#each previewHeader as header, i}
-        <th class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}"
-          >{capitalizeString(header.type ?? '')}</th
-        >
+        <th class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}">{capitalizeString(header.type ?? '')}</th>
       {/each}
       {#each previewRows as row}
         <tr class="text-black" style="font-size: 12px;">
           {#each row as cell, i}
             <td
-              class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''} text-{previewHeader[i]
-                .type === 'numerical'
+              class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''} text-{previewHeader[i].type === 'numerical'
                 ? 'right'
                 : 'left'}">{clearStringQuotes(cell)}</td
             >

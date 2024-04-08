@@ -19,12 +19,10 @@
       let left = clientX;
       let top = clientY;
 
-      if (clientX + tooltipElement.offsetWidth + 10 > window.innerWidth)
-        left -= tooltipElement.offsetWidth + 10;
+      if (clientX + tooltipElement.offsetWidth + 10 > window.innerWidth) left -= tooltipElement.offsetWidth + 10;
       else left += 10;
 
-      if (clientY + tooltipElement.offsetHeight + 10 > window.innerHeight)
-        top -= tooltipElement.offsetHeight;
+      if (clientY + tooltipElement.offsetHeight + 10 > window.innerHeight) top -= tooltipElement.offsetHeight;
       else top += 10;
 
       tooltipStyle = `position: fixed; top: ${top}px; left: ${left}px; font-size: 10px; ${
@@ -36,11 +34,7 @@
 
 {#if data.visible}
   {#key tooltipKey}
-    <div
-      bind:this={tooltipElement}
-      class="{color} py-0.5 px-1 rounded-sm whitespace-nowrap z-10"
-      style={tooltipStyle}
-    >
+    <div bind:this={tooltipElement} class="{color} py-0.5 px-1 rounded-sm whitespace-nowrap z-10" style={tooltipStyle}>
       {@html data.text.join('<br>')}
     </div>
   {/key}

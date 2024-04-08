@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { rgbaToHexNumber } from '../../../util/colors';
 import { POINT_MATERIAL_ACTIVE } from '../../../util/materials';
 import type { PartitionType } from '../../partitions/types';
-import { DEFAULT_PARTITION } from '../../../util/util';
 
 export type PointType = THREE.Mesh & {
   index: number;
@@ -61,12 +60,7 @@ export function changePointPosition(point: PointType, newZPosition: number) {
   point.geometry.attributes.position.needsUpdate = true;
 }
 
-export function drawPoint(
-  point: PointType,
-  material: THREE.Material,
-  needsUpdate?: boolean,
-  newPosition?: number
-) {
+export function drawPoint(point: PointType, material: THREE.Material, needsUpdate?: boolean, newPosition?: number) {
   point.material = material;
   if (needsUpdate !== undefined) material.needsUpdate = needsUpdate;
   if (newPosition !== undefined) changePointPosition(point, newPosition);

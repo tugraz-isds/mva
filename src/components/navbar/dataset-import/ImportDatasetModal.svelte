@@ -1,14 +1,5 @@
 <script lang="ts">
-  import {
-    Button,
-    Modal,
-    Label,
-    Input,
-    Fileupload,
-    Helper,
-    Select,
-    Spinner
-  } from 'flowbite-svelte';
+  import { Button, Modal, Label, Input, Fileupload, Helper, Select, Spinner } from 'flowbite-svelte';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
   import { isInteractableStore } from '../../../stores/brushing';
   import { tableDimensionsStore } from '../../../stores/table';
@@ -60,8 +51,7 @@
 
   async function handleFileUpload(event: Event) {
     files = (event.target as HTMLInputElement).files as FileList;
-    if (files.length > 0)
-      ({ previewHeaderString, previewRowsString } = await parseDatasetPreview(files[0]));
+    if (files.length > 0) ({ previewHeaderString, previewRowsString } = await parseDatasetPreview(files[0]));
     selectedColumn = null;
     validUpload = true;
   }
@@ -69,8 +59,11 @@
   async function importDataset() {
     isLoading = true;
     try {
-      const { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsData } =
-        await parseDataset(files, cellSeparator, decimalSeparator);
+      const { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsData } = await parseDataset(
+        files,
+        cellSeparator,
+        decimalSeparator
+      );
       tableDimensionsStore.set(tableDimensions);
       dimensionDataStore.set(dimensionTypeMap);
       datasetStore.set(dataset);
@@ -185,13 +178,7 @@
       <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
     {/if}
     {#if previewHeader.length > 0 && previewRowsString.length > 0}
-      <DatasetPreview
-        {selectedColumn}
-        {previewHeader}
-        {previewRows}
-        {changeColumnType}
-        {selectColumn}
-      />
+      <DatasetPreview {selectedColumn} {previewHeader} {previewRows} {changeColumnType} {selectColumn} />
     {/if}
     <div class="w-full flex justify-center">
       <Button class="w-1/2" on:click={importDataset}>Import Dataset</Button>

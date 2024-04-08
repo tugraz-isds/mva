@@ -36,19 +36,9 @@ function cleanBuildFolder() {
 }
 
 function cleanAll() {
-  return deleteAsync(
-    [
-      '.svelte-kit',
-      'build',
-      'build-tauri',
-      'src-tauri/target',
-      'node_modules',
-      'package-lock.json'
-    ],
-    {
-      force: true
-    }
-  );
+  return deleteAsync(['.svelte-kit', 'build', 'build-tauri', 'src-tauri/target', 'node_modules', 'package-lock.json'], {
+    force: true
+  });
 }
 
 function copyTauriFiles() {

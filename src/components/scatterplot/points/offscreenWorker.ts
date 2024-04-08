@@ -1,9 +1,5 @@
 import * as THREE from 'three';
-import {
-  POINT_MATERIAL_BRUSHED,
-  POINT_MATERIAL_FILTERED,
-  POINT_MATERIAL_HOVERED
-} from '../../../util/materials';
+import { POINT_MATERIAL_BRUSHED, POINT_MATERIAL_FILTERED, POINT_MATERIAL_HOVERED } from '../../../util/materials';
 import {
   drawPoint,
   getPartitionGeometry,

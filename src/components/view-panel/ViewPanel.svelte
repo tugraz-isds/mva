@@ -11,7 +11,7 @@
   import Layout_6 from './Layout-6.svelte';
 
   let activeViews: View[];
-  const unsubscribeActive = activeViewsStore.subscribe((value: any) => {
+  const unsubscribeActive = activeViewsStore.subscribe((value) => {
     activeViews = value;
   });
 
@@ -53,15 +53,10 @@
       const dragY = e.clientY;
       if (activeViews.length === 3 || activeViews.length === 4) {
         activeViews[0].height = activeViews[1].height = (dragY / windowHeight) * 100 - 5;
-        activeViews[2].height = activeViews[3].height =
-          ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
+        activeViews[2].height = activeViews[3].height = ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
       } else if (activeViews.length === 5 || activeViews.length === 6) {
-        activeViews[0].height =
-          activeViews[1].height =
-          activeViews[2].height =
-            (dragY / windowHeight) * 100 - 5;
-        activeViews[3].height = activeViews[4].height =
-          ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
+        activeViews[0].height = activeViews[1].height = activeViews[2].height = (dragY / windowHeight) * 100 - 5;
+        activeViews[3].height = activeViews[4].height = ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
         if (activeViews.length === 6) activeViews[5].height = activeViews[4].height;
       }
     }
@@ -92,8 +87,7 @@
           activeViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 + 0.25;
         } else if (activeViews.length === 6) {
           activeViews[3].width = (dragX / windowWidth) * 100 - 0.5;
-          activeViews[4].width =
-            ((windowWidth - dragX) / windowWidth) * 100 - activeViews[5].width + 0.25;
+          activeViews[4].width = ((windowWidth - dragX) / windowWidth) * 100 - activeViews[5].width + 0.25;
         }
       } else if (activeHorizonalDivider === 4 && activeViews.length === 6) {
         activeViews[4].width = (dragX / windowWidth) * 100 - activeViews[3].width;
@@ -105,16 +99,11 @@
   const handleSwap = (title: string, e: Event) => {
     // Find the indices of the two objects to swap
     const index1 = activeViews.findIndex((view: View) => view.title === title);
-    const index2 = activeViews.findIndex(
-      (view: View) => view.title === (e.target as HTMLElement).textContent
-    );
+    const index2 = activeViews.findIndex((view: View) => view.title === (e.target as HTMLElement).textContent);
 
     if (index1 !== -1 && index2 !== -1) {
       [activeViews[index1], activeViews[index2]] = [activeViews[index2], activeViews[index1]]; // Swap the objects in the array
-      [activeViews[index1].width, activeViews[index2].width] = [
-        activeViews[index2].width,
-        activeViews[index1].width
-      ]; // Swap widths
+      [activeViews[index1].width, activeViews[index2].width] = [activeViews[index2].width, activeViews[index1].width]; // Swap widths
     }
   };
 
@@ -133,32 +122,12 @@
   {:else if activeViews.length === 2}
     <Layout_2 views={activeViews} {handleSwap} {handleHorizontalMouseDown} />
   {:else if activeViews.length === 3}
-    <Layout_3
-      views={activeViews}
-      {handleSwap}
-      {handleHorizontalMouseDown}
-      {handleVerticalMouseDown}
-    />
+    <Layout_3 views={activeViews} {handleSwap} {handleHorizontalMouseDown} {handleVerticalMouseDown} />
   {:else if activeViews.length === 4}
-    <Layout_4
-      views={activeViews}
-      {handleSwap}
-      {handleHorizontalMouseDown}
-      {handleVerticalMouseDown}
-    />
+    <Layout_4 views={activeViews} {handleSwap} {handleHorizontalMouseDown} {handleVerticalMouseDown} />
   {:else if activeViews.length === 5}
-    <Layout_5
-      views={activeViews}
-      {handleSwap}
-      {handleHorizontalMouseDown}
-      {handleVerticalMouseDown}
-    />
+    <Layout_5 views={activeViews} {handleSwap} {handleHorizontalMouseDown} {handleVerticalMouseDown} />
   {:else if activeViews.length === 6}
-    <Layout_6
-      views={activeViews}
-      {handleSwap}
-      {handleHorizontalMouseDown}
-      {handleVerticalMouseDown}
-    />
+    <Layout_6 views={activeViews} {handleSwap} {handleHorizontalMouseDown} {handleVerticalMouseDown} />
   {/if}
 </div>

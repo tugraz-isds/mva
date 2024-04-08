@@ -3,20 +3,17 @@
   import { Select } from 'flowbite-svelte';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { dimensionDataStore } from '../../stores/dataset';
-  import type { DimensionDataType } from '../../util/types';
 
   let numericalDimensions: { value: string; name: string }[] = [];
-  const unsubscribeDimensionData = dimensionDataStore.subscribe(
-    (value: Map<string, DimensionDataType>) => {
-      if (value?.size === 0) return;
-      numericalDimensions = Array.from(value.keys())
-        .filter((dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical')
-        .map((dim) => ({
-          value: dim,
-          name: dim
-        }));
-    }
-  );
+  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
+    if (value?.size === 0) return;
+    numericalDimensions = Array.from(value.keys())
+      .filter((dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical')
+      .map((dim) => ({
+        value: dim,
+        name: dim
+      }));
+  });
 
   onDestroy(() => {
     unsubscribeDimensionData();

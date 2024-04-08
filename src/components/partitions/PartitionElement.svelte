@@ -97,17 +97,9 @@
       class="text-grey-900 cursor-pointer"
     />
     <Tooltip style="z-index: 1000;" type="light">Delete Partition</Tooltip>
-    <Plus
-      size="16"
-      class="text-grey-900 cursor-pointer"
-      on:click={() => addRecordsToPartition(partitionName)}
-    />
+    <Plus size="16" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
     <Tooltip style="z-index: 1000;" type="light">Add Records</Tooltip>
-    <Stop
-      id="partition-shape-button-{partitionName.replace(' ', '')}"
-      size="16"
-      class="text-grey-900 cursor-pointer"
-    />
+    <Stop id="partition-shape-button-{partitionName.replace(' ', '')}" size="16" class="text-grey-900 cursor-pointer" />
     <Tooltip style="z-index: 1000;" type="light">Partition Shape</Tooltip>
     <Dropdown
       triggeredBy="#partition-shape-button-{partitionName.replace(' ', '')}"

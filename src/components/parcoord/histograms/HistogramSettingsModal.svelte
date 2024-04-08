@@ -16,15 +16,8 @@
     maxValue: number
   ) {
     if (property === 'widthLimits')
-      histogramSettings.widthLimits.min = Math.max(
-        minValue,
-        Math.min(maxValue, histogramSettings.widthLimits.min)
-      );
-    else
-      histogramSettings[property] = Math.max(
-        minValue,
-        Math.min(maxValue, histogramSettings[property])
-      );
+      histogramSettings.widthLimits.min = Math.max(minValue, Math.min(maxValue, histogramSettings.widthLimits.min));
+    else histogramSettings[property] = Math.max(minValue, Math.min(maxValue, histogramSettings[property]));
   }
 
   function loadData() {
@@ -57,8 +50,7 @@
       </div>
       <div class="mb-6 flex items-center">
         <span class="w-1/4 bg-red-300" />
-        <Helper class="text-xs w-3/4">Fill opacity of bins. Select a number from 0.0 to 1.0.</Helper
-        >
+        <Helper class="text-xs w-3/4">Fill opacity of bins. Select a number from 0.0 to 1.0.</Helper>
       </div>
 
       <div class="flex items-center">
@@ -76,9 +68,7 @@
       </div>
       <div class="mb-6 flex items-center">
         <span class="w-1/4 bg-red-300" />
-        <Helper class="text-xs w-3/4"
-          >Stroke opacity of bins. Select a number from 0.0 to 1.0.</Helper
-        >
+        <Helper class="text-xs w-3/4">Stroke opacity of bins. Select a number from 0.0 to 1.0.</Helper>
       </div>
 
       <div class="flex items-center">

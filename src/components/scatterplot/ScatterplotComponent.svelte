@@ -27,13 +27,11 @@
 
   let dataset: DSVParsedArray<any>;
   let xData: any, yData: any;
-  const unsubscribeDataset = datasetStore.subscribe((value: any) => {
-    dataset = value;
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
+    dataset = value as DSVParsedArray<any>;
     if (dataset?.length > 0) {
       dimensions = Object.keys(dataset[0]);
-      numericalDimensions = dimensions.filter(
-        (dim) => $dimensionDataStore.get(dim)?.type === 'numerical'
-      );
+      numericalDimensions = dimensions.filter((dim) => $dimensionDataStore.get(dim)?.type === 'numerical');
       if (numericalDimensions.length >= 2) {
         yDim = numericalDimensions[0];
         xDim = numericalDimensions[1];
@@ -52,7 +50,7 @@
     }
   });
 
-  const unsubscribeXDim = xDimStore.subscribe((value: string) => {
+  const unsubscribeXDim = xDimStore.subscribe((value) => {
     xDim = value;
     xData = dataset.map((row) => row[xDim]);
     calculateXScale();
@@ -61,7 +59,7 @@
     }, 0);
   });
 
-  const unsubscribeYDim = yDimStore.subscribe((value: string) => {
+  const unsubscribeYDim = yDimStore.subscribe((value) => {
     yDim = value;
     yData = dataset.map((row) => row[yDim]);
     calculateYScale();
@@ -84,31 +82,19 @@
 
   function calculateXScale() {
     xScaleAxes = scaleLinear()
-      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [number, number])
       .range([0, width - margin.right - margin.left]);
     xScalePoints = scaleLinear()
-      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(xDim)?.min, $dimensionDataStore.get(xDim)?.max] as [number, number])
       .range([3, width - margin.right - margin.left - 3]);
   }
 
   function calculateYScale() {
     yScaleAxes = scaleLinear()
-      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [number, number])
       .range([height - margin.top - margin.bottom, 0]);
     yScalePoints = scaleLinear()
-      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [
-        number,
-        number
-      ])
+      .domain([$dimensionDataStore.get(yDim)?.min, $dimensionDataStore.get(yDim)?.max] as [number, number])
       .range([height - margin.top - margin.bottom - 3, 3]);
   }
 
@@ -128,21 +114,9 @@
 {:else if numericalDimensions.length < 2}
   <div><span>Not enough numerical dimensions.</span></div>
 {/if}
-<div
-  id="scatterplot-canvas"
-  class="w-full h-full"
-  bind:clientWidth={width}
-  bind:clientHeight={height}
->
+<div id="scatterplot-canvas" class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
   {#if dataset?.length > 0 && width}
-    <Axes
-      {width}
-      {height}
-      {margin}
-      xScale={xScaleAxes}
-      yScale={yScaleAxes}
-      viewTitle="scatterplot"
-    />
+    <Axes {width} {height} {margin} xScale={xScaleAxes} yScale={yScaleAxes} viewTitle="scatterplot" />
 
     <Tooltip data={tooltip} maxWidth={120} />
 

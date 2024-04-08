@@ -37,8 +37,7 @@
   >
     <DropdownItem
       defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-      on:click={() =>
-        changeColumnType(currIdx, currHeader.type === 'categorical' ? 'numerical' : 'categorical')}
+      on:click={() => changeColumnType(currIdx, currHeader.type === 'categorical' ? 'numerical' : 'categorical')}
       >Set as {currHeader.type === 'categorical' ? 'Numerical' : 'Categorical'}</DropdownItem
     >
   </div>

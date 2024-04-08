@@ -25,12 +25,7 @@
 
   $: if (size && hoveredDim) {
     clearRectangle('hovered');
-    if (
-      hoveredDim.x >= 0 &&
-      hoveredDim.x < dimensions.length &&
-      hoveredDim.y >= 0 &&
-      hoveredDim.y < dimensions.length
-    )
+    if (hoveredDim.x >= 0 && hoveredDim.x < dimensions.length && hoveredDim.y >= 0 && hoveredDim.y < dimensions.length)
       renderRectangle(hoveredDim.x, hoveredDim.y, 'hovered');
   }
 
@@ -116,10 +111,7 @@
       svg
         .append('text')
         .attr('class', 'splom-axis-title-left')
-        .attr(
-          'transform',
-          `rotate(-90, ${margin.left - 5}, ${margin.top + i * spacing + spacing / 2})`
-        )
+        .attr('transform', `rotate(-90, ${margin.left - 5}, ${margin.top + i * spacing + spacing / 2})`)
         .attr('x', margin.left - 5)
         .attr('y', margin.top + i * spacing + spacing / 2)
         .attr('font-size', '10px')
