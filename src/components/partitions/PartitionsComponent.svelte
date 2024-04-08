@@ -14,7 +14,8 @@
 
   let isBrowser = false;
   let validUpload = true;
-  let partitionName: string;
+  let errorMessage = '';
+  let partitionName = '';
 
   let tooltip: TooltipType = {
     visible: false,
@@ -55,8 +56,14 @@
   }
 
   function addPartition() {
+    if (partitionName.length === 0) {
+      validUpload = false;
+      errorMessage = 'Cannot add partition with empty name.';
+      return;
+    }
     if (Array.from(partitions.keys()).includes(partitionName)) {
       validUpload = false;
+      errorMessage = 'Partition with this name already exists.';
       return;
     }
 
@@ -77,16 +84,18 @@
   function deletePartition(name: string) {
     const defaultPartition = partitions.get(DEFAULT_PARTITION);
     if (!defaultPartition) return;
+    let changedRecords = 0;
     partitionsData.forEach((partition, i) => {
       if (partition === name) {
         defaultPartition.size++;
+        changedRecords++;
         partitionsData[i] = DEFAULT_PARTITION;
       }
     });
     partitions.set(DEFAULT_PARTITION, defaultPartition);
     partitions.delete(name);
     partitionsStore.set(partitions);
-    partitionsDataStore.set(partitionsData);
+    if (changedRecords > 0) partitionsDataStore.set(partitionsData);
   }
 
   function showTooltip(e: MouseEvent, dim: string) {
@@ -132,16 +141,14 @@
     />
     <Button color="primary" size="sm" on:click={addPartition}>Add</Button>
   </ButtonGroup>
-  {#if !validUpload}
-    <Helper color="red"
-      ><span class="font-medium">Partition with this name already exists.</span></Helper
-    >
-  {/if}
 
   {#if partitions.size === 0}
     <div class="mt-4">No partitions.</div>
   {:else}
     <div class="w-full overflow-y-auto scrollable-div pb-2" style="height: {height - 25}px">
+      {#if !validUpload}
+        <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
+      {/if}
       {#each [...partitions] as [partitionName, partition]}
         <PartitionElement
           {partitionName}

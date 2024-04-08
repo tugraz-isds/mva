@@ -57,7 +57,7 @@
         function: 'setPartitions',
         partitions: value
       });
-    }, 0);
+    }, 10);
   });
 
   const unsubscribeLinking = linkingArray.subscribe((value: boolean[]) => {

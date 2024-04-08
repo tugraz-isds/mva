@@ -21,6 +21,7 @@
   let activeHorizonalDivider: number | null = null;
 
   const handleVerticalMouseDown = () => {
+    $isInteractableStore = false;
     $isCurrentlyResizing = true;
     isDraggingVertical = true;
     disableTextSelection = true;
@@ -30,6 +31,7 @@
     if (!(e.target instanceof Element)) return;
     const dividerId = e.target.id.match(/\d+$/);
     activeHorizonalDivider = dividerId ? parseInt(dividerId[0]) : null;
+    $isInteractableStore = false;
     $isCurrentlyResizing = true;
     isDraggingHorizontal = true;
     disableTextSelection = true;
@@ -49,17 +51,18 @@
     if (isDraggingVertical) {
       const windowHeight = window.innerHeight;
       const dragY = e.clientY;
-      if (activeViews.length === 5) {
+      if (activeViews.length === 3 || activeViews.length === 4) {
+        activeViews[0].height = activeViews[1].height = (dragY / windowHeight) * 100 - 5;
+        activeViews[2].height = activeViews[3].height =
+          ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
+      } else if (activeViews.length === 5 || activeViews.length === 6) {
         activeViews[0].height =
           activeViews[1].height =
           activeViews[2].height =
             (dragY / windowHeight) * 100 - 5;
         activeViews[3].height = activeViews[4].height =
           ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
-      } else if (activeViews.length === 3 || activeViews.length === 4) {
-        activeViews[0].height = activeViews[1].height = (dragY / windowHeight) * 100 - 5;
-        activeViews[2].height = activeViews[3].height =
-          ((windowHeight - dragY) / windowHeight) * 100 + 4.5;
+        if (activeViews.length === 6) activeViews[5].height = activeViews[4].height;
       }
     }
     // Handle horizontal resize based on divider id and number of active views
@@ -122,7 +125,6 @@
 
 <div
   style="user-select: {disableTextSelection ? 'none' : 'auto'}; height: 95.5%"
-  on:mousedown={() => ($isInteractableStore = false)}
   on:mousemove={handleResize}
   on:mouseup={handleMouseUp}
 >

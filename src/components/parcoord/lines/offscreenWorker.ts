@@ -1,13 +1,22 @@
 import * as THREE from 'three';
 import {
-  LINE_MATERIAL_ACTIVE,
   LINE_MATERIAL_BRUSHED,
   LINE_MATERIAL_FILTERED,
   LINE_MATERIAL_HOVERED
 } from '../../../util/materials';
-import { areSetsEqual } from '../../../util/util';
+import {
+  changeLinePosition,
+  drawLine,
+  getPartitionMaterial,
+  getPartitionRecordsByName,
+  getUpdatedPartition,
+  initScene,
+  resetLines
+} from './drawingUtil';
+import { DEFAULT_PARTITION, areSetsEqual } from '../../../util/util';
 import type { AxesFilterType } from '../types';
 import type { MarginType } from '../../../util/types';
+import type { PartitionType } from '../../partitions/types';
 
 let width: number, height: number;
 
@@ -25,16 +34,18 @@ let hoveredLinesIndices = new Set<number>(),
   brushedLinesIndices = new Set<number>(),
   previouslyBrushedLinesIndices = new Set<number>();
 let lineShow: boolean[] = [];
+let partitionsData: string[] = [];
+let partitions: Map<string, PartitionType> = new Map();
 
 self.onmessage = function (message) {
   const data = message.data;
   switch (data.function) {
     case 'init':
       ({ canvas, width, height } = data);
-      init();
+      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       break;
     case 'resetLines':
-      resetLines(data.lineShow);
+      ({ lineShow, lines } = resetLines(data.lineShow));
       break;
     case 'drawLines':
       drawLines(data.lines);
@@ -68,33 +79,23 @@ self.onmessage = function (message) {
       break;
     case 'resizeCanvas':
       ({ width, height } = data);
-      init();
+      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       resizeCanvas(canvas, width, height);
       break;
     case 'redrawLines':
-      init();
+      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       drawLines(data.lines);
+      break;
+    case 'setPartitionsData':
+      partitionsData = data.partitionsData;
+      break;
+    case 'setPartitions':
+      updatePartitions(data.partitions);
       break;
     default:
       break;
   }
 };
-
-function init() {
-  scene = new THREE.Scene();
-  camera = new THREE.OrthographicCamera(0, width, 0, height, 0.1, 1000);
-  camera.position.set(0, 0, 5);
-  renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
-  renderer.setClearColor(0xffffff);
-  renderer.setSize(width, height, false);
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-}
-
-function resetLines(show: boolean[]) {
-  lineShow = show;
-  lines = [];
-}
 
 function drawLines(inputLines: number[][][]) {
   scene.children = [];
@@ -103,9 +104,8 @@ function drawLines(inputLines: number[][][]) {
     currLine.forEach((point: number[]) => {
       linePoints.push(new THREE.Vector3(...point));
     });
-    const material = (
-      lines[i] ? lines[i].material : LINE_MATERIAL_ACTIVE
-    ) as THREE.LineBasicMaterial;
+    const partition = partitions.get(partitionsData[i]);
+    const material = getPartitionMaterial(partition);
     material.needsUpdate = false;
     const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
     const line: THREE.Line & { index?: number } = new THREE.Line(geometry, material);
@@ -113,6 +113,7 @@ function drawLines(inputLines: number[][][]) {
     lines[i] = line;
     scene.add(line);
   });
+
   animate();
 }
 
@@ -175,10 +176,7 @@ function drawHoveredLines(hoveredIndices: Set<number> | null = null) {
   if (hoveredIndices) hoveredLinesIndices = hoveredIndices;
   hoveredLinesIndices.forEach((i) => {
     if (!lineShow[i]) return;
-    const line = lines[i];
-    line.material = LINE_MATERIAL_HOVERED;
-    changeLinePosition(line, 2);
-    line.material.needsUpdate = true;
+    drawLine(lines[i], LINE_MATERIAL_HOVERED, true, 2);
   });
 }
 
@@ -186,15 +184,8 @@ function removePreviouslyHoveredLines(hoveredIndices: Set<number> | null = null)
   if (hoveredIndices) previouslyHoveredLinesIndices = hoveredIndices;
   previouslyHoveredLinesIndices.forEach((i) => {
     if (!lineShow[i] || (interactable && hoveredLinesIndices.has(i))) return;
-    const line = lines[i];
-    if (brushedLinesIndices.has(i)) {
-      line.material = LINE_MATERIAL_BRUSHED;
-      changeLinePosition(line, 1);
-    } else {
-      line.material = LINE_MATERIAL_ACTIVE;
-      changeLinePosition(line, 0);
-    }
-    line.material.needsUpdate = false;
+    if (brushedLinesIndices.has(i)) drawLine(lines[i], LINE_MATERIAL_BRUSHED, false, 1);
+    else drawLine(lines[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
 }
 
@@ -202,10 +193,7 @@ function drawBrushedLines(brushedIndices: Set<number> | null = null) {
   if (brushedIndices) brushedLinesIndices = brushedIndices;
   brushedLinesIndices.forEach((i) => {
     if (!lineShow[i]) return;
-    const line = lines[i];
-    line.material = LINE_MATERIAL_BRUSHED;
-    changeLinePosition(line, 1);
-    line.material.needsUpdate = true;
+    drawLine(lines[i], LINE_MATERIAL_BRUSHED, true, 1);
   });
 }
 
@@ -213,10 +201,39 @@ function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null)
   if (brushedIndices) previouslyBrushedLinesIndices = brushedIndices;
   previouslyBrushedLinesIndices.forEach((i) => {
     if (!lineShow[i]) return;
-    const line = lines[i];
-    line.material = LINE_MATERIAL_ACTIVE;
-    changeLinePosition(line, 0);
-    line.material.needsUpdate = false;
+    drawLine(lines[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
+  });
+}
+
+function updatePartitions(partitionsNew: Map<string, PartitionType>) {
+  if (partitions.size === 0 || partitionsNew.size === 0) {
+    partitions = partitionsNew;
+    return;
+  }
+
+  const partitionsOldArray = Array.from(partitions.keys());
+  const partitionsNewArray = Array.from(partitionsNew.keys());
+  const partitionsDiff = partitionsOldArray.filter((x) => !partitionsNewArray.includes(x));
+  // Partition property was updated
+  if (partitionsDiff.length === 0) {
+    const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
+    partitions = partitionsNew;
+    if (updatedPartition !== null && updatedProperty !== null) {
+      updatePartitionColor(updatedPartition);
+    }
+  }
+  // Partition was deleted
+  else if (partitionsDiff.length === 1) {
+    updatePartitionColor(DEFAULT_PARTITION);
+  }
+}
+
+function updatePartitionColor(partitionName: string) {
+  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  const partition = partitions.get(partitionName);
+  partitionRecords.forEach((i) => {
+    if (!lineShow[i]) return;
+    drawLine(lines[i], getPartitionMaterial(partition), true);
   });
 }
 
@@ -243,7 +260,7 @@ function applyFilters(axesFilters: AxesFilterType[], margin: MarginType) {
         line.material = LINE_MATERIAL_BRUSHED;
         changeLinePosition(line, 1);
       } else {
-        line.material = LINE_MATERIAL_ACTIVE;
+        line.material = getPartitionMaterial(partitions.get(partitionsData[i]));
         changeLinePosition(line, 0);
       }
     } else {
@@ -256,14 +273,6 @@ function applyFilters(axesFilters: AxesFilterType[], margin: MarginType) {
     function: 'setLineShow',
     lineShow
   });
-}
-
-function changeLinePosition(line: THREE.Line, newZPosition: number) {
-  const positions = line.geometry.attributes.position.array;
-  for (let i = 0; i < positions.length; i += 3) {
-    positions[i + 2] = newZPosition;
-  }
-  line.geometry.attributes.position.needsUpdate = true;
 }
 
 function render() {

@@ -14,7 +14,7 @@ import {
   resetPoints,
   type PointType
 } from './drawingUtil';
-import { areSetsEqual } from '../../../util/util';
+import { DEFAULT_PARTITION, areSetsEqual } from '../../../util/util';
 import type { PartitionType } from '../../partitions/types';
 
 let width: number, height: number;
@@ -44,8 +44,7 @@ self.onmessage = function (message) {
       ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       break;
     case 'resetPoints':
-      ({ pointShow, points } = resetPoints(pointShow));
-      resetPoints(data.pointShow);
+      ({ pointShow, points } = resetPoints(data.pointShow));
       break;
     case 'setLinking':
       setLinking(data.pointShow);
@@ -105,9 +104,7 @@ function drawPoints(inputPoints: number[][]) {
   inputPoints.forEach((currPoint: number[], i: number) => {
     const partition = partitions.get(partitionsData[i]);
     const pointGeometry = getPartitionGeometry(pointSize, partition);
-    const material = points[i]
-      ? (points[i].material as THREE.Material)
-      : getPartitionMaterial(partition);
+    const material = getPartitionMaterial(partition);
     material.needsUpdate = false;
     const point: PointType = new THREE.Mesh(pointGeometry, material) as PointType;
     point.position.set(currPoint[0], currPoint[1], points[i] ? points[i].position.z : currPoint[2]);
@@ -208,24 +205,47 @@ function removePreviouslyBrushedPoints(brushedIndices: Set<number> | null = null
 }
 
 function updatePartitions(partitionsNew: Map<string, PartitionType>) {
-  if (JSON.stringify(partitions.keys()) !== JSON.stringify(partitionsNew.keys())) return;
   if (partitions.size === 0 || partitionsNew.size === 0) {
     partitions = partitionsNew;
     return;
   }
 
-  const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
-  console.log(updatedPartition, updatedProperty);
-  partitions = partitionsNew;
-  if (updatedPartition !== null && updatedProperty !== null) updatePartitionColor(updatedPartition);
+  const partitionsOldArray = Array.from(partitions.keys());
+  const partitionsNewArray = Array.from(partitionsNew.keys());
+  const partitionsDiff = partitionsOldArray.filter((x) => !partitionsNewArray.includes(x));
+  // Partition property was updated
+  if (partitionsDiff.length === 0) {
+    const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
+    partitions = partitionsNew;
+    if (updatedPartition !== null && updatedProperty !== null) {
+      if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
+      else updatePartitionShape(updatedPartition);
+    }
+  }
+  // Partition was deleted
+  else if (partitionsDiff.length === 1) {
+    updatePartitionColor(DEFAULT_PARTITION);
+    updatePartitionShape(DEFAULT_PARTITION);
+  }
 }
 
 function updatePartitionColor(partitionName: string) {
   const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  const partition = partitions.get(partitionName);
   partitionRecords.forEach((i) => {
     if (!pointShow[i]) return;
-    const partition = partitions.get(partitionsData[i]);
     drawPoint(points[i], getPartitionMaterial(partition), true);
+  });
+}
+
+function updatePartitionShape(partitionName: string) {
+  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  const partition = partitions.get(partitionName);
+  partitionRecords.forEach((i) => {
+    const newPoint = points[i];
+    newPoint.geometry = getPartitionGeometry(pointSize, partition);
+    scene.remove(points[i]);
+    scene.add(newPoint);
   });
 }
 

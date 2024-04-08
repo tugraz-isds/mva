@@ -117,7 +117,6 @@
     }
   }
 
-  // Update xScale when dimensions change
   $: {
     if (margin && width > 0 && dataset?.length > 0 && dimensions) {
       calculateXScales();
@@ -189,7 +188,6 @@
     else if (direction === 'left') parcoordDiv.scrollLeft -= 10;
   }
 
-  // Handle inverting axes
   function handleInvertAxis(axisIndex: number) {
     yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
       yScales[dimensions[axisIndex]].domain().reverse()

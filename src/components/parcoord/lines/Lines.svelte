@@ -16,6 +16,7 @@
   } from '../../../stores/brushing';
   import { linkingArray } from '../../../stores/linking';
   import { isCurrentlyResizing } from '../../../stores/views';
+  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
   import { select } from 'd3-selection';
   import { line as lineD3 } from 'd3-shape';
@@ -51,6 +52,24 @@
     currHeight: number = height;
   let throttledDrawLines: () => void;
   let debouncedDrawLines: () => void;
+
+  const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
+    setTimeout(() => {
+      worker?.postMessage({
+        function: 'setPartitionsData',
+        partitionsData: value
+      });
+    }, 0);
+  });
+
+  const unsubscribePartitions = partitionsStore.subscribe((value) => {
+    setTimeout(() => {
+      worker?.postMessage({
+        function: 'setPartitions',
+        partitions: value
+      });
+    }, 10);
+  });
 
   let axesFilters: AxesFilterType[] = [];
   const unsubscribeFilters = filtersArray.subscribe((value: any) => {
@@ -415,6 +434,8 @@
   });
 
   onDestroy(() => {
+    unsubscribePartitions();
+    unsubscribePartitionsData();
     unsubscribeFilters();
     unsubscribeCustomRanges();
     unsubscribeParcoordHistogramData();
