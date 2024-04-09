@@ -1,3 +1,5 @@
+import type { Selection } from 'd3-selection';
+
 export type DimensionMetadataType = {
   inverted: boolean;
   showLabels: boolean;
@@ -5,6 +7,17 @@ export type DimensionMetadataType = {
   showFilter: boolean;
   showFilterValues: boolean;
   binNo: number | null;
+};
+
+export type AxisElementsType = {
+  lines: Selection<SVGGElement, unknown, HTMLElement, any>[];
+  titles: Selection<SVGTextElement, unknown, HTMLElement, any>[];
+  invertIcons: Selection<SVGSVGElement, unknown, HTMLElement, any>[];
+  upperFilters: Selection<SVGSVGElement, unknown, HTMLElement, any>[];
+  upperFilterValues: (Selection<SVGGElement, unknown, HTMLElement, any> | null)[];
+  lowerFilters: Selection<SVGSVGElement, unknown, HTMLElement, any>[];
+  lowerFilterValues: (Selection<SVGGElement, unknown, HTMLElement, any> | null)[];
+  filterRectangles: Selection<SVGRectElement, unknown, HTMLElement, any>[];
 };
 
 export type AxesFilterType = {
