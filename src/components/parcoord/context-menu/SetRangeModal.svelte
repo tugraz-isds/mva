@@ -74,7 +74,7 @@
 </script>
 
 <Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
-  <form class="flex flex-col space-y-6" action="#">
+  <form class="flex flex-col space-y-6">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Set Range for Dimension '{dimension}'</h3>
     <div class="mb-6 flex items-center">
       <div class="flex flex-row items-center mr-4">
@@ -106,14 +106,14 @@
       </div>
     </div>
     <div>
-      <div class="text-sm font-medium block text-gray-400 dark:text-gray-500 w-1/4">Original Range:</div>
+      <div class="text-sm font-medium block text-gray-400 w-1/4">Original Range:</div>
       <div class="mb-6 flex items-center">
         <div class="flex flex-row items-center mr-4">
           <Label for="original-range-min" class="w-1/4">Min:</Label>
           <NumberInput
+            value={originalMin}
             disabled
             readonly
-            value={originalMin}
             id="original-range-min"
             defaultClass="block w-3/4"
             size="sm"

@@ -59,7 +59,7 @@
 </script>
 
 <Modal bind:open={isOpen} size="xs" class="w-full">
-  <form class="flex flex-col space-y-6" action="#">
+  <form class="flex flex-col space-y-6">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Export as SVG</h3>
     <div class="mb-6 flex items-center">
       <Label for="upload-input" class="w-1/3">Number of decimals:</Label>

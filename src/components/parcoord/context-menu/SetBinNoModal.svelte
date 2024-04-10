@@ -27,7 +27,7 @@
 </script>
 
 <Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
-  <form class="flex flex-col space-y-6" action="#">
+  <form class="flex flex-col space-y-6">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Set Number of Bins</h3>
     <div class="mb-6 flex items-center">
       <div class="flex flex-row items-center">

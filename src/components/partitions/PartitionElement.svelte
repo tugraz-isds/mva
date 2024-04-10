@@ -1,12 +1,14 @@
 <script lang="ts">
   import ColorPicker, { type RgbaColor } from 'svelte-awesome-color-picker';
-  import { Tooltip, Dropdown, DropdownItem, Modal, Button } from 'flowbite-svelte';
+  import { Tooltip, Dropdown, DropdownItem } from 'flowbite-svelte';
   import { Trash, Plus, Eye, Stop, Check } from 'svelte-heros-v2';
   import ColorPickerWrapper from './ColorPickerWrapper.svelte';
+  import DeletePartitionModal from './DeletePartitionModal.svelte';
   import { colorPickerOpenedStore, colorPickerPositionStore } from '../../stores/partitions';
   import { onDestroy, onMount } from 'svelte';
   import { DEFAULT_PARTITION } from '../../util/util';
   import type { PartitionShapeType, PartitionType } from './types';
+  import { datasetStore } from '../../stores/dataset';
 
   export let partitionName: string;
   export let partition: PartitionType;
@@ -20,6 +22,13 @@
   let rgb: RgbaColor = { r: 65, b: 225, g: 105, a: 1 };
   let isDeleteModalOpen = false;
   let isShapeDropdownOpen = false;
+
+  const unsubscribeDataset = datasetStore.subscribe(() => {
+    if (partitionName === DEFAULT_PARTITION)
+      setTimeout(() => {
+        rgb = partition.color;
+      }, 0);
+  });
 
   const unsubscribeColorPickerOpened = colorPickerOpenedStore.subscribe((value) => {
     if (value || !isMounted) return;
@@ -48,32 +57,15 @@
 
   onMount(() => {
     isMounted = true;
-    setTimeout(() => {
-      rgb = partition.color;
-    }, 0);
   });
 
   onDestroy(() => {
+    unsubscribeDataset();
     unsubscribeColorPickerOpened();
   });
 </script>
 
-<Modal bind:open={isDeleteModalOpen} size="xs" autoclose>
-  <div class="text-center">
-    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-      {partitionName === DEFAULT_PARTITION
-        ? `You cannot delete '${DEFAULT_PARTITION}' partition.`
-        : `Are you sure you want to delete partition '${partitionName}'?`}
-    </h3>
-    <Button
-      disabled={partitionName === DEFAULT_PARTITION}
-      color="red"
-      class="me-2"
-      on:click={() => deletePartition(partitionName)}>Delete</Button
-    >
-    <Button color="alternative">Cancel</Button>
-  </div>
-</Modal>
+<DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} {deletePartition} />
 
 <div
   class="flex flex-row items-center mt-2 rounded-lg bg-gray-100 border-b-4 p-1"
@@ -92,6 +84,7 @@
     <Trash
       size="16"
       on:click={() => {
+        isDeleteModalOpen = false;
         isDeleteModalOpen = true;
       }}
       class="text-grey-900 cursor-pointer"
