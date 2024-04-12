@@ -4,6 +4,7 @@
   import PartitionElement from './PartitionElement.svelte';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
   import { isInteractableStore, brushedArray } from '../../stores/brushing';
+  import { datasetStore } from '../../stores/dataset';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { DEFAULT_PARTITION } from '../../util/util';
   import type { PartitionType } from './types';
@@ -23,6 +24,23 @@
     clientY: 0,
     text: []
   };
+
+  const unsubscribeDataset = datasetStore.subscribe((value) => {
+    partitionsStore.set(
+      new Map([
+        [
+          DEFAULT_PARTITION,
+          {
+            size: value.length,
+            shape: 'circle',
+            color: { r: 65, b: 225, g: 105, a: 1 }
+          }
+        ]
+      ])
+    );
+
+    partitionsDataStore.set(Array(value.length).fill(DEFAULT_PARTITION));
+  });
 
   let partitions: Map<string, PartitionType> = new Map();
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
@@ -122,6 +140,7 @@
   });
 
   onDestroy(() => {
+    unsubscribeDataset();
     unsubscribePartitions();
     unsubscribePartitionsData();
   });

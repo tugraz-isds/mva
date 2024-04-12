@@ -55,7 +55,7 @@
         function: 'setPartitionsData',
         partitionsData: value
       });
-    }, 0);
+    }, 10);
   });
 
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
@@ -64,7 +64,7 @@
         function: 'setPartitions',
         partitions: value
       });
-    }, 10);
+    }, 0);
   });
 
   let axesFilters: AxesFilterType[] = [];

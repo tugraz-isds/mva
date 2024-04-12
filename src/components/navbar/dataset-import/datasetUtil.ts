@@ -1,6 +1,6 @@
 import { autoType, dsvFormat, type DSVParsedArray } from 'd3-dsv';
 import type { DimensionDataType } from '../../../util/types';
-import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
+import { isNumber } from '../../../util/util';
 import { extent, max } from 'd3-array';
 
 export const SELECT_DEFAULT_STYLE =
@@ -97,8 +97,6 @@ export async function parseDataset(files: FileList, cellSeparator: string, decim
   localStorage.setItem('tableDimensions', JSON.stringify(tableDimensions));
   localStorage.setItem('dimensionTypes', JSON.stringify(Array.from(dimensionTypeMap.entries())));
   localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
-  const partitionsData = Array(dataset.length).fill(DEFAULT_PARTITION);
-  localStorage.setItem('partitionsData', JSON.stringify(partitionsData));
 
-  return { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsData };
+  return { dataset, tableDimensions, dimensionTypeMap, labelDim };
 }
