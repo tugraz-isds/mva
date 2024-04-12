@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare, EllipsisVertical } from 'svelte-heros-v2';
+  import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare, Bars3 } from 'svelte-heros-v2';
   import { openWindow } from 'svelte-window-system';
   import { Checkbox, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { activeViewsStore } from '../../stores/views';
@@ -84,10 +84,10 @@
     <div class="flex flex-row items-center">
       <span>{currView.title}</span>
       {#if currView.id === 'table'}
-        <EllipsisVertical
+        <Bars3
           id="table-dims-dropdown"
-          size="16"
-          class="text-grey-900 cursor-pointer hover:bg-sky-100"
+          size="14"
+          class="rotate-90 text-grey-900 cursor-pointer hover:bg-sky-100"
           on:click={openTableDimensions}
         />
         <Tooltip style="z-index: 1000;" type="light">Table Dimensions</Tooltip>

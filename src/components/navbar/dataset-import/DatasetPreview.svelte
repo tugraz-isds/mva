@@ -34,7 +34,10 @@
     </thead>
     <tbody>
       {#each previewHeader as header, i}
-        <th class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''}">{capitalizeString(header.type ?? '')}</th>
+        <th
+          class="px-1 {selectedColumn === i ? 'bg-blue-200' : ''} text-{header.type === 'numerical' ? 'right' : 'left'}"
+          >{capitalizeString(header.type ?? '')}</th
+        >
       {/each}
       {#each previewRows as row}
         <tr class="text-black" style="font-size: 12px;">

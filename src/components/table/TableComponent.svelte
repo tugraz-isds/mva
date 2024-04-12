@@ -17,8 +17,9 @@
   import { getLongestString, getTextWidth } from '../../util/text';
   import { ascending, descending } from 'd3-array';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { TooltipType } from '../../util/types';
+  import type { DimensionDataType, TooltipType } from '../../util/types';
   import type { TableDimensionsType } from './types';
+  import type { RgbaColor } from 'svelte-awesome-color-picker';
 
   let contextMenu: ContextMenu;
 
@@ -37,18 +38,27 @@
     text: []
   };
 
+  let dataset: DSVParsedArray<any>;
+
   let tableDimensions: TableDimensionsType[] = [];
   const unsubscribeTableDimensions = tableDimensionsStore.subscribe((value) => {
     tableDimensions = value;
   });
 
-  let dataset: DSVParsedArray<any>;
+  let partitionsData: string[] = [];
+  const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
+    partitionsData = value;
+
+    dataset?.map((row, i) => (row._partition = partitionsData[i]));
+  });
+
   const unsubscribeDataset = datasetStore.subscribe((value) => {
     dataset = value as DSVParsedArray<any>;
     if (dataset?.length > 0) {
       dataset = dataset.map((item, i) => {
         return {
           _i: i,
+          _partition: partitionsData[i],
           ...item
         };
       }) as DSVParsedArray<any>;
@@ -130,6 +140,7 @@
   }
 
   function sortDataset(dim: string) {
+    console.log(dim, dataset[0]);
     if (sorting.dim === dim) sorting.direction = sorting.direction === 'ASC' ? 'DESC' : 'ASC';
     else sorting.direction = 'ASC';
     sorting.dim = dim;
@@ -170,12 +181,27 @@
     else return $dimensionDataStore.get(title)?.longestString ?? '';
   }
 
+  function getHeaderClass(dimData?: DimensionDataType) {
+    return `text-${dimData === undefined || dimData.active ? 'black' : 'gray-400'}`;
+  }
+
+  function getCellClass(dimData?: DimensionDataType) {
+    return `px-1 text-${dimData?.type === 'numerical' ? 'right' : 'left'} text-${
+      dimData === undefined || dimData.active ? 'black' : 'gray-400'
+    }`;
+  }
+
+  function getPartitionColor(title: string, color?: RgbaColor) {
+    return title === '_partition' ? `background-color: rgba(${color?.r}, ${color?.g}, ${color?.b}, 0.25)` : '';
+  }
+
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeLinking();
     unsubscribeBrushing();
     unsubscribeHovered();
     unsubscribeTableDimensions();
+    unsubscribePartitionsData();
   });
 </script>
 
@@ -193,6 +219,7 @@
                   on:mouseenter={(e) => showTooltip(e, dim.title)}
                   on:mouseleave={hideTooltip}
                   on:contextmenu={(e) => contextMenu.showContextMenu(e, dim.title)}
+                  class={getHeaderClass($dimensionDataStore.get(dim.title))}
                   style="font-size: 12px; overflow: hidden; width: {getTextWidth(
                     getHeaderLength(dim.title),
                     12,
@@ -223,12 +250,11 @@
         <tbody>
           {#each dataset as row, index}
             <tr
-              class="{hoveredLineIndex === index || hoveredRowsIndices.has(index)
+              class={hoveredLineIndex === index || hoveredRowsIndices.has(index)
                 ? 'bg-red-500'
                 : brushedRowsIndices.has(index) && rowShow[index]
                 ? 'bg-orange-400'
                 : ''}
-              {rowShow[index] ? 'text-black' : 'text-gray-400'}"
               on:mouseenter={() => handleMouseEnter(index)}
               on:mouseleave={() => handleMouseLeave(index)}
               on:mousedown={(e) => handleRowClick(e, index)}
@@ -236,9 +262,11 @@
               {#each tableDimensions as dim, i}
                 {#if dim.visible}
                   <td
-                    class="px-1 text-{$dimensionDataStore.get(dim.title)?.type === 'numerical' ? 'right' : 'left'}"
-                    style="font-size: 12px;"
-                    >{dim.title === '_partition' ? $partitionsDataStore[index] : formatCell(row[dim.title], i)}</td
+                    class={getCellClass($dimensionDataStore.get(dim.title))}
+                    style="font-size: 12px; {getPartitionColor(
+                      dim.title,
+                      $partitionsStore.get(partitionsData[row._i])?.color
+                    )}">{dim.title === '_partition' ? partitionsData[row._i] : formatCell(row[dim.title], i)}</td
                   >
                 {/if}
               {/each}
@@ -248,7 +276,7 @@
       </table>
     </div>
     <div class="flex items-center" style="font-size: 12px;">
-      {dataset.length} rows | {brushedRowsIndices.size} selected |
+      {dataset.length} records | {brushedRowsIndices.size} selected |
     </div>
   </div>
 {:else}
@@ -265,23 +293,23 @@
   }
 
   table th {
-    border-top: 1px solid;
+    border-top: 1px solid black;
   }
 
   table td,
   table th {
-    border-bottom: 1px solid;
-    border-right: 1px solid;
+    border-bottom: 1px solid black;
+    border-right: 1px solid black;
   }
 
   table th:first-child,
   table td:first-child {
-    border-left: 1px solid;
+    border-left: 1px solid black;
   }
 
   thead {
     position: sticky;
-    border: 2px solid red;
+    border: 2px solid black;
     top: 0;
   }
 

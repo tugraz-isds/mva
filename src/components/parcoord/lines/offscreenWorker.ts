@@ -202,18 +202,18 @@ function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null)
 }
 
 function updatePartitions(partitionsNew: Map<string, PartitionType>) {
-  if (partitions.size === 0 || partitionsNew.size === 0) {
-    partitions = partitionsNew;
+  const partitionsOld = partitions;
+  partitions = partitionsNew;
+  if (partitionsOld.size === 0 || partitionsNew.size === 0) {
     return;
   }
 
-  const partitionsOldArray = Array.from(partitions.keys());
-  const partitionsNewArray = Array.from(partitionsNew.keys());
+  const partitionsOldArray = Array.from(partitionsOld.keys());
+  const partitionsNewArray = Array.from(partitions.keys());
   const partitionsDiff = partitionsOldArray.filter((x) => !partitionsNewArray.includes(x));
   // Partition property was updated
   if (partitionsDiff.length === 0) {
-    const { updatedPartition, updatedProperty } = getUpdatedPartition(partitions, partitionsNew);
-    partitions = partitionsNew;
+    const { updatedPartition, updatedProperty } = getUpdatedPartition(partitionsOld, partitions);
     if (updatedPartition !== null && updatedProperty !== null) {
       updatePartitionColor(updatedPartition);
     }
