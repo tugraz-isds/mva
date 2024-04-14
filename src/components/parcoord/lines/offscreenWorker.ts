@@ -82,11 +82,9 @@ self.onmessage = function (message) {
       ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       drawLines(data.lines);
       break;
-    case 'setPartitionsData':
-      partitionsData = data.partitionsData;
-      break;
-    case 'setPartitions':
-      updatePartitions(data.partitions);
+    case 'updatePartitions':
+      if (data.partitionsData !== null) partitionsData = data.partitionsData;
+      if (data.partitions !== null) updatePartitions(data.partitions);
       break;
     default:
       break;
@@ -219,7 +217,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
     }
   }
   // Partition was deleted
-  else if (partitionsDiff.length === 1) {
+  else if (partitionsDiff.length === 1 && partitionsNewArray.length === partitionsOldArray.length - 1) {
     updatePartitionColor(DEFAULT_PARTITION);
   }
 }

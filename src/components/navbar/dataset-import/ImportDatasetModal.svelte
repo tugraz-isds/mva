@@ -3,7 +3,7 @@
   import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
   import { isInteractableStore } from '../../../stores/brushing';
   import { tableDimensionsStore } from '../../../stores/table';
-  import { isNumber } from '../../../util/util';
+  import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
   import {
     SELECT_DEFAULT_STYLE,
     CELL_SEPARATOR_LIST,
@@ -14,6 +14,7 @@
   } from './datasetUtil';
   import type { DimensionType } from '../../../util/types';
   import DatasetPreview from './DatasetPreview.svelte';
+  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
 
   export let isOpen: boolean;
 
@@ -68,6 +69,21 @@
       dimensionDataStore.set(dimensionTypeMap);
       datasetStore.set(dataset);
       labelDimension.set(labelDim);
+
+      partitionsStore.set(
+        new Map([
+          [
+            DEFAULT_PARTITION,
+            {
+              size: dataset.length,
+              shape: 'circle',
+              color: { r: 65, b: 225, g: 105, a: 1 }
+            }
+          ]
+        ])
+      );
+
+      partitionsDataStore.set(Array(dataset.length).fill(DEFAULT_PARTITION));
 
       validUpload = true;
       isOpen = false;

@@ -41,6 +41,7 @@ export function calculateMaxLengthArray(textArray: string[], fontSize: number, f
 }
 
 export function getLongestString(arr: string[]) {
+  if (arr.length === 0) return '';
   return arr.reduce(function (a, b) {
     return a.length > b.length ? a : b;
   });

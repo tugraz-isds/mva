@@ -1,14 +1,19 @@
-import * as THREE from 'three';
 import { POINT_MATERIAL_BRUSHED, POINT_MATERIAL_FILTERED, POINT_MATERIAL_HOVERED } from '../../../util/materials';
+import * as THREE from 'three';
 import {
   drawPoint,
   getPartitionGeometry,
+  getPartitionGeometryStroke,
   getPartitionMaterial,
+  getPartitionMaterialStroke,
   getPartitionRecordsByName,
+  getPoint,
+  getStroke,
   getUpdatedPartition,
   initScene,
   resetPoints,
-  type PointType
+  type PointType,
+  type StrokeType
 } from './drawingUtil';
 import { DEFAULT_PARTITION, areSetsEqual } from '../../../util/util';
 import type { PartitionType } from '../../partitions/types';
@@ -22,6 +27,7 @@ let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let points: PointType[] = [];
+let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
 
 let hoveredPointsIndices = new Set<number>(),
@@ -40,7 +46,7 @@ self.onmessage = function (message) {
       ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       break;
     case 'resetPoints':
-      ({ pointShow, points } = resetPoints(data.pointShow));
+      ({ pointShow, points, strokes } = resetPoints(data.pointShow));
       break;
     case 'setLinking':
       setLinking(data.pointShow);
@@ -73,11 +79,9 @@ self.onmessage = function (message) {
       ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       resizeCanvas(canvas, width, height);
       break;
-    case 'setPartitionsData':
-      partitionsData = data.partitionsData;
-      break;
-    case 'setPartitions':
-      updatePartitions(data.partitions);
+    case 'updatePartitions':
+      if (data.partitionsData !== null) partitionsData = data.partitionsData;
+      if (data.partitions !== null) updatePartitions(data.partitions);
       break;
     default:
       break;
@@ -97,16 +101,17 @@ function setLinking(show: boolean[]) {
 
 function drawPoints(inputPoints: number[][]) {
   scene.children = [];
+  strokes = Array(inputPoints.length).fill(null);
   inputPoints.forEach((currPoint: number[], i: number) => {
     const partition = partitions.get(partitionsData[i]);
-    const pointGeometry = getPartitionGeometry(pointSize, partition);
-    const material = getPartitionMaterial(partition);
-    material.needsUpdate = false;
-    const point: PointType = new THREE.Mesh(pointGeometry, material) as PointType;
-    point.position.set(currPoint[0], currPoint[1], points[i] ? points[i].position.z : currPoint[2]);
-    point.index = i;
+    const point = getPoint(currPoint, i, points[i], pointSize, partition);
     points[i] = point as PointType;
     scene.add(point);
+
+    if (partition?.shape.includes('hollow')) {
+      const stroke = getStroke(currPoint, i, points[i], pointSize, partition);
+      scene.add(stroke);
+    }
   });
 
   animate();
@@ -219,7 +224,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
     }
   }
   // Partition was deleted
-  else if (partitionsDiff.length === 1) {
+  else if (partitionsDiff.length === 1 && partitionsNewArray.length === partitionsOldArray.length - 1) {
     updatePartitionColor(DEFAULT_PARTITION);
     updatePartitionShape(DEFAULT_PARTITION);
   }
@@ -238,10 +243,27 @@ function updatePartitionShape(partitionName: string) {
   const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
   const partition = partitions.get(partitionName);
   partitionRecords.forEach((i) => {
-    const newPoint = points[i];
-    newPoint.geometry = getPartitionGeometry(pointSize, partition);
+    const geometry = getPartitionGeometry(pointSize, partition);
+    const material = getPartitionMaterial(partition);
+    const newPoint = new THREE.Mesh(geometry, material) as PointType;
+    newPoint.position.set(points[i].position.x, points[i].position.y, points[i].position.z);
+    newPoint.index = i;
     scene.remove(points[i]);
     scene.add(newPoint);
+    points[i] = newPoint;
+
+    scene.remove(strokes[i] as StrokeType);
+    if (partition?.shape.includes('hollow')) {
+      const materialStroke = getPartitionMaterialStroke(partition);
+      const geometryStroke = getPartitionGeometryStroke(pointSize, partition);
+      const newStroke = new THREE.LineLoop(geometryStroke, materialStroke) as StrokeType;
+      newStroke.position.set(points[i].position.x, points[i].position.y, points[i].position.z);
+      newStroke.index = i;
+      scene.add(newStroke);
+      strokes[i] = newStroke;
+    } else if (strokes[i] !== null) {
+      strokes[i] = null;
+    }
   });
 }
 

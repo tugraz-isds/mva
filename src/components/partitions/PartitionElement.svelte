@@ -1,46 +1,37 @@
 <script lang="ts">
-  import ColorPicker, { type RgbaColor } from 'svelte-awesome-color-picker';
-  import { Tooltip, Dropdown, DropdownItem } from 'flowbite-svelte';
-  import { Trash, Plus, Eye, Stop, Check } from 'svelte-heros-v2';
-  import ColorPickerWrapper from './ColorPickerWrapper.svelte';
+  import { Tooltip, Dropdown, DropdownItem, Input } from 'flowbite-svelte';
+  import { Trash, Plus, Eye, Check } from 'svelte-heros-v2';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
-  import { colorPickerOpenedStore, colorPickerPositionStore } from '../../stores/partitions';
-  import { onDestroy, onMount } from 'svelte';
-  import { DEFAULT_PARTITION } from '../../util/util';
+  import ColorPickerModal from './ColorPickerModal.svelte';
+  import { palette_icon, shape_circle_icon, shape_square_icon, shape_triangle_icon } from '../../util/icon-definitions';
+  import { rgbaToHexString } from '../../util/colors';
   import type { PartitionShapeType, PartitionType } from './types';
-  import { datasetStore } from '../../stores/dataset';
+  import type { RgbaColor } from 'svelte-awesome-color-picker';
+  import { DEFAULT_PARTITION } from '../../util/util';
 
+  export let index: number;
   export let partitionName: string;
+  export let partitions: Map<string, PartitionType>;
   export let partition: PartitionType;
   export let addRecordsToPartition: (name: string) => void;
   export let updatePartition: (name: string, partition: PartitionType) => void;
   export let deletePartition: (name: string) => void;
-  export let showTooltip: (e: MouseEvent, dim: string) => void;
-  export let hideTooltip: () => void;
+  export let renamePartition: (oldName: string, newName: string, error?: string) => void;
 
-  let isMounted = false;
-  let rgb: RgbaColor = { r: 65, b: 225, g: 105, a: 1 };
+  const SHAPES: Map<PartitionShapeType, string> = new Map([
+    ['circle', shape_circle_icon],
+    ['triangle', shape_triangle_icon],
+    ['square', shape_square_icon],
+    ['triangle hollow', shape_triangle_icon],
+    ['square hollow', shape_square_icon]
+  ]);
+
   let isDeleteModalOpen = false;
   let isShapeDropdownOpen = false;
-
-  const unsubscribeDataset = datasetStore.subscribe(() => {
-    if (partitionName === DEFAULT_PARTITION)
-      setTimeout(() => {
-        rgb = partition.color;
-      }, 0);
-  });
-
-  const unsubscribeColorPickerOpened = colorPickerOpenedStore.subscribe((value) => {
-    if (value || !isMounted) return;
-    setColor(rgb);
-  });
-
-  function handleColorPickerOpen(event: MouseEvent) {
-    colorPickerPositionStore.set({
-      position: { x: event.clientX, y: event.clientY },
-      windowSize: { width: window.innerWidth, height: window.innerHeight }
-    });
-  }
+  let isColorPickerOpen = false;
+  let colorPickerPosition = { x: 0, y: 0 };
+  let isNameEditable = false;
+  let partitionNameOld: string;
 
   function setShape(shape: PartitionShapeType) {
     if (shape === partition.shape) return;
@@ -55,31 +46,64 @@
     updatePartition(partitionName, partition);
   }
 
-  onMount(() => {
-    isMounted = true;
-  });
+  function showColorPicker(e: MouseEvent) {
+    isColorPickerOpen = false;
+    isColorPickerOpen = true;
+    colorPickerPosition = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  }
 
-  onDestroy(() => {
-    unsubscribeDataset();
-    unsubscribeColorPickerOpened();
-  });
+  function handleFocus(e: FocusEvent) {
+    if (!isNameEditable) (e.target as HTMLElement).blur();
+  }
+
+  function handleBlur(e: FocusEvent) {
+    if (!isNameEditable) return;
+    isNameEditable = false;
+    let errorMessage: string | undefined;
+    if (partitionName.length === 0) errorMessage = 'Cannot add partition with empty name.';
+    if (Array.from(partitions.keys()).includes(partitionName))
+      errorMessage = 'Partition with this name already exists.';
+    setTimeout(() => {
+      renamePartition(partitionNameOld, partitionName, errorMessage);
+      if (errorMessage) partitionName = partitionNameOld;
+    }, 100);
+  }
+
+  function handleDoubleClick(e: MouseEvent) {
+    if (partitionName === DEFAULT_PARTITION) return;
+    isNameEditable = true;
+    (e.target as HTMLElement).focus();
+    partitionNameOld = partitionName;
+  }
 </script>
 
 <DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} {deletePartition} />
 
+<ColorPickerModal
+  isOpen={isColorPickerOpen}
+  position={colorPickerPosition}
+  partitionColor={partition.color}
+  {setColor}
+/>
+
 <div
   class="flex flex-row items-center mt-2 rounded-lg bg-gray-100 border-b-4 p-1"
-  style="border-color: {`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`}; font-size: 12px;"
+  style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
 >
-  <div
-    class="w-1/2 truncate rounded-lg p-1"
-    style="background-color: {`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`};"
-    on:mouseenter={(e) => showTooltip(e, partitionName)}
-    on:mouseleave={hideTooltip}
-  >
-    {partitionName}
+  <div on:dblclick={handleDoubleClick} class="w-1/2">
+    <Input
+      bind:value={partitionName}
+      on:blur={handleBlur}
+      on:focus={handleFocus}
+      defaultClass="block w-full disabled:cursor-pointer rtl:text-right"
+      class="rounded-lg p-1 {isNameEditable ? '' : 'opacity-50 select-none'}"
+      style="background-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, 0.1)`};"
+    />
   </div>
-  <div class="w-1/6 truncate">{partition.size}</div>
+  <div class="w-1/6 truncate ml-1">{partition.size}</div>
   <div class="w-1/3 flex flex-row items-center justify-evenly">
     <Trash
       size="16"
@@ -92,50 +116,34 @@
     <Tooltip style="z-index: 1000;" type="light">Delete Partition</Tooltip>
     <Plus size="16" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
     <Tooltip style="z-index: 1000;" type="light">Add Records</Tooltip>
-    <Stop id="partition-shape-button-{partitionName.replace(' ', '')}" size="16" class="text-grey-900 cursor-pointer" />
+    <div id="partition-shape-button-{index}" class="cursor-pointer">
+      {@html SHAPES.get(partition.shape)?.replace('<svg', '<svg width="12" height="12" stroke="#fff" fill="#111827"')}
+    </div>
     <Tooltip style="z-index: 1000;" type="light">Partition Shape</Tooltip>
     <Dropdown
-      triggeredBy="#partition-shape-button-{partitionName.replace(' ', '')}"
+      triggeredBy="#partition-shape-button-{index}"
       ulClass="bg-white border border-gray-300 p-1"
       style="z-index: 1000;"
       bind:open={isShapeDropdownOpen}
     >
-      <DropdownItem
-        on:click={() => setShape('circle')}
-        defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {partition.shape === 'circle' ? 'visible' : 'hidden'}"
-        />Circle</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => setShape('triangle')}
-        defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {partition.shape === 'triangle' ? 'visible' : 'hidden'}"
-        />Triangle</DropdownItem
-      >
-      <DropdownItem
-        on:click={() => setShape('square')}
-        defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {partition.shape === 'square' ? 'visible' : 'hidden'}"
-        />Square</DropdownItem
-      >
+      {#each [...SHAPES] as [name]}
+        <DropdownItem
+          on:click={() => setShape(name)}
+          defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
+          ><Check
+            class="w-3 h-3 ms-2 mr-2"
+            style="visibility: {partition.shape === name ? 'visible' : 'hidden'}"
+          />{name[0].toUpperCase() + name.slice(1)}</DropdownItem
+        >
+      {/each}
     </Dropdown>
-    <div id="color-picker-wrapper" />
-    <div on:click={handleColorPickerOpen} on:keydown={() => {}}>
-      <ColorPicker
-        label=""
-        --input-size="16px"
-        --picker-height="200px"
-        --picker-width="200px"
-        bind:rgb
-        components={{ wrapper: ColorPickerWrapper }}
-      />
+    <div on:click={showColorPicker} on:keydown={() => {}} class="cursor-pointer">
+      {@html palette_icon.replace(
+        '<svg',
+        `<svg width="16" height="16" stroke="#fff" fill="${rgbaToHexString(partition.color)}"`
+      )}
     </div>
+
     <Tooltip style="z-index: 1000;" type="light">Partition Color</Tooltip>
     <Eye size="16" class="text-grey-900 cursor-pointer" />
     <Tooltip style="z-index: 1000;" type="light">View Records</Tooltip>

@@ -3,12 +3,9 @@
   import { ButtonGroup, Input, Button, Helper } from 'flowbite-svelte';
   import PartitionElement from './PartitionElement.svelte';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
-  import { isInteractableStore, brushedArray } from '../../stores/brushing';
-  import { datasetStore } from '../../stores/dataset';
-  import Tooltip from '../tooltip/Tooltip.svelte';
+  import { brushedArray } from '../../stores/brushing';
   import { DEFAULT_PARTITION } from '../../util/util';
   import type { PartitionType } from './types';
-  import type { TooltipType } from '../../util/types';
 
   let width: number;
   let height: number;
@@ -17,30 +14,6 @@
   let validUpload = true;
   let errorMessage = '';
   let partitionName = '';
-
-  let tooltip: TooltipType = {
-    visible: false,
-    clientX: 0,
-    clientY: 0,
-    text: []
-  };
-
-  const unsubscribeDataset = datasetStore.subscribe((value) => {
-    partitionsStore.set(
-      new Map([
-        [
-          DEFAULT_PARTITION,
-          {
-            size: value.length,
-            shape: 'circle',
-            color: { r: 65, b: 225, g: 105, a: 1 }
-          }
-        ]
-      ])
-    );
-
-    partitionsDataStore.set(Array(value.length).fill(DEFAULT_PARTITION));
-  });
 
   let partitions: Map<string, PartitionType> = new Map();
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
@@ -116,23 +89,21 @@
     if (changedRecords > 0) partitionsDataStore.set(partitionsData);
   }
 
-  function showTooltip(e: MouseEvent, dim: string) {
-    if (!$isInteractableStore) return;
-    tooltip = {
-      visible: true,
-      clientX: e.clientX,
-      clientY: e.clientY,
-      text: [dim]
-    };
-  }
+  function renamePartition(oldName: string, newName: string, error?: string) {
+    if (oldName === newName || !partitions.has(oldName)) return;
+    if (error) {
+      validUpload = false;
+      errorMessage = error;
+      return;
+    }
 
-  function hideTooltip() {
-    tooltip = {
-      visible: false,
-      clientX: 0,
-      clientY: 0,
-      text: []
-    };
+    const partitionsUpdated = new Map(
+      Array.from(partitions.entries()).map((record) => (record[0] === oldName ? [newName, record[1]] : record))
+    );
+    partitions = new Map(partitionsUpdated);
+    partitionsData = partitionsData.map((record) => (record = record === oldName ? newName : record));
+    partitionsStore.set(partitions);
+    partitionsDataStore.set(partitionsData);
   }
 
   onMount(() => {
@@ -140,13 +111,10 @@
   });
 
   onDestroy(() => {
-    unsubscribeDataset();
     unsubscribePartitions();
     unsubscribePartitionsData();
   });
 </script>
-
-<Tooltip data={tooltip} color="bg-gray-300" />
 
 <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
   <ButtonGroup class="w-full" style="height: 25px;">
@@ -164,19 +132,25 @@
   {#if partitions.size === 0}
     <div class="mt-4">No partitions.</div>
   {:else}
-    <div class="w-full overflow-y-auto scrollable-div pb-2" style="height: {height - 25}px">
+    <div
+      class="w-full overflow-y-auto scrollable-div pb-2"
+      style="height: {height - 25}px"
+      on:click={() => (validUpload = true)}
+      on:keydown={() => {}}
+    >
       {#if !validUpload}
         <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
       {/if}
-      {#each [...partitions] as [partitionName, partition]}
+      {#each [...partitions] as [partitionName, partition], index}
         <PartitionElement
+          {index}
           {partitionName}
+          {partitions}
           {partition}
           {addRecordsToPartition}
           {updatePartition}
           {deletePartition}
-          {showTooltip}
-          {hideTooltip}
+          {renamePartition}
         />
       {/each}
     </div>

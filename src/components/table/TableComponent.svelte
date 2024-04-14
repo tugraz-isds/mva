@@ -20,6 +20,7 @@
   import type { DimensionDataType, TooltipType } from '../../util/types';
   import type { TableDimensionsType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
+  import type { PartitionType } from '../partitions/types';
 
   let contextMenu: ContextMenu;
 
@@ -48,8 +49,14 @@
   let partitionsData: string[] = [];
   const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
     partitionsData = value;
-
     dataset?.map((row, i) => (row._partition = partitionsData[i]));
+  });
+
+  let partitions: Map<string, PartitionType> = new Map();
+  let longestPartition = '';
+  const unsubscribePartitions = partitionsStore.subscribe((value) => {
+    partitions = value;
+    longestPartition = getLongestString(Array.from(partitions.keys()));
   });
 
   const unsubscribeDataset = datasetStore.subscribe((value) => {
@@ -140,7 +147,6 @@
   }
 
   function sortDataset(dim: string) {
-    console.log(dim, dataset[0]);
     if (sorting.dim === dim) sorting.direction = sorting.direction === 'ASC' ? 'DESC' : 'ASC';
     else sorting.direction = 'ASC';
     sorting.dim = dim;
@@ -175,10 +181,11 @@
     return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
   }
 
-  function getHeaderLength(title: string) {
+  function getHeaderLength(title: string, longestPartition: string) {
     if (title === '_i') return (dataset.length - 1).toString();
-    else if (title === '_partition') return getLongestString(Array.from($partitionsStore.keys()));
-    else return $dimensionDataStore.get(title)?.longestString ?? '';
+    else if (title === '_partition') {
+      return longestPartition;
+    } else return $dimensionDataStore.get(title)?.longestString ?? '';
   }
 
   function getHeaderClass(dimData?: DimensionDataType) {
@@ -202,6 +209,7 @@
     unsubscribeHovered();
     unsubscribeTableDimensions();
     unsubscribePartitionsData();
+    unsubscribePartitions();
   });
 </script>
 
@@ -221,7 +229,7 @@
                   on:contextmenu={(e) => contextMenu.showContextMenu(e, dim.title)}
                   class={getHeaderClass($dimensionDataStore.get(dim.title))}
                   style="font-size: 12px; overflow: hidden; width: {getTextWidth(
-                    getHeaderLength(dim.title),
+                    getHeaderLength(dim.title, longestPartition),
                     12,
                     'sans-serif'
                   ) + 8}px;"
@@ -265,7 +273,7 @@
                     class={getCellClass($dimensionDataStore.get(dim.title))}
                     style="font-size: 12px; {getPartitionColor(
                       dim.title,
-                      $partitionsStore.get(partitionsData[row._i])?.color
+                      partitions.get(partitionsData[row._i])?.color
                     )}">{dim.title === '_partition' ? partitionsData[row._i] : formatCell(row[dim.title], i)}</td
                   >
                 {/if}

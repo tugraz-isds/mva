@@ -9,4 +9,12 @@ const rgbaToHexNumber = (color: RgbaColor): number => {
   return (color.r << 16) | (color.g << 8) | color.b;
 };
 
-export { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber };
+const rgbaToHexString = (color: RgbaColor): string => {
+  let rHex = color.r.toString(16).padStart(2, '0');
+  let gHex = color.g.toString(16).padStart(2, '0');
+  let bHex = color.b.toString(16).padStart(2, '0');
+
+  return `#${rHex}${gHex}${bHex}`;
+};
+
+export { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString };

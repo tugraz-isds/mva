@@ -20,6 +20,7 @@
   import type { DSVParsedArray } from 'd3-dsv';
   import type { RecordDataType, TooltipType } from '../../../util/types';
   import type { AxesFilterType } from '../types';
+  import type { PartitionType } from '../../partitions/types';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -49,23 +50,30 @@
   let throttledDrawLines: () => void;
   let debouncedDrawLines: () => void;
 
+  let partitionsData: string[] | null = null;
   const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
-    setTimeout(() => {
-      worker?.postMessage({
-        function: 'setPartitionsData',
-        partitionsData: value
-      });
-    }, 10);
+    partitionsData = value;
+    updatePartitions();
   });
 
+  let partitions: Map<string, PartitionType> | null = null;
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
-    setTimeout(() => {
-      worker?.postMessage({
-        function: 'setPartitions',
-        partitions: value
-      });
-    }, 0);
+    partitions = value;
+    updatePartitions();
   });
+
+  function updatePartitions() {
+    setTimeout(() => {
+      if (partitions !== null || partitionsData !== null)
+        worker?.postMessage({
+          function: 'updatePartitions',
+          partitions,
+          partitionsData
+        });
+      partitions = null;
+      partitionsData = null;
+    }, 0);
+  }
 
   let axesFilters: AxesFilterType[] = [];
   const unsubscribeFilters = filtersArray.subscribe((value) => {
