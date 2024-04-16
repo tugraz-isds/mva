@@ -63,14 +63,26 @@ export const palette_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none"
   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z"/>
 </svg>`;
 
+export const shape_circle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="10" fill="none" />
+</svg>`;
+
 export const shape_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="50" />
 </svg>`;
 
-export const shape_square_icon = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+export const shape_square_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <polygon points="90,90 10,90 10,10 90,10" stroke="black" stroke-width="10" fill="none" />
+</svg>`;
+
+export const shape_square_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="100,100 0,100 0,0 100,0" />
 </svg>`;
 
-export const shape_triangle_icon = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+export const shape_triangle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <polygon points="90,90 10,90 50,15" stroke="black" stroke-width="10" fill="none" />
+</svg>`;
+
+export const shape_triangle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="100,100 0,100 50,0" />
 </svg>`;

@@ -12,6 +12,7 @@
   } from '../../stores/brushing';
   import { tableDimensionsStore } from '../../stores/table';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
+  import PartitionsContextMenu from '../partitions/ContextMenu.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { getLongestString, getTextWidth } from '../../util/text';
@@ -23,6 +24,7 @@
   import type { PartitionType } from '../partitions/types';
 
   let contextMenu: ContextMenu;
+  let partitionsContextMenu: PartitionsContextMenu;
 
   let width: number, height: number;
   let rowShow: boolean[] = [];
@@ -214,8 +216,15 @@
 </script>
 
 <ContextMenu bind:this={contextMenu} />
+<PartitionsContextMenu bind:this={partitionsContextMenu} />
+
 {#if dataset?.length > 0 && rowShow?.length > 0}
-  <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
+  <div
+    class="w-full h-full"
+    bind:clientWidth={width}
+    bind:clientHeight={height}
+    on:contextmenu={partitionsContextMenu.showContextMenu}
+  >
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
       <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
         <thead style="font-size: 14px;">

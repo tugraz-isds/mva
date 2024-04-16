@@ -110,6 +110,7 @@ function drawPoints(inputPoints: number[][]) {
 
     if (partition?.shape.includes('hollow')) {
       const stroke = getStroke(currPoint, i, points[i], pointSize, partition);
+      strokes[i] = stroke;
       scene.add(stroke);
     }
   });
@@ -233,9 +234,13 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
 function updatePartitionColor(partitionName: string) {
   const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
   const partition = partitions.get(partitionName);
+  const hasStroke = partition?.shape.includes('hollow');
   partitionRecords.forEach((i) => {
     if (!pointShow[i]) return;
     drawPoint(points[i], getPartitionMaterial(partition), true);
+    if (hasStroke && strokes[i] !== null) {
+      (strokes[i] as StrokeType).material = getPartitionMaterialStroke(partition);
+    }
   });
 }
 

@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { ButtonGroup, Input, Button, Helper } from 'flowbite-svelte';
   import PartitionElement from './PartitionElement.svelte';
-  import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
+  import { partitionsStore, partitionsDataStore, selectedPartitionStore } from '../../stores/partitions';
   import { brushedArray } from '../../stores/brushing';
   import { DEFAULT_PARTITION } from '../../util/util';
   import type { PartitionType } from './types';
@@ -106,6 +106,10 @@
     partitionsDataStore.set(partitionsData);
   }
 
+  function handleClick(e: MouseEvent) {
+    if (!(e.target as HTMLElement).closest('.partition-element')) $selectedPartitionStore = null;
+  }
+
   onMount(() => {
     isBrowser = true;
   });
@@ -116,7 +120,13 @@
   });
 </script>
 
-<div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
+<div
+  class="w-full h-full"
+  bind:clientWidth={width}
+  bind:clientHeight={height}
+  on:click={handleClick}
+  on:keydown={() => {}}
+>
   <ButtonGroup class="w-full" style="height: 25px;">
     <Input
       id="input-addon"

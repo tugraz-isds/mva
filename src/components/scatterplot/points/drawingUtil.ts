@@ -51,9 +51,10 @@ export function getPartitionMaterialStroke(partition?: PartitionType) {
 }
 
 export function getPartitionGeometry(pointSize: number, partition?: PartitionType) {
-  if (!partition || partition.shape === 'circle') return new THREE.CircleGeometry(pointSize, 16);
+  if (!partition || partition.shape === 'circle' || partition.shape === 'circle hollow')
+    return new THREE.CircleGeometry(pointSize * 1.2, 16);
   else if (partition.shape === 'triangle' || partition.shape === 'triangle hollow') {
-    const triangleGeometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     const vertices = new Float32Array([
       -pointSize * 1.2,
       pointSize * 1.2,
@@ -65,17 +66,16 @@ export function getPartitionGeometry(pointSize: number, partition?: PartitionTyp
       pointSize * 1.2,
       0.0
     ]);
-    triangleGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    return triangleGeometry;
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    return geometry;
   } else if (partition.shape === 'square' || partition.shape === 'square hollow')
     return new THREE.PlaneGeometry(pointSize * 2, pointSize * 2);
 }
 
 export function getPartitionGeometryStroke(pointSize: number, partition?: PartitionType) {
-  //if (!partition || partition.shape === 'circle') return new THREE.CircleGeometry(pointSize, 16);
-  if (!partition) return new THREE.CircleGeometry(pointSize, 16);
+  if (!partition || partition.shape === 'circle hollow') return new THREE.RingGeometry(pointSize, pointSize * 1.2, 16);
   if (partition.shape === 'triangle hollow') {
-    const triangleGeometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     const vertices = new Float32Array([
       -pointSize * 1.2,
       pointSize * 1.2,
@@ -87,26 +87,26 @@ export function getPartitionGeometryStroke(pointSize: number, partition?: Partit
       pointSize * 1.2,
       0.0
     ]);
-    triangleGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    return triangleGeometry;
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    return geometry;
   } else if (partition.shape === 'square hollow') {
-    const squareGeometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     const vertices = new Float32Array([
-      -pointSize * 1.2,
-      pointSize * 1.2,
+      -pointSize,
+      pointSize,
       0.0,
-      -pointSize * 1.2,
-      -pointSize * 1.2,
+      -pointSize,
+      -pointSize,
       0.0,
-      pointSize * 1.2,
-      -pointSize * 1.2,
+      pointSize,
+      -pointSize,
       0.0,
-      pointSize * 1.2,
-      pointSize * 1.2,
+      pointSize,
+      pointSize,
       0.0
     ]);
-    squareGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    return squareGeometry;
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    return geometry;
   }
 }
 
@@ -148,17 +148,11 @@ export function getStroke(
 
 export function changePointPosition(point: PointType, newZPosition: number) {
   point.position.z = newZPosition;
-  if (point instanceof THREE.Group) {
-    (point.children[0] as THREE.LineLoop).geometry.attributes.position.needsUpdate = true;
-    (point.children[1] as THREE.LineLoop).geometry.attributes.position.needsUpdate = true;
-  } else point.geometry.attributes.position.needsUpdate = true;
+  point.geometry.attributes.position.needsUpdate = true;
 }
 
 export function drawPoint(point: PointType, material: THREE.Material, needsUpdate?: boolean, newPosition?: number) {
-  if (point instanceof THREE.Group) {
-    (point.children[0] as THREE.LineLoop).material = material;
-    (point.children[1] as THREE.LineLoop).material = material;
-  } else point.material = material;
+  point.material = material;
   if (needsUpdate !== undefined) material.needsUpdate = needsUpdate;
   if (newPosition !== undefined) changePointPosition(point, newPosition);
 }

@@ -3,11 +3,20 @@
   import { Trash, Plus, Eye, Check } from 'svelte-heros-v2';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
   import ColorPickerModal from './ColorPickerModal.svelte';
-  import { palette_icon, shape_circle_icon, shape_square_icon, shape_triangle_icon } from '../../util/icon-definitions';
+  import {
+    palette_icon,
+    shape_circle_icon,
+    shape_square_icon,
+    shape_triangle_icon,
+    shape_circle_hollow_icon,
+    shape_square_hollow_icon,
+    shape_triangle_hollow_icon
+  } from '../../util/icon-definitions';
   import { rgbaToHexString } from '../../util/colors';
   import type { PartitionShapeType, PartitionType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
   import { DEFAULT_PARTITION } from '../../util/util';
+  import { selectedPartitionStore } from '../../stores/partitions';
 
   export let index: number;
   export let partitionName: string;
@@ -22,8 +31,9 @@
     ['circle', shape_circle_icon],
     ['triangle', shape_triangle_icon],
     ['square', shape_square_icon],
-    ['triangle hollow', shape_triangle_icon],
-    ['square hollow', shape_square_icon]
+    ['circle hollow', shape_circle_hollow_icon],
+    ['triangle hollow', shape_triangle_hollow_icon],
+    ['square hollow', shape_square_hollow_icon]
   ]);
 
   let isDeleteModalOpen = false;
@@ -78,6 +88,11 @@
     (e.target as HTMLElement).focus();
     partitionNameOld = partitionName;
   }
+
+  function handleClick(e: MouseEvent) {
+    partitionNameOld = partitionName;
+    $selectedPartitionStore = partitionName;
+  }
 </script>
 
 <DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} {deletePartition} />
@@ -90,7 +105,11 @@
 />
 
 <div
-  class="flex flex-row items-center mt-2 rounded-lg bg-gray-100 border-b-4 p-1"
+  on:click={handleClick}
+  on:keydown={() => {}}
+  class={`partition-element flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
+    $selectedPartitionStore === partitionNameOld ? 'border-4' : 'border-b-4'
+  }`}
   style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
 >
   <div on:dblclick={handleDoubleClick} class="w-1/2">
