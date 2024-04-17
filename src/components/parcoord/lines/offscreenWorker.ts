@@ -213,7 +213,8 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
   if (partitionsDiff.length === 0) {
     const { updatedPartition, updatedProperty } = getUpdatedPartition(partitionsOld, partitions);
     if (updatedPartition !== null && updatedProperty !== null) {
-      updatePartitionColor(updatedPartition);
+      if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
+      else if (updatedProperty === 'visible') updatePartitionVisible(updatedPartition);
     }
   }
   // Partition was deleted
@@ -228,6 +229,18 @@ function updatePartitionColor(partitionName: string) {
   partitionRecords.forEach((i) => {
     if (!lineShow[i]) return;
     drawLine(lines[i], getPartitionMaterial(partition), true);
+  });
+}
+
+function updatePartitionVisible(partitionName: string) {
+  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  const partition = partitions.get(partitionName);
+  partitionRecords.forEach((i) => {
+    if (partition?.visible) {
+      scene.add(lines[i]);
+    } else {
+      scene.remove(lines[i]);
+    }
   });
 }
 

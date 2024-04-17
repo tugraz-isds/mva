@@ -221,7 +221,8 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
     const { updatedPartition, updatedProperty } = getUpdatedPartition(partitionsOld, partitions);
     if (updatedPartition !== null && updatedProperty !== null) {
       if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
-      else updatePartitionShape(updatedPartition);
+      else if (updatedProperty === 'shape') updatePartitionShape(updatedPartition);
+      else if (updatedProperty === 'visible') updatePartitionVisible(updatedPartition);
     }
   }
   // Partition was deleted
@@ -268,6 +269,20 @@ function updatePartitionShape(partitionName: string) {
       strokes[i] = newStroke;
     } else if (strokes[i] !== null) {
       strokes[i] = null;
+    }
+  });
+}
+
+function updatePartitionVisible(partitionName: string) {
+  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  const partition = partitions.get(partitionName);
+  partitionRecords.forEach((i) => {
+    if (partition?.visible) {
+      scene.add(points[i]);
+      if (strokes[i] !== null) scene.add(strokes[i] as StrokeType);
+    } else {
+      scene.remove(points[i]);
+      if (strokes[i] !== null) scene.remove(strokes[i] as StrokeType);
     }
   });
 }

@@ -15,6 +15,7 @@
   import Lines from './lines/Lines.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
+  import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { CustomRangeType } from './types';
@@ -36,6 +37,7 @@
   let linesComponent: Lines;
   let axesComponent: Axes;
   let contextMenuAxes: ContextMenuAxes;
+  let contextMenuPartitions: ContextMenuPartitions;
   let svgExportModal: SvgExportModal;
 
   let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
@@ -288,6 +290,10 @@
     }, 0);
   });
 
+  function handleContextMenu(e: MouseEvent) {
+    if (e.offsetY > margin.top) contextMenuPartitions.showContextMenu(e);
+  }
+
   afterUpdate(() => {
     if (parcoordDiv.scrollWidth > parcoordDiv.clientWidth && margin.bottom !== 20) {
       setMarginBottom(20);
@@ -312,6 +318,7 @@
   bind:this={parcoordDiv}
   bind:clientWidth={originalWidth}
   bind:clientHeight={height}
+  on:contextmenu={handleContextMenu}
 >
   {#if dataset?.length === 0}
     <span>No data available.</span>
@@ -338,6 +345,8 @@
     {/if}
 
     <Tooltip data={tooltip} maxWidth={tooltipMaxWidth} color={tooltipColor} />
+
+    <ContextMenuPartitions bind:this={contextMenuPartitions} />
 
     <ContextMenuAxes
       bind:this={contextMenuAxes}

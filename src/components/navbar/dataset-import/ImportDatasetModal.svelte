@@ -77,7 +77,8 @@
             {
               size: dataset.length,
               shape: 'circle',
-              color: { r: 65, b: 225, g: 105, a: 1 }
+              color: { r: 65, b: 225, g: 105, a: 1 },
+              visible: true
             }
           ]
         ])

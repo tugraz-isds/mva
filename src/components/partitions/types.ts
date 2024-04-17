@@ -12,4 +12,5 @@ export type PartitionType = {
   size: number;
   shape: PartitionShapeType;
   color: RgbaColor;
+  visible: boolean;
 };

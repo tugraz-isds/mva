@@ -166,9 +166,10 @@ export function getUpdatedPartition(
     const partitionOld = Array.from(partitionsOld.entries())[i];
     const partitionNew = partitionsNewArray[i];
 
+    if (partitionOld[1].visible !== partitionNew[1].visible)
+      return { updatedPartition: partitionOld[0], updatedProperty: 'visible' };
     if (partitionOld[1].shape !== partitionNew[1].shape)
       return { updatedPartition: partitionOld[0], updatedProperty: 'shape' };
-
     if (rgbaToHexNumber(partitionOld[1].color) !== rgbaToHexNumber(partitionNew[1].color))
       return { updatedPartition: partitionOld[0], updatedProperty: 'color' };
   }

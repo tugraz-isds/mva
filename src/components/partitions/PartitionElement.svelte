@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Tooltip, Dropdown, DropdownItem, Input } from 'flowbite-svelte';
-  import { Trash, Plus, Eye, Check } from 'svelte-heros-v2';
+  import { Trash, Plus, Eye, EyeSlash, Check } from 'svelte-heros-v2';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
   import ColorPickerModal from './ColorPickerModal.svelte';
   import {
@@ -26,6 +26,7 @@
   export let updatePartition: (name: string, partition: PartitionType) => void;
   export let deletePartition: (name: string) => void;
   export let renamePartition: (oldName: string, newName: string, error?: string) => void;
+  export let hidePartition: (name: string) => void;
 
   const SHAPES: Map<PartitionShapeType, string> = new Map([
     ['circle', shape_circle_icon],
@@ -91,6 +92,7 @@
 
   function handleClick(e: MouseEvent) {
     partitionNameOld = partitionName;
+    if (e.target instanceof SVGElement) return;
     $selectedPartitionStore = partitionName;
   }
 </script>
@@ -107,7 +109,7 @@
 <div
   on:click={handleClick}
   on:keydown={() => {}}
-  class={`partition-element flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
+  class={`flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
     $selectedPartitionStore === partitionNameOld ? 'border-4' : 'border-b-4'
   }`}
   style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
@@ -164,7 +166,20 @@
     </div>
 
     <Tooltip style="z-index: 1000;" type="light">Partition Color</Tooltip>
-    <Eye size="16" class="text-grey-900 cursor-pointer" />
-    <Tooltip style="z-index: 1000;" type="light">View Records</Tooltip>
+    {#if partition.visible}
+      <Eye
+        on:click={() => hidePartition(partitionNameOld ?? partitionName)}
+        size="16"
+        class="text-grey-900 cursor-pointer"
+      />
+      <Tooltip style="z-index: 1000;" type="light">Hide Records</Tooltip>
+    {:else}
+      <EyeSlash
+        on:click={() => hidePartition(partitionNameOld ?? partitionName)}
+        size="16"
+        class="text-grey-900 cursor-pointer"
+      />
+      <Tooltip style="z-index: 1000;" type="light">Show Records</Tooltip>
+    {/if}
   </div>
 </div>

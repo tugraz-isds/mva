@@ -61,7 +61,8 @@
     partitions.set(partitionName, {
       size: 0,
       shape: 'circle',
-      color: { r: 65, b: 225, g: 105, a: 1 }
+      color: { r: 65, b: 225, g: 105, a: 1 },
+      visible: true
     });
     partitionsStore.set(partitions);
     partitionName = '';
@@ -106,8 +107,17 @@
     partitionsDataStore.set(partitionsData);
   }
 
+  function hidePartition(name: string) {
+    const partition = partitions.get(name);
+    if (!partition) return;
+    partition.visible = !partition.visible;
+    partitions.set(name, partition);
+    partitionsStore.set(partitions);
+  }
+
   function handleClick(e: MouseEvent) {
-    if (!(e.target as HTMLElement).closest('.partition-element')) $selectedPartitionStore = null;
+    if (!(e.target instanceof HTMLElement) || e.target.className?.includes('partitions-component')) return;
+    $selectedPartitionStore = null;
   }
 
   onMount(() => {
@@ -121,7 +131,7 @@
 </script>
 
 <div
-  class="w-full h-full"
+  class="partitions-component w-full h-full"
   bind:clientWidth={width}
   bind:clientHeight={height}
   on:click={handleClick}
@@ -130,6 +140,7 @@
   <ButtonGroup class="w-full" style="height: 25px;">
     <Input
       id="input-addon"
+      class="partitions-component"
       type="email"
       size="sm"
       placeholder="New Partition"
@@ -143,7 +154,7 @@
     <div class="mt-4">No partitions.</div>
   {:else}
     <div
-      class="w-full overflow-y-auto scrollable-div pb-2"
+      class="partitions-component w-full overflow-y-auto scrollable-div pb-2"
       style="height: {height - 25}px"
       on:click={() => (validUpload = true)}
       on:keydown={() => {}}
@@ -161,6 +172,7 @@
           {updatePartition}
           {deletePartition}
           {renamePartition}
+          {hidePartition}
         />
       {/each}
     </div>

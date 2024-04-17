@@ -12,7 +12,7 @@
   } from '../../stores/brushing';
   import { tableDimensionsStore } from '../../stores/table';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
-  import PartitionsContextMenu from '../partitions/ContextMenu.svelte';
+  import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import ContextMenu from './ContextMenu.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import { getLongestString, getTextWidth } from '../../util/text';
@@ -24,7 +24,7 @@
   import type { PartitionType } from '../partitions/types';
 
   let contextMenu: ContextMenu;
-  let partitionsContextMenu: PartitionsContextMenu;
+  let contextMenuPartitions: ContextMenuPartitions;
 
   let width: number, height: number;
   let rowShow: boolean[] = [];
@@ -94,8 +94,8 @@
     hoveredRowsIndices = value;
   });
 
-  function handleRowClick(event: MouseEvent, index: number) {
-    if (!rowShow[index]) return;
+  function handleRowClick(event: MouseEvent, index: number, _i: number) {
+    if (!rowShow[_i]) return;
     previouslyBrushedArray.set(brushedRowsIndices);
     if (hoveredLineIndex === null) return;
 
@@ -109,16 +109,16 @@
     } else if (event.shiftKey) {
       // Select a range of items with Shift key
       if (rangeStart !== null) {
-        const tempStart = Math.min(rangeStart, hoveredLineIndex);
-        const tempEnd = Math.max(rangeStart, hoveredLineIndex);
+        const tempStart = Math.min(rangeStart, index);
+        const tempEnd = Math.max(rangeStart, index);
         brushedRowsIndices.clear();
         for (let i = tempStart; i <= tempEnd; i++) {
-          brushedRowsIndices.add(i);
+          brushedRowsIndices.add(dataset[i]._i);
         }
       } else {
         brushedRowsIndices.clear();
         brushedRowsIndices.add(hoveredLineIndex);
-        rangeStart = hoveredLineIndex;
+        rangeStart = index;
       }
     } else {
       // Select a single item without Ctrl or Shift
@@ -126,7 +126,7 @@
       else {
         brushedRowsIndices.clear();
         brushedRowsIndices.add(hoveredLineIndex);
-        rangeStart = hoveredLineIndex;
+        rangeStart = index;
       }
     }
 
@@ -216,15 +216,10 @@
 </script>
 
 <ContextMenu bind:this={contextMenu} />
-<PartitionsContextMenu bind:this={partitionsContextMenu} />
+<ContextMenuPartitions bind:this={contextMenuPartitions} />
 
 {#if dataset?.length > 0 && rowShow?.length > 0}
-  <div
-    class="w-full h-full"
-    bind:clientWidth={width}
-    bind:clientHeight={height}
-    on:contextmenu={partitionsContextMenu.showContextMenu}
-  >
+  <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
       <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
         <thead style="font-size: 14px;">
@@ -264,17 +259,17 @@
             {/each}
           </tr>
         </thead>
-        <tbody>
+        <tbody on:contextmenu={contextMenuPartitions.showContextMenu}>
           {#each dataset as row, index}
             <tr
-              class={hoveredLineIndex === index || hoveredRowsIndices.has(index)
+              class={hoveredLineIndex === row._i || hoveredRowsIndices.has(row._i)
                 ? 'bg-red-500'
-                : brushedRowsIndices.has(index) && rowShow[index]
+                : brushedRowsIndices.has(row._i) && rowShow[row._i]
                 ? 'bg-orange-400'
                 : ''}
-              on:mouseenter={() => handleMouseEnter(index)}
-              on:mouseleave={() => handleMouseLeave(index)}
-              on:mousedown={(e) => handleRowClick(e, index)}
+              on:mouseenter={() => handleMouseEnter(row._i)}
+              on:mouseleave={() => handleMouseLeave(row._i)}
+              on:click={(e) => handleRowClick(e, index, row._i)}
             >
               {#each tableDimensions as dim, i}
                 {#if dim.visible}

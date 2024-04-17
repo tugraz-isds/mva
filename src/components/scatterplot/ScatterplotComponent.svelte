@@ -3,6 +3,7 @@
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
+  import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { scaleLinear } from 'd3-scale';
@@ -16,6 +17,7 @@
   let xDim: string, yDim: string;
   let xScaleAxes: any, yScaleAxes: any, xScalePoints: any, yScalePoints: any;
   let pointsComponent: Points;
+  let contextMenuPartitions: ContextMenuPartitions;
 
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
   let tooltip: TooltipType = {
@@ -114,11 +116,19 @@
 {:else if numericalDimensions.length < 2}
   <div><span>Not enough numerical dimensions.</span></div>
 {/if}
-<div id="scatterplot-canvas" class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
+<div
+  id="scatterplot-canvas"
+  class="w-full h-full"
+  bind:clientWidth={width}
+  bind:clientHeight={height}
+  on:contextmenu={contextMenuPartitions.showContextMenu}
+>
   {#if dataset?.length > 0 && width}
     <Axes {width} {height} {margin} xScale={xScaleAxes} yScale={yScaleAxes} viewTitle="scatterplot" />
 
     <Tooltip data={tooltip} maxWidth={120} />
+
+    <ContextMenuPartitions bind:this={contextMenuPartitions} />
 
     <Points
       bind:this={pointsComponent}

@@ -125,7 +125,12 @@
 </script>
 
 {#if isContextMenuShown}
-  <div class="context-menu" style={menuStyle} on:mouseenter={handleMouseEnter} on:mouseleave={handleMouseLeave}>
+  <div
+    class="context-menu fixed bg-white border border-gray-300 p-1 w-32 z-10"
+    style={menuStyle}
+    on:mouseenter={handleMouseEnter}
+    on:mouseleave={handleMouseLeave}
+  >
     <DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Dimension</DropdownItem>
     <DropdownItem defaultClass={activeClass} on:click={invertDimension}>Invert Dimension</DropdownItem>
     <DropdownDivider />
@@ -207,14 +212,3 @@
 <SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
 
 <SetFilterModal isOpen={isSetFilterModalOpen} dimension={dimensions[dimIndex]} {yScales} {dimIndex} />
-
-<style>
-  .context-menu {
-    position: fixed;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 5px;
-    z-index: 1000;
-    width: 120px;
-  }
-</style>

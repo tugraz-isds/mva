@@ -212,7 +212,7 @@
     };
   }
 
-  function handleMouseDown(event: MouseEvent) {
+  function handleClick(event: MouseEvent) {
     if (!canvasEl) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
@@ -379,7 +379,7 @@
   onMount(() => {
     initializeArrays();
     window.addEventListener('pointermove', handleMouseMove, false);
-    window.addEventListener('pointerdown', handleMouseDown, false);
+    window.addEventListener('click', handleClick, false);
     throttledDrawLines = throttle(drawLines, 10);
     debouncedDrawLines = debounce(throttledDrawLines, 10);
 

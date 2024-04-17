@@ -7,11 +7,9 @@
 
   let showMenu = false;
   let dim = '';
+  let isDisabled = false;
   let menuStyle = '';
   let labelDim: string;
-
-  const activeClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100';
-  const disabledClass = 'font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 text-gray-400 cursor-not-allowed';
 
   const unsubscribeLabelDim = labelDimension.subscribe((value) => {
     labelDim = value;
@@ -29,6 +27,7 @@
     const { clientX, clientY } = event;
     menuStyle = `left: ${clientX}px; top: ${clientY}px;`;
     dim = dimension;
+    isDisabled = dim === '_i' || dim === '_partition';
   }
 
   export function hideContextMenu() {
@@ -64,32 +63,25 @@
 
 {#if showMenu}
   <div
-    class="context-menu"
+    class="context-menu fixed bg-white border border-gray-300 p-1 w-28 z-10"
     style={menuStyle}
     on:click={hideContextMenu}
     on:mouseleave={hideContextMenu}
     on:keydown={hideContextMenu}
   >
     <DropdownItem
-      disabled={dim === labelDim || dim === '_i' || dim === '_partition'}
-      defaultClass={dim === labelDim || dim === '_i' || dim === '_partition' ? disabledClass : activeClass}
+      disabled={isDisabled || dim === labelDim}
+      defaultClass={`font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 ${
+        isDisabled || dim === labelDim ? 'text-gray-400 cursor-not-allowed' : ''
+      }`}
       on:click={setLabel}>Use as Label</DropdownItem
     >
     <DropdownItem
-      disabled={dim === '_i' || dim === '_partition'}
-      defaultClass={dim === '_i' || dim === '_partition' ? disabledClass : activeClass}
+      disabled={isDisabled}
+      defaultClass={`font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 ${
+        isDisabled ? 'text-gray-400 cursor-not-allowed' : ''
+      }`}
       on:click={setDimensionActive}>Set as {dimensionData.get(dim)?.active ? 'Inactive' : 'Active'}</DropdownItem
     >
   </div>
 {/if}
-
-<style>
-  .context-menu {
-    position: fixed;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 5px;
-    z-index: 1000;
-    width: 150px;
-  }
-</style>

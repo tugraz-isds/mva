@@ -29,7 +29,7 @@
 
 {#if showMenu}
   <div
-    class="context-menu fixed bg-white border border-gray-300 p-1 w-38"
+    class="context-menu fixed bg-white border border-gray-300 p-1 w-40"
     style={menuStyle}
     on:click={hideContextMenu}
     on:mouseleave={hideContextMenu}
