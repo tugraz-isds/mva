@@ -5,7 +5,6 @@
   import { tableDimensionsStore } from '../../../stores/table';
   import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
   import {
-    SELECT_DEFAULT_STYLE,
     CELL_SEPARATOR_LIST,
     DECIMAL_SEPARATOR_LIST,
     COLUMN_TYPE_LIST,
@@ -59,32 +58,15 @@
   async function importDataset() {
     isLoading = true;
     try {
-      const { dataset, tableDimensions, dimensionTypeMap, labelDim } = await parseDataset(
-        files,
-        cellSeparator,
-        decimalSeparator
-      );
+      const { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
+        await parseDataset(files, cellSeparator, decimalSeparator);
 
       tableDimensionsStore.set(tableDimensions);
       dimensionDataStore.set(dimensionTypeMap);
       datasetStore.set(dataset);
       labelDimension.set(labelDim);
-
-      partitionsStore.set(
-        new Map([
-          [
-            DEFAULT_PARTITION,
-            {
-              size: dataset.length,
-              shape: 'circle',
-              color: { r: 65, b: 225, g: 105, a: 1 },
-              visible: true
-            }
-          ]
-        ])
-      );
-
-      partitionsDataStore.set(Array(dataset.length).fill(DEFAULT_PARTITION));
+      partitionsStore.set(partitionsMap);
+      partitionsDataStore.set(partitionsData);
 
       validUpload = true;
       isOpen = false;
@@ -137,7 +119,7 @@
         <Select
           id="cell-separator-select"
           size="sm"
-          defaultClass={SELECT_DEFAULT_STYLE}
+          class="w-1/2"
           bind:value={cellSeparator}
           on:change={() => (validUpload = true)}
           items={CELL_SEPARATOR_LIST}
@@ -157,7 +139,7 @@
         <Select
           id="decimal-separator-select"
           size="sm"
-          defaultClass={SELECT_DEFAULT_STYLE}
+          class="w-1/2"
           bind:value={decimalSeparator}
           on:change={() => (validUpload = true)}
           items={DECIMAL_SEPARATOR_LIST}
@@ -171,7 +153,7 @@
       <Select
         id="cell-type-select"
         size="sm"
-        defaultClass={SELECT_DEFAULT_STYLE}
+        class="w-1/2"
         bind:value={columnType}
         on:change={() => changeColumnType(selectedColumn)}
         items={COLUMN_TYPE_LIST}

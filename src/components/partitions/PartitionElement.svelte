@@ -43,6 +43,7 @@
   let colorPickerPosition = { x: 0, y: 0 };
   let isNameEditable = false;
   let partitionNameOld: string;
+  let shapesDropdownElement: HTMLDivElement;
 
   function setShape(shape: PartitionShapeType) {
     if (shape === partition.shape) return;
@@ -141,23 +142,26 @@
       {@html SHAPES.get(partition.shape)?.replace('<svg', '<svg width="12" height="12" stroke="#fff" fill="#111827"')}
     </div>
     <Tooltip style="z-index: 1000;" type="light">Partition Shape</Tooltip>
-    <Dropdown
-      triggeredBy="#partition-shape-button-{index}"
-      ulClass="bg-white border border-gray-300 p-1"
-      style="z-index: 1000;"
-      bind:open={isShapeDropdownOpen}
-    >
-      {#each [...SHAPES] as [name]}
-        <DropdownItem
-          on:click={() => setShape(name)}
-          defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-          ><Check
-            class="w-3 h-3 ms-2 mr-2"
-            style="visibility: {partition.shape === name ? 'visible' : 'hidden'}"
-          />{name[0].toUpperCase() + name.slice(1)}</DropdownItem
-        >
-      {/each}
-    </Dropdown>
+    <div bind:this={shapesDropdownElement}>
+      <Dropdown
+        triggeredBy="#partition-shape-button-{index}"
+        ulClass="bg-white border border-gray-300 p-1 h-32"
+        style="z-index: 1000;"
+        placement={shapesDropdownElement?.getBoundingClientRect().bottom + 140 > window.innerHeight ? 'top' : 'bottom'}
+        bind:open={isShapeDropdownOpen}
+      >
+        {#each [...SHAPES] as [name]}
+          <DropdownItem
+            on:click={() => setShape(name)}
+            defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
+            ><Check
+              class="w-3 h-3 ms-2 mr-2"
+              style="visibility: {partition.shape === name ? 'visible' : 'hidden'}"
+            />{name[0].toUpperCase() + name.slice(1)}</DropdownItem
+          >
+        {/each}
+      </Dropdown>
+    </div>
     <div on:click={showColorPicker} on:keydown={() => {}} class="cursor-pointer">
       {@html palette_icon.replace(
         '<svg',

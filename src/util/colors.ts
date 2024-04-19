@@ -9,7 +9,8 @@ const rgbaToHexNumber = (color: RgbaColor): number => {
   return (color.r << 16) | (color.g << 8) | color.b;
 };
 
-const rgbaToHexString = (color: RgbaColor): string => {
+const rgbaToHexString = (color?: RgbaColor): string => {
+  if (!color) return '';
   let rHex = color.r.toString(16).padStart(2, '0');
   let gHex = color.g.toString(16).padStart(2, '0');
   let bHex = color.b.toString(16).padStart(2, '0');
@@ -17,4 +18,27 @@ const rgbaToHexString = (color: RgbaColor): string => {
   return `#${rHex}${gHex}${bHex}`;
 };
 
-export { COLOR_ACTIVE, COLOR_HOVERED, COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString };
+const hexStringToRgba = (hex: string): RgbaColor => {
+  hex = hex.replace(/^#/, '');
+  let r = 0,
+    g = 0,
+    b = 0,
+    a = 255;
+  if (hex.length === 6) {
+    r = parseInt(hex.slice(0, 2), 16);
+    g = parseInt(hex.slice(2, 4), 16);
+    b = parseInt(hex.slice(4, 6), 16);
+  } else throw new Error('Invalid hex string format. Expected #RRGGBB or #RRGGBBAA.');
+
+  return { r, g, b, a: 255 };
+};
+
+export {
+  COLOR_ACTIVE,
+  COLOR_HOVERED,
+  COLOR_BRUSHED,
+  COLOR_FILTERED,
+  rgbaToHexNumber,
+  rgbaToHexString,
+  hexStringToRgba
+};

@@ -1,16 +1,27 @@
 <script lang="ts">
   import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
-  import ImportDatasetModal from './dataset-import/ImportDatasetModal.svelte';
+  import ImportDatasetModal from './dataset/ImportDatasetModal.svelte';
+  import ExportDatasetModal from './dataset/ExportDatasetModal.svelte';
   import { isInteractableStore } from '../../stores/brushing';
 
   let isImportDatasetModalOpen = false;
+  let isExportDatasetModalOpen = false;
 
-  function openModal() {
+  function openImportModal() {
     isImportDatasetModalOpen = false;
     isImportDatasetModalOpen = true;
     $isInteractableStore = false;
   }
+
+  function openExportModal() {
+    isExportDatasetModalOpen = false;
+    isExportDatasetModalOpen = true;
+    $isInteractableStore = false;
+  }
 </script>
+
+<ImportDatasetModal isOpen={isImportDatasetModalOpen} />
+<ExportDatasetModal isOpen={isExportDatasetModalOpen} />
 
 <div style="height: 4.5%;">
   <Navbar let:hidden class="bg-sky-900 h-full p-0 flex-row" navDivClass="h-full">
@@ -29,9 +40,8 @@
         <span class="text-white hover:text-blue-200">Help</span>
       </NavLi>
       <Dropdown triggeredBy="#nav-file" class="w-44 z-20">
-        <DropdownItem on:click={openModal}>Import Dataset...</DropdownItem>
-        <DropdownItem>Item 2</DropdownItem>
-        <DropdownItem>Item 3</DropdownItem>
+        <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
+        <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
       </Dropdown>
       <Dropdown triggeredBy="#nav-settings" class="w-44 z-20">
         <DropdownItem>Item 1</DropdownItem>
@@ -41,5 +51,3 @@
     </NavUl>
   </Navbar>
 </div>
-
-<ImportDatasetModal isOpen={isImportDatasetModalOpen} />
