@@ -78,10 +78,6 @@ self.onmessage = function (message) {
       ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
       resizeCanvas(canvas, width, height);
       break;
-    case 'redrawLines':
-      ({ scene, camera, renderer, raycaster, mouse } = initScene(canvas, width, height));
-      drawLines(data.lines);
-      break;
     case 'updatePartitions':
       if (data.partitionsData !== null) partitionsData = data.partitionsData;
       if (data.partitions !== null) updatePartitions(data.partitions);
@@ -92,6 +88,7 @@ self.onmessage = function (message) {
 };
 
 function drawLines(inputLines: number[][][]) {
+  console.log('Drawing lines');
   scene.children = [];
   inputLines.forEach((currLine: number[][], i: number) => {
     const linePoints: THREE.Vector3[] = [];
@@ -99,7 +96,7 @@ function drawLines(inputLines: number[][][]) {
       linePoints.push(new THREE.Vector3(...point));
     });
     const partition = partitions.get(partitionsData[i]);
-    const material = getPartitionMaterial(partition);
+    const material = lineShow[i] ? getPartitionMaterial(partition) : LINE_MATERIAL_FILTERED;
     material.needsUpdate = false;
     const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
     const line: THREE.Line & { index?: number } = new THREE.Line(geometry, material);

@@ -120,7 +120,7 @@ export async function parseDataset(files: FileList, cellSeparator: string, decim
 
   dimensions = dimensions.filter((dim) => !dim.includes('_partition'));
 
-  const tableDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));
+  const shownDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));
   const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
   dimensions.forEach((dim: string) => {
     const dimData = dataset.map((d) => d[dim]);
@@ -155,11 +155,12 @@ export async function parseDataset(files: FileList, cellSeparator: string, decim
 
   const labelDim = Object.keys(dataset[0])[0]; // Set first dimension as label
   localStorage.setItem('labelDimension', labelDim);
-  localStorage.setItem('tableDimensions', JSON.stringify(tableDimensions));
+  localStorage.setItem('tableVisibleDimensions', JSON.stringify(shownDimensions));
+  localStorage.setItem('parcoordVisibleDimensions', JSON.stringify(shownDimensions));
   localStorage.setItem('dimensionTypes', JSON.stringify(Array.from(dimensionTypeMap.entries())));
   localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
 
-  return { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData };
+  return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData };
 }
 
 export function exportDataset(

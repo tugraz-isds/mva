@@ -3,10 +3,12 @@ import type {
   AxesFilterType,
   CustomRangeType,
   DimensionMetadataType,
-  HistogramsType
+  HistogramsType,
+  ParcoordVisibleDimensionsType
 } from '../components/parcoord/types';
 
-export const filtersArray = writable<AxesFilterType[]>([]);
+export const parcoordVisibleDimensionsStore = writable<ParcoordVisibleDimensionsType[]>();
+export const filtersArray = writable<Map<string, AxesFilterType>>(new Map());
 export const parcoordCustomAxisRanges = writable<Map<string, CustomRangeType>>(new Map());
 export const parcoordDimMetadata = writable<Map<string, DimensionMetadataType>>(new Map());
 export const parcoordHistogramData = writable<HistogramsType>({

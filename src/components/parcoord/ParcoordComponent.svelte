@@ -6,6 +6,7 @@
     filtersArray,
     parcoordCustomAxisRanges,
     parcoordDimMetadata,
+    parcoordVisibleDimensionsStore,
     parcoordHistogramData
   } from '../../stores/parcoord';
   import { scaleLinear, scaleBand } from 'd3-scale';
@@ -18,8 +19,8 @@
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { CustomRangeType } from './types';
-  import type { MarginType, TooltipType } from '../../util/types';
+  import type { CustomRangeType, ParcoordVisibleDimensionsType } from './types';
+  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
 
   let isBrowser = false; // Flag to see if we are in browser
 
@@ -90,9 +91,24 @@
     }
   });
 
+  let visibleDimensions: ParcoordVisibleDimensionsType[] = [];
+  let dimensionData: Map<string, DimensionDataType> = new Map();
+  const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
+    if (!value) return;
+    visibleDimensions = value;
+    dimensions = visibleDimensions
+      .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
+      .map((dim) => dim.title);
+
+    setMarginLeft();
+  });
+
   const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
     if (value?.size === 0) return;
-    dimensions = Array.from(value.keys()).filter((dim) => value.get(dim)?.active);
+    dimensionData = value;
+    dimensions = visibleDimensions
+      .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
+      .map((dim) => dim.title);
     dimensionsInitial = dimensions;
 
     setMarginLeft();
@@ -157,8 +173,9 @@
   }
 
   function handleAxesSwapped(fromIndex: number, toIndex: number) {
+    console.log(fromIndex, toIndex);
     linesComponent.swapPoints(fromIndex, toIndex);
-    dimensions = reorderArray(dimensions, fromIndex, toIndex);
+    // dimensions = reorderArray(dimensions, fromIndex, toIndex);
   }
 
   function handleMarginChanged() {
@@ -187,10 +204,8 @@
   }
 
   function handleHideDimension(idx: number) {
-    dimensions = [...dimensions.slice(0, idx), ...dimensions.slice(idx + 1)];
     idx === 0 && setMarginLeft();
     setTimeout(() => {
-      filtersArray.set([...$filtersArray.slice(0, idx), ...$filtersArray.slice(idx + 1)]);
       linesComponent.drawLines();
     }, 0);
   }
@@ -303,6 +318,7 @@
   });
 
   onDestroy(() => {
+    unsubscribeParcoordVisibleDimensions();
     unsubscribeDataset();
     unsubscribeCustomRanges();
     unsubscribeDimensionData();

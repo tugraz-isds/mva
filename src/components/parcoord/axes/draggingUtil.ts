@@ -8,7 +8,7 @@ export function moveDraggedAxis(
   newX: number,
   top: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensionsMetadata: Map<string, DimensionMetadataType>,
   dimensions: string[]
 ) {
@@ -21,13 +21,14 @@ export function moveDraggedAxis(
     axisElements.filterRectangles[draggingIndex].attr('transform', `translate(${newX - 6}, 0)`);
   }
   if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+    const axisFilter = axesFilters.get(dimensions[draggingIndex]) as AxesFilterType;
     axisElements.upperFilterValues[draggingIndex]?.attr(
       'transform',
-      `translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.start + top - 10})`
+      `translate(${newX + 8}, ${axisFilter.pixels.start + top - 10})`
     );
     axisElements.lowerFilterValues[draggingIndex]?.attr(
       'transform',
-      `translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.end + top - 4})`
+      `translate(${newX + 8}, ${axisFilter.pixels.end + top - 4})`
     );
   }
 }
@@ -39,7 +40,7 @@ export function swapAxes(
   xScales: any[],
   top: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensionsMetadata: Map<string, DimensionMetadataType>,
   dimensions: string[]
 ) {
@@ -52,13 +53,14 @@ export function swapAxes(
     axisElements.filterRectangles[newIndex].attr('transform', `translate(${xScales[draggingIndex] - 6}, 0)`);
   }
   if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+    const axisFilter = axesFilters.get(dimensions[draggingIndex]) as AxesFilterType;
     axisElements.upperFilterValues[draggingIndex]?.attr(
       'transform',
-      `translate(${newX + 8}, ${axesFilters[draggingIndex].pixels.start + top - 10})`
+      `translate(${newX + 8}, ${axisFilter.pixels.start + top - 10})`
     );
     axisElements.lowerFilterValues[newIndex]?.attr(
       'transform',
-      `translate(${xScales[draggingIndex] + 8}, ${axesFilters[draggingIndex].pixels.end + top - 4})`
+      `translate(${xScales[draggingIndex] + 8}, ${axisFilter.pixels.end + top - 4})`
     );
   }
   dimensions = reorderArray(dimensions, draggingIndex, newIndex);
@@ -66,7 +68,6 @@ export function swapAxes(
   axisElements.titles = reorderArray(axisElements.titles, draggingIndex, newIndex);
   axisElements.filterRectangles = reorderArray(axisElements.filterRectangles, draggingIndex, newIndex);
   axisElements.invertIcons = reorderArray(axisElements.invertIcons, draggingIndex, newIndex);
-  axesFilters = reorderArray(axesFilters, draggingIndex, newIndex);
 }
 
 export function endAxisDragging(
@@ -74,7 +75,7 @@ export function endAxisDragging(
   xScales: any[],
   top: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensionsMetadata: Map<string, DimensionMetadataType>,
   dimensions: string[],
   isCurrentlyFiltering: boolean
@@ -89,13 +90,14 @@ export function endAxisDragging(
     axisElements.filterRectangles[draggingIndex].attr('transform', `translate(${xScales[draggingIndex] - 6}, 0)`);
   }
   if (dimensionsMetadata.get(dimensions[draggingIndex])?.showFilterValues) {
+    const axisFilter = axesFilters.get(dimensions[draggingIndex]) as AxesFilterType;
     axisElements.upperFilterValues[draggingIndex]?.attr(
       'transform',
-      `translate(${xScales[draggingIndex] + 8}, ${axesFilters[draggingIndex].pixels.start + top - 10})`
+      `translate(${xScales[draggingIndex] + 8}, ${axisFilter.pixels.start + top - 10})`
     );
     axisElements.lowerFilterValues[draggingIndex]?.attr(
       'transform',
-      `translate(${xScales[draggingIndex] + 8}, ${axesFilters[draggingIndex].pixels.end + top - 4})`
+      `translate(${xScales[draggingIndex] + 8}, ${axisFilter.pixels.end + top - 4})`
     );
   }
   draggingIndex = -1;
@@ -110,23 +112,22 @@ export function dragUpperFilter(
   top: number,
   axisHeight: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensions: string[],
   numberOfDecimals?: number | null
 ) {
+  const axisFilter = axesFilters.get(dimensions[i]) as AxesFilterType;
   axisElements.upperFilters[i].attr('y', newY - 8);
   axisElements.upperFilterValues[i]
     ?.attr('transform', `translate(${xScales[i] + 8}, ${newY - 2})`)
-    .style('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
+    .style('display', (axisFilter.percentages.start as number) <= 0 ? 'none' : 'block');
   axisElements.upperFilterValues[i]
     ?.select('text')
-    .text(getAxisDomainValue(i, axesFilters[i].percentages.start as number, yScales, dimensions, numberOfDecimals));
-  axisElements.filterRectangles[i]
-    .attr('y', `${newY + 8}`)
-    .attr('height', `${axesFilters[i].pixels.end - newY + top - 8}`);
+    .text(getAxisDomainValue(i, axisFilter.percentages.start as number, yScales, dimensions, numberOfDecimals));
+  axisElements.filterRectangles[i].attr('y', `${newY + 8}`).attr('height', `${axisFilter.pixels.end - newY + top - 8}`);
 
-  axesFilters[i].pixels.start = newY - top + 8;
-  axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
+  axisFilter.pixels.start = newY - top + 8;
+  axisFilter.percentages.start = axisFilter.pixels.start / axisHeight;
 }
 
 export function dragLowerFilter(
@@ -137,21 +138,22 @@ export function dragLowerFilter(
   top: number,
   axisHeight: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensions: string[],
   numberOfDecimals?: number | null
 ) {
+  const axisFilter = axesFilters.get(dimensions[i]) as AxesFilterType;
   axisElements.lowerFilters[i].attr('y', newY - 8);
   axisElements.lowerFilterValues[i]
     ?.attr('transform', `translate(${xScales[i] + 8}, ${newY - 8})`)
-    .style('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
+    .style('display', (axisFilter.percentages.end as number) >= 1 ? 'none' : 'block');
   axisElements.lowerFilterValues[i]
     ?.select('text')
-    .text(getAxisDomainValue(i, axesFilters[i].percentages.end as number, yScales, dimensions, numberOfDecimals));
-  axisElements.filterRectangles[i].attr('height', `${newY - axesFilters[i].pixels.start - top - 8}`);
+    .text(getAxisDomainValue(i, axisFilter.percentages.end as number, yScales, dimensions, numberOfDecimals));
+  axisElements.filterRectangles[i].attr('height', `${newY - axisFilter.pixels.start - top - 8}`);
 
-  axesFilters[i].pixels.end = newY - top - 8;
-  axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
+  axisFilter.pixels.end = newY - top - 8;
+  axisFilter.percentages.end = axisFilter.pixels.end / axisHeight;
 }
 
 export function dragFilterRectangle(
@@ -163,35 +165,36 @@ export function dragFilterRectangle(
   top: number,
   axisHeight: number,
   axisElements: AxisElementsType,
-  axesFilters: AxesFilterType[],
+  axesFilters: Map<string, AxesFilterType>,
   dimensions: string[],
-  filtersArray: Writable<AxesFilterType[]>,
+  filtersArray: Writable<Map<string, AxesFilterType>>,
   numberOfDecimals?: number | null
 ) {
   axisElements.filterRectangles[i].attr('y', `${newY}`);
-
-  axesFilters[i].pixels = {
+  const axisFilter = axesFilters.get(dimensions[i]) as AxesFilterType;
+  axisFilter.pixels = {
     start: newY - top,
     end: newY + filterHeight - top
   };
-  axesFilters[i].percentages = {
-    start: axesFilters[i].pixels.start / axisHeight,
-    end: axesFilters[i].pixels.end / axisHeight
+  axisFilter.percentages = {
+    start: axisFilter.pixels.start / axisHeight,
+    end: axisFilter.pixels.end / axisHeight
   };
+  axesFilters.set(dimensions[i], axisFilter);
   filtersArray.set(axesFilters);
 
-  axisElements.upperFilters[i].attr('y', axesFilters[i].pixels.start + top - 16);
+  axisElements.upperFilters[i].attr('y', axisFilter.pixels.start + top - 16);
   axisElements.upperFilterValues[i]
-    ?.attr('transform', `translate(${xScales[i] + 8}, ${axesFilters[i].pixels.start + top - 10})`)
-    .style('display', (axesFilters[i].percentages.start as number) <= 0 ? 'none' : 'block');
+    ?.attr('transform', `translate(${xScales[i] + 8}, ${axisFilter.pixels.start + top - 10})`)
+    .style('display', (axisFilter.percentages.start as number) <= 0 ? 'none' : 'block');
   axisElements.upperFilterValues[i]
     ?.select('text')
-    .text(getAxisDomainValue(i, axesFilters[i].percentages.start as number, yScales, dimensions, numberOfDecimals));
-  axisElements.lowerFilters[i].attr('y', axesFilters[i].pixels.end + top);
+    .text(getAxisDomainValue(i, axisFilter.percentages.start as number, yScales, dimensions, numberOfDecimals));
+  axisElements.lowerFilters[i].attr('y', axisFilter.pixels.end + top);
   axisElements.lowerFilterValues[i]
-    ?.attr('transform', `translate(${xScales[i] + 8}, ${axesFilters[i].pixels.end + top - 4})`)
-    .style('display', (axesFilters[i].percentages.end as number) >= 1 ? 'none' : 'block');
+    ?.attr('transform', `translate(${xScales[i] + 8}, ${axisFilter.pixels.end + top - 4})`)
+    .style('display', (axisFilter.percentages.end as number) >= 1 ? 'none' : 'block');
   axisElements.lowerFilterValues[i]
     ?.select('text')
-    .text(getAxisDomainValue(i, axesFilters[i].percentages.end as number, yScales, dimensions, numberOfDecimals));
+    .text(getAxisDomainValue(i, axisFilter.percentages.end as number, yScales, dimensions, numberOfDecimals));
 }

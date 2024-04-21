@@ -4,6 +4,7 @@
   import { isInteractableStore } from '../../../stores/brushing';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { scaleLinear } from 'd3-scale';
+  import type { AxesFilterType } from '../types';
 
   export let isOpen: boolean;
   export let dimension: string;
@@ -51,18 +52,21 @@
     isOpen = false;
 
     // Calculate new filter values
-    const filtersTemp = $filtersArray[dimIndex].percentages;
+    const axisFilter = $filtersArray.get(dimension) as AxesFilterType;
     const originalScale = scaleLinear().domain(yScales[dimension].domain()).range([0, 1]);
     const newScale = scaleLinear()
       .domain(isAxisInverted ? [rangeMax, rangeMin] : [rangeMin, rangeMax])
       .range([0, 1]);
-    const originalStart = originalScale.invert(1 - (filtersTemp.start as number));
-    const originalEnd = originalScale.invert(1 - (filtersTemp.end as number));
-    $filtersArray[dimIndex].percentages = {
+    const originalStart = originalScale.invert(1 - (axisFilter.percentages.start as number));
+    const originalEnd = originalScale.invert(1 - (axisFilter.percentages.end as number));
+    axisFilter.percentages = {
       start: 1 - newScale(originalStart),
       end: 1 - newScale(originalEnd)
     };
 
+    const filtersArrayTemp = $filtersArray;
+    filtersArrayTemp.set(dimension, axisFilter);
+    filtersArray.set(filtersArrayTemp);
     $parcoordCustomAxisRanges = customRanges;
   }
 

@@ -2,7 +2,7 @@
   import { Button, Modal, Label, Input, Fileupload, Helper, Select, Spinner } from 'flowbite-svelte';
   import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
   import { isInteractableStore } from '../../../stores/brushing';
-  import { tableDimensionsStore } from '../../../stores/table';
+  import { tableVisibleDimensionsStore } from '../../../stores/table';
   import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
   import {
     CELL_SEPARATOR_LIST,
@@ -14,6 +14,7 @@
   import type { DimensionType } from '../../../util/types';
   import DatasetPreview from './DatasetPreview.svelte';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
+  import { parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
 
   export let isOpen: boolean;
 
@@ -58,10 +59,11 @@
   async function importDataset() {
     isLoading = true;
     try {
-      const { dataset, tableDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
+      const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
         await parseDataset(files, cellSeparator, decimalSeparator);
 
-      tableDimensionsStore.set(tableDimensions);
+      tableVisibleDimensionsStore.set(shownDimensions);
+      parcoordVisibleDimensionsStore.set(shownDimensions);
       dimensionDataStore.set(dimensionTypeMap);
       datasetStore.set(dataset);
       labelDimension.set(labelDim);

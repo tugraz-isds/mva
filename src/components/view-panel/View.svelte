@@ -2,14 +2,14 @@
   import { onDestroy } from 'svelte';
   import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare, Bars3 } from 'svelte-heros-v2';
   import { openWindow } from 'svelte-window-system';
-  import { Checkbox, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
+  import { Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
   import MethodPicker from '../simmap/MethodPicker.svelte';
+  import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
+  import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import type { View } from './ViewType';
-  import { tableDimensionsStore } from '../../stores/table';
-  import type { TableDimensionsType } from '../table/types';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -17,20 +17,11 @@
   export let parentHeight: number;
 
   let showView = true;
-  let updatedHere = false;
-  let showTableDimensions = false;
-  let menuStyle = '';
 
   // Get active views from store
   let activeViews: View[];
   const unsubscribeActive = activeViewsStore.subscribe((value) => {
     activeViews = value;
-  });
-
-  let tableDimensions: TableDimensionsType[] = [];
-  const unsubscribeTableDimensions = tableDimensionsStore.subscribe((value) => {
-    if (updatedHere) updatedHere = false;
-    else tableDimensions = value;
   });
 
   $: otherViews = otherViews?.filter((view: View) => view.title !== currView.title);
@@ -61,21 +52,8 @@
     window.dispatchEvent(event);
   }
 
-  function openTableDimensions(e: MouseEvent) {
-    menuStyle = `left: ${e.clientX + 10}px; top: ${e.clientY + 10}px;`;
-    showTableDimensions = true;
-  }
-
-  function updateTableDimensions(i: number) {
-    updatedHere = true;
-    const tableDims = tableDimensions;
-    tableDims[i].visible = !tableDims[i].visible;
-    tableDimensionsStore.set(tableDims);
-  }
-
   onDestroy(() => {
     unsubscribeActive();
-    unsubscribeTableDimensions();
   });
 </script>
 
@@ -84,24 +62,9 @@
     <div class="flex flex-row items-center">
       <span>{currView.title}</span>
       {#if currView.id === 'table'}
-        <Bars3
-          id="table-dims-dropdown"
-          size="14"
-          class="rotate-90 text-grey-900 cursor-pointer hover:bg-sky-100"
-          on:click={openTableDimensions}
-        />
-        <Tooltip style="z-index: 1000;" type="light">Table Dimensions</Tooltip>
-        <Dropdown
-          triggeredBy="#table-dims-dropdown"
-          class="overflow-y-auto"
-          style="z-index: 1000; padding: 5px; max-height: {parentHeight - 10}%;"
-        >
-          {#each tableDimensions as dim, i}
-            <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">
-              <Checkbox checked={dim.visible} on:change={() => updateTableDimensions(i)} />{dim.title}</DropdownItem
-            >
-          {/each}
-        </Dropdown>
+        <TableVisibleDimensions height={parentHeight - 10} />
+      {:else if currView.id === 'parcoord'}
+        <ParcoordVisibleDimensions height={parentHeight - 10} />
       {/if}
     </div>
     <div class="w-1/2">

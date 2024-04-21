@@ -1,5 +1,10 @@
 import type { Selection } from 'd3-selection';
 
+export type ParcoordVisibleDimensionsType = {
+  title: string;
+  visible: boolean;
+};
+
 export type DimensionMetadataType = {
   inverted: boolean;
   showLabels: boolean;

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { afterUpdate, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
   import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
-  import { filtersArray, parcoordCustomAxisRanges, parcoordHistogramData } from '../../../stores/parcoord';
+  import { filtersArray, parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
   import {
     brushedArray,
     hoveredArray,
@@ -50,6 +50,13 @@
   let throttledDrawLines: () => void;
   let debouncedDrawLines: () => void;
 
+  $: {
+    if (width && height && debouncedDrawLines) {
+      worker.postMessage({ function: 'resizeCanvas', width, height });
+      debouncedDrawLines();
+    }
+  }
+
   let partitionsData: string[] | null = null;
   const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
     partitionsData = value;
@@ -77,15 +84,18 @@
 
   let axesFilters: AxesFilterType[] = [];
   const unsubscribeFilters = filtersArray.subscribe((value) => {
-    axesFilters = value;
     if (worker && dataset?.length > 0 && dimensions?.length > 0 && !$isCurrentlyResizing) {
+      axesFilters = [];
+      $parcoordVisibleDimensionsStore.forEach((dim) => {
+        if (dim.visible) axesFilters.push(value.get(dim.title) as AxesFilterType);
+      });
       setTimeout(() => {
         worker.postMessage({
           function: 'applyFilters',
           axesFilters,
           margin
         });
-      }, 0);
+      }, 100);
     }
   });
 
@@ -96,17 +106,6 @@
         function: 'applyFilters',
         axesFilters,
         margin
-      });
-    }, 0);
-  });
-
-  const unsubscribeParcoordHistogramData = parcoordHistogramData.subscribe(() => {
-    if (!worker) return;
-    setTimeout(() => {
-      setLineData();
-      worker.postMessage({
-        function: 'redrawLines',
-        lines
       });
     }, 0);
   });
@@ -265,10 +264,12 @@
       lines[i][toIndex][1] = temp;
     }
 
-    worker.postMessage({
-      function: 'drawLines',
-      lines
-    });
+    setTimeout(() => {
+      worker.postMessage({
+        function: 'drawLines',
+        lines
+      });
+    }, 0);
   }
 
   export function handleInvertAxis(axisIndex: number) {
@@ -380,8 +381,8 @@
     initializeArrays();
     window.addEventListener('pointermove', handleMouseMove, false);
     window.addEventListener('click', handleClick, false);
-    throttledDrawLines = throttle(drawLines, 10);
-    debouncedDrawLines = debounce(throttledDrawLines, 10);
+    throttledDrawLines = throttle(drawLines, 100);
+    debouncedDrawLines = debounce(throttledDrawLines, 100);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
     worker = new OffscreenWorker();
@@ -425,18 +426,11 @@
     };
   });
 
-  afterUpdate(() => {
-    if (currWidth === width && currHeight === height) return;
-    worker.postMessage({ function: 'resizeCanvas', width, height });
-    debouncedDrawLines();
-  });
-
   onDestroy(() => {
     unsubscribePartitions();
     unsubscribePartitionsData();
     unsubscribeFilters();
     unsubscribeCustomRanges();
-    unsubscribeParcoordHistogramData();
     unsubscribeHovered();
     unsubscribeBrushed();
     unsubscribePreviouslyHovered();

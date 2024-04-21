@@ -3,13 +3,14 @@
   import { Check } from 'svelte-heros-v2';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
-  import { parcoordCustomAxisRanges } from '../../../stores/parcoord';
+  import { parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import SetRangeModal from './SetRangeModal.svelte';
   import SetBinNoModal from './SetBinNoModal.svelte';
   import SetFilterModal from './SetFilterModal.svelte';
   import type Axes from '../axes/Axes.svelte';
   import type { MarginType } from '../../../util/types';
+  import type { AxesFilterType } from '../types';
 
   export let axesComponent: Axes;
   export let dimensions: string[] = [];
@@ -20,6 +21,7 @@
   export let calculateMarginLeft: () => void;
 
   let dimIndex: number;
+  let dimension: string;
   let isSetRangeModalOpen = false,
     isSetBinNoModalOpen = false,
     isSetFilterModalOpen = false;
@@ -35,7 +37,9 @@
     $isInteractableStore = false;
     isContextMenuShown = true;
     dimIndex = index;
-    isFilterSet = $filtersArray[dimIndex].percentages.start !== 0 || $filtersArray[dimIndex].percentages.end !== 1;
+    dimension = dimensions[dimIndex];
+    const axisFilter = $filtersArray.get(dimension) as AxesFilterType;
+    isFilterSet = axisFilter.percentages.start !== 0 || axisFilter.percentages.end !== 1;
     const { clientX, clientY } = event;
     const clientXNew = clientX + 150 < window.innerWidth ? clientX : clientX - 150;
     menuStyle = `left: ${clientXNew}px; top: ${clientY}px;`;
@@ -47,6 +51,9 @@
   }
 
   function hideDimension() {
+    const visibleDimensions = $parcoordVisibleDimensionsStore;
+    visibleDimensions[visibleDimensions.findIndex((dim) => dim.title === dimension)].visible = false;
+    parcoordVisibleDimensionsStore.set(visibleDimensions);
     handleHideDimension(dimIndex);
     hideContextMenu();
   }
@@ -57,7 +64,7 @@
 
   function handleShow(field: 'labels' | 'histograms' | 'filter' | 'filterValues') {
     const dimData = $parcoordDimMetadata;
-    const currDimData = dimData.get(dimensions[dimIndex]);
+    const currDimData = dimData.get(dimension);
     if (!currDimData) return;
 
     if (field === 'labels') {
@@ -70,7 +77,7 @@
     } else if (field === 'filter') currDimData.showFilter = !currDimData.showFilter;
     else if (field === 'filterValues') currDimData.showFilterValues = !currDimData.showFilterValues;
 
-    dimData.set(dimensions[dimIndex], currDimData);
+    dimData.set(dimension, currDimData);
     parcoordDimMetadata.set(dimData);
     hideContextMenu();
   }
@@ -84,13 +91,15 @@
 
   function resetDimensionRange() {
     const customRanges = $parcoordCustomAxisRanges;
-    customRanges.set(dimensions[dimIndex], null);
+    customRanges.set(dimension, null);
     $parcoordCustomAxisRanges = customRanges;
 
-    $filtersArray[dimIndex].percentages = {
+    const axisFilter = $filtersArray.get(dimension) as AxesFilterType;
+    axisFilter.percentages = {
       start: 0,
       end: 1
     };
+    $filtersArray.set(dimension, axisFilter);
   }
 
   function openSetFilterModal() {
@@ -102,7 +111,7 @@
 
   function resetFilter() {
     isFilterSet = false;
-    axesComponent.resetAxisFilter(dimIndex);
+    axesComponent.resetAxisFilter(dimension);
     handleMouseLeave();
   }
 
@@ -144,7 +153,7 @@
         on:click={() => handleShow('labels')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showLabels ? 'visible' : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimension)?.showLabels ? 'visible' : 'hidden'}"
         />Labels</DropdownItem
       >
       <DropdownItem
@@ -153,7 +162,7 @@
         on:click={() => handleShow('histograms')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showHistograms ? 'visible' : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimension)?.showHistograms ? 'visible' : 'hidden'}"
         />Histogram</DropdownItem
       >
       <DropdownItem
@@ -162,39 +171,37 @@
         on:click={() => handleShow('filter')}
         ><Check
           class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilter ? 'visible' : 'hidden'}"
+          style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilter ? 'visible' : 'hidden'}"
         />Filter</DropdownItem
       >
-      {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+      {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
         <DropdownItem
           defaultClass="{activeClass} flex items-center"
           style="width: 110px;"
           on:click={() => handleShow('filterValues')}
           ><Check
             class="w-3 h-3 ms-2 mr-2"
-            style="visibility: {$parcoordDimMetadata.get(dimensions[dimIndex])?.showFilterValues
-              ? 'visible'
-              : 'hidden'}"
+            style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilterValues ? 'visible' : 'hidden'}"
           />Filter Values</DropdownItem
         >{/if}
     </Dropdown>
-    {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
       <DropdownDivider />
       <DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}>Set Range...</DropdownItem>
     {/if}
-    {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimensions[dimIndex]) !== null}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical' && $parcoordCustomAxisRanges.get(dimension) !== null}
       <DropdownItem defaultClass={activeClass} on:click={() => resetDimensionRange()}>Reset Range</DropdownItem>
     {/if}
-    {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical' || isFilterSet}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical' || isFilterSet}
       <DropdownDivider />
     {/if}
-    {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
       <DropdownItem defaultClass={activeClass} on:click={() => openSetFilterModal()}>Set Filter...</DropdownItem>
     {/if}
     {#if isFilterSet}
       <DropdownItem defaultClass={activeClass} on:click={resetFilter}>Reset Filter</DropdownItem>
     {/if}
-    {#if $dimensionDataStore.get(dimensions[dimIndex])?.type === 'numerical'}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
       <DropdownDivider />
       <DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}>Set Bin Num...</DropdownItem>
     {/if}
@@ -203,12 +210,12 @@
 
 <SetRangeModal
   isOpen={isSetRangeModalOpen}
-  dimension={dimensions[dimIndex]}
+  {dimension}
   {yScales}
   {dimIndex}
   handleResetDimensionRange={resetDimensionRange}
 />
 
-<SetBinNoModal isOpen={isSetBinNoModalOpen} dimension={dimensions[dimIndex]} />
+<SetBinNoModal isOpen={isSetBinNoModalOpen} {dimension} />
 
-<SetFilterModal isOpen={isSetFilterModalOpen} dimension={dimensions[dimIndex]} {yScales} {dimIndex} />
+<SetFilterModal isOpen={isSetFilterModalOpen} {dimension} {yScales} {dimIndex} />

@@ -3,7 +3,7 @@
   import { parcoordDimMetadata, filtersArray, parcoordCustomAxisRanges } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import { dimensionDataStore } from '../../../stores/dataset';
-  import type { CustomRangeType } from '../types';
+  import type { AxesFilterType, CustomRangeType } from '../types';
 
   export let isOpen: boolean;
   export let dimension: string;
@@ -22,12 +22,13 @@
   function loadData() {
     const numberOfDecimals = $dimensionDataStore.get(dimension)?.numberOfDecimals;
     const isAxisInverted = $parcoordDimMetadata.get(dimension)?.inverted;
+    const axisFilter = $filtersArray.get(dimension) as AxesFilterType;
     filterStart = isAxisInverted
-      ? yScales[dimension].invert($filtersArray[dimIndex].pixels.start).toFixed(numberOfDecimals)
-      : yScales[dimension].invert($filtersArray[dimIndex].pixels.end).toFixed(numberOfDecimals);
+      ? yScales[dimension].invert(axisFilter.pixels.start).toFixed(numberOfDecimals)
+      : yScales[dimension].invert(axisFilter.pixels.end).toFixed(numberOfDecimals);
     filterEnd = isAxisInverted
-      ? yScales[dimension].invert($filtersArray[dimIndex].pixels.end).toFixed(numberOfDecimals)
-      : yScales[dimension].invert($filtersArray[dimIndex].pixels.start).toFixed(numberOfDecimals);
+      ? yScales[dimension].invert(axisFilter.pixels.end).toFixed(numberOfDecimals)
+      : yScales[dimension].invert(axisFilter.pixels.start).toFixed(numberOfDecimals);
     let dimCustomRange = $parcoordCustomAxisRanges.get(dimension) as CustomRangeType;
     originalMin = dimCustomRange === null ? ($dimensionDataStore.get(dimension)?.min as number) : dimCustomRange.start;
     originalMax = dimCustomRange === null ? ($dimensionDataStore.get(dimension)?.max as number) : dimCustomRange.end;
@@ -55,8 +56,8 @@
     isOpen = false;
 
     // Calculate new filter values
-    const filtersTemp = $filtersArray;
-    filtersTemp[dimIndex] = {
+    const filtersArrayTemp = $filtersArray;
+    filtersArrayTemp.set(dimension, {
       pixels: {
         start: isAxisInverted ? yScales[dimension](filterStart) : yScales[dimension](filterEnd),
         end: isAxisInverted ? yScales[dimension](filterEnd) : yScales[dimension](filterStart)
@@ -65,9 +66,8 @@
         start: null,
         end: null
       }
-    };
-
-    $filtersArray = filtersTemp;
+    });
+    filtersArray.set(filtersArrayTemp);
   }
 </script>
 

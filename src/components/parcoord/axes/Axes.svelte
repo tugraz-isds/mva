@@ -2,12 +2,17 @@
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import { select } from 'd3-selection';
   import { drag } from 'd3-drag';
-  import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
+  import { filtersArray, parcoordDimMetadata, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
   import { calculateMaxLength, getTextWidth } from '../../../util/text';
   import type ContextMenuAxes from '../context-menu/ContextMenuAxes.svelte';
-  import type { AxesFilterType, AxisElementsType, DimensionMetadataType } from '../types';
+  import type {
+    AxesFilterType,
+    AxisElementsType,
+    DimensionMetadataType,
+    ParcoordVisibleDimensionsType
+  } from '../types';
   import type { MarginType, TooltipType } from '../../../util/types';
   import {
     drawAxis,
@@ -29,6 +34,7 @@
     moveDraggedAxis,
     swapAxes
   } from './draggingUtil';
+  import { reorderArray } from '../../../util/util';
 
   export let width: number;
   export let contextMenuAxes: ContextMenuAxes;
@@ -57,49 +63,52 @@
   };
 
   let axisHeight: number;
-  let axesFilters: AxesFilterType[] = [];
+  let axesFilters: Map<string, AxesFilterType> = new Map();
   let isCurrentlyFiltering = false;
   let datasetUploaded = false;
   let autoscrollInterval: number | null = null;
 
   $: axisHeight = height - margin.top - margin.bottom;
 
+  let visibleDimensions: ParcoordVisibleDimensionsType[] = [];
+  const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
+    visibleDimensions = value;
+  });
+
   let dimensionsMetadata: Map<string, DimensionMetadataType>;
   const unsubscribeDimData = parcoordDimMetadata.subscribe((value) => {
-    if (axesFilters.length > 0) {
+    if (axesFilters.size > 0) {
       dimensionsMetadata = value;
       clearSVG();
+      console.log('render from unsubscribeDimData');
       renderAxes();
     }
   });
 
   const unsubscribeFilters = filtersArray.subscribe((value) => {
-    if (
-      !axesFilters ||
-      !axisElements.upperFilters ||
-      axesFilters.length === 0 ||
-      axisElements.upperFilters.length === 0
-    )
+    if (!axesFilters || !axisElements.upperFilters || axesFilters.size === 0 || axisElements.upperFilters.length === 0)
       return;
 
     let redrawAxes = false;
-    if (axesFilters.length !== value.length) {
-      redrawAxes = true;
-      axesFilters = value;
-    }
-    dimensions.forEach((dim: string, i: number) => {
-      if (value[i].percentages.start === null) {
-        axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
+    visibleDimensions.forEach((dim) => {
+      if (!dim.visible) return;
+      const axisFilterOld = axesFilters.get(dim.title);
+      const axisFilterNew = value.get(dim.title);
+      if (!axisFilterOld || !axisFilterNew) return;
+      if (axisFilterNew.percentages.start === null) {
+        axisFilterOld.percentages.start = axisFilterOld.pixels.start / axisHeight;
         redrawAxes = true;
       }
-      if (value[i].percentages.end === null) {
-        axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
+      if (axisFilterNew.percentages.end === null) {
+        axisFilterOld.percentages.end = axisFilterOld.pixels.end / axisHeight;
         redrawAxes = true;
       }
+      axesFilters.set(dim.title, axisFilterOld);
     });
 
     if (redrawAxes) {
       clearSVG();
+      console.log('render from unsubscribeFilters');
       renderAxes();
     }
   });
@@ -129,6 +138,7 @@
     if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
     if (newWidth) width = newWidth;
+    console.log('Rendering axes');
 
     const svg = select('#parcoord-canvas-axes');
 
@@ -178,11 +188,12 @@
         )
       );
 
+      const axisFilter = axesFilters.get(dim) as AxesFilterType;
       axisElements.upperFilters.push(
         drawAxisUpperFilter(
           svg,
           xScales[i] - 8,
-          axesFilters[i].pixels.start + margin.top - 16,
+          axisFilter.pixels.start + margin.top - 16,
           dimensionsMetadata.get(dim)?.showFilter
         )
       );
@@ -191,7 +202,7 @@
         drawAxisLowerFilter(
           svg,
           xScales[i] - 8,
-          axesFilters[i].pixels.end + margin.top,
+          axisFilter.pixels.end + margin.top,
           dimensionsMetadata.get(dim)?.showFilter
         )
       );
@@ -199,7 +210,7 @@
       if ($dimensionDataStore.get(dim)?.type === 'numerical' && dimensionsMetadata.get(dim)?.showFilterValues) {
         const upperFilterValue = getAxisDomainValue(
           i,
-          axesFilters[i].percentages.start as number,
+          axisFilter.percentages.start as number,
           yScales,
           dimensions,
           $dimensionDataStore.get(dimensions[i])?.numberOfDecimals
@@ -208,15 +219,15 @@
           drawAxisUpperFilterValue(
             svg,
             xScales[i] + 8,
-            axesFilters[i].pixels.start + margin.top - 10,
-            !dimensionsMetadata.get(dim)?.showFilter || (axesFilters[i].percentages.start as number) <= 0,
+            axisFilter.pixels.start + margin.top - 10,
+            !dimensionsMetadata.get(dim)?.showFilter || (axisFilter.percentages.start as number) <= 0,
             upperFilterValue
           )
         );
 
         const lowerFilterValue = getAxisDomainValue(
           i,
-          axesFilters[i].percentages.end as number,
+          axisFilter.percentages.end as number,
           yScales,
           dimensions,
           $dimensionDataStore.get(dimensions[i])?.numberOfDecimals
@@ -225,8 +236,8 @@
           drawAxisLowerFilterValue(
             svg,
             xScales[i] + 8,
-            axesFilters[i].pixels.end + margin.top - 4,
-            !dimensionsMetadata.get(dim)?.showFilter || (axesFilters[i].percentages.end as number) >= 1,
+            axisFilter.pixels.end + margin.top - 4,
+            !dimensionsMetadata.get(dim)?.showFilter || (axisFilter.percentages.end as number) >= 1,
             lowerFilterValue
           )
         );
@@ -239,9 +250,9 @@
         drawAxisFilterRectangle(
           svg,
           xScales[i] - 6,
-          margin.top + axesFilters[i].pixels.start,
+          margin.top + axisFilter.pixels.start,
           12,
-          axesFilters[i].pixels.end - axesFilters[i].pixels.start,
+          axisFilter.pixels.end - axisFilter.pixels.start,
           () => {
             isInteractableStore.set(false);
             setTooltipData({
@@ -305,10 +316,14 @@
               dimensionsMetadata,
               dimensions
             );
-            filtersArray.set(axesFilters);
+            const dimensionsVisible = reorderArray($parcoordVisibleDimensionsStore, draggingIndex, newIndex);
+            parcoordVisibleDimensionsStore.set(dimensionsVisible);
+            console.log('swapping', dimensions[draggingIndex], dimensions[newIndex]);
 
             if ((newIndex === 0 && draggingIndex === 1) || (newIndex === 1 && draggingIndex === 0)) {
-              calculateMarginLeft();
+              setTimeout(() => {
+                calculateMarginLeft();
+              }, 0);
             }
 
             draggingIndex = newIndex;
@@ -370,18 +385,19 @@
   }
 
   function handleUpperFilterDragging() {
-    dimensions.forEach((dim: string, idx: number) => {
+    dimensions.forEach((dim: string, i: number) => {
       const dragBehavior = drag<SVGSVGElement, unknown, any>()
         .on('start', () => {
           isInteractableStore.set(false);
         })
         .on('drag', (event) => {
+          const axisFilter = axesFilters.get(dim) as AxesFilterType;
           const minY = margin.top - 8;
-          const maxY = axesFilters[idx].pixels.end + margin.top - 8;
+          const maxY = axisFilter.pixels.end + margin.top - 8;
           const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
           dragUpperFilter(
-            idx,
+            i,
             newY,
             xScales,
             yScales,
@@ -390,7 +406,7 @@
             axisElements,
             axesFilters,
             dimensions,
-            $dimensionDataStore.get(dimensions[idx])?.numberOfDecimals
+            $dimensionDataStore.get(dimensions[i])?.numberOfDecimals
           );
 
           filtersArray.set(axesFilters);
@@ -404,18 +420,19 @@
   }
 
   function handleLowerFilterDragging() {
-    dimensions.forEach((dim: string, idx: number) => {
+    dimensions.forEach((dim: string, i: number) => {
       const dragBehavior = drag<SVGSVGElement, unknown, any>()
         .on('start', () => {
           isInteractableStore.set(false);
         })
         .on('drag', (event) => {
-          const minY = axesFilters[idx].pixels.start + margin.top + 8;
+          const axisFilter = axesFilters.get(dim) as AxesFilterType;
+          const minY = axisFilter.pixels.start + margin.top + 8;
           const maxY = height - margin.bottom + 8;
           const newY = Math.max(minY, Math.min(maxY, event.y)); // Clamp the y position within the valid range
 
           dragLowerFilter(
-            idx,
+            i,
             newY,
             xScales,
             yScales,
@@ -424,7 +441,7 @@
             axisElements,
             axesFilters,
             dimensions,
-            $dimensionDataStore.get(dimensions[idx])?.numberOfDecimals
+            $dimensionDataStore.get(dimensions[i])?.numberOfDecimals
           );
 
           filtersArray.set(axesFilters);
@@ -486,13 +503,15 @@
     axisData.inverted = !axisData.inverted;
     dimensionsMetadata.set(dim, axisData);
 
-    const temp = axesFilters[i].pixels.end;
-    axesFilters[i].pixels.end = axisHeight - axesFilters[i].pixels.start;
-    axesFilters[i].pixels.start = axisHeight - temp;
-    axesFilters[i].percentages.start = axesFilters[i].pixels.start / axisHeight;
-    axesFilters[i].percentages.end = axesFilters[i].pixels.end / axisHeight;
+    const axisFilter = axesFilters.get(dim) as AxesFilterType;
+    const temp = axisFilter.pixels.end;
+    axisFilter.pixels.end = axisHeight - axisFilter.pixels.start;
+    axisFilter.pixels.start = axisHeight - temp;
+    axisFilter.percentages.start = axisFilter.pixels.start / axisHeight;
+    axisFilter.percentages.end = axisFilter.pixels.end / axisHeight;
 
     parcoordDimMetadata.set(dimensionsMetadata);
+    axesFilters.set(dim, axisFilter);
     filtersArray.set(axesFilters);
   }
 
@@ -506,8 +525,8 @@
     handleMarginChanged();
   }
 
-  export function resetAxisFilter(idx: number) {
-    axesFilters[idx] = {
+  export function resetAxisFilter(dim: string) {
+    axesFilters.set(dim, {
       pixels: {
         start: 0,
         end: axisHeight
@@ -516,24 +535,29 @@
         start: 0,
         end: 1
       }
-    };
+    });
 
     filtersArray.set(axesFilters);
     clearSVG();
+    console.log('render from resetAxisFilter');
     renderAxes();
   }
 
   function initAxesFilters() {
-    axesFilters = dimensions.map(() => ({
-      pixels: {
-        start: 0,
-        end: axisHeight
-      },
-      percentages: {
-        start: 0,
-        end: 1
-      }
-    }));
+    const axesFiltersNew: Map<string, AxesFilterType> = new Map();
+    $parcoordVisibleDimensionsStore.forEach((dim) =>
+      axesFiltersNew.set(dim.title, {
+        pixels: {
+          start: 0,
+          end: axisHeight
+        },
+        percentages: {
+          start: 0,
+          end: 1
+        }
+      })
+    );
+    axesFilters = axesFiltersNew;
 
     filtersArray.set(axesFilters);
 
@@ -554,11 +578,13 @@
 
   export function resizeFilters() {
     axisHeight = height - margin.top - margin.bottom;
-    dimensions.forEach((dim: string, i: number) => {
-      axesFilters[i].pixels = {
-        start: (axesFilters[i].percentages.start as number) * axisHeight,
-        end: (axesFilters[i].percentages.end as number) * axisHeight
+    dimensions.forEach((dim, i) => {
+      const axisFilter = axesFilters.get(dim) as AxesFilterType;
+      axisFilter.pixels = {
+        start: (axisFilter.percentages.start as number) * axisHeight,
+        end: (axisFilter.percentages.end as number) * axisHeight
       };
+      axesFilters.set(dim, axisFilter);
     });
 
     filtersArray.set(axesFilters);
@@ -583,12 +609,14 @@
       datasetUploaded = false;
     }
 
-    resizeFilters();
-    clearSVG();
-    renderAxes();
+    // resizeFilters();
+    // clearSVG();
+    // console.log('render from afterUpdate');
+    // renderAxes();
   });
 
   onDestroy(() => {
+    unsubscribeParcoordVisibleDimensions();
     unsubscribeDimData();
     unsubscribeFilters();
     unsubscribeDataset();

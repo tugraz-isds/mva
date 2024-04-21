@@ -1,4 +1,4 @@
-export type TableDimensionsType = {
+export type TableVisibleDimensionsType = {
   title: string;
   visible: boolean;
 };

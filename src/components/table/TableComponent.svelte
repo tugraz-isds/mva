@@ -10,7 +10,7 @@
     previouslyBrushedArray,
     isInteractableStore
   } from '../../stores/brushing';
-  import { tableDimensionsStore } from '../../stores/table';
+  import { tableVisibleDimensionsStore } from '../../stores/table';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import ContextMenu from './ContextMenu.svelte';
@@ -19,7 +19,7 @@
   import { ascending, descending } from 'd3-array';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { DimensionDataType, TooltipType } from '../../util/types';
-  import type { TableDimensionsType } from './types';
+  import type { TableVisibleDimensionsType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
   import type { PartitionType } from '../partitions/types';
 
@@ -43,9 +43,9 @@
 
   let dataset: DSVParsedArray<any>;
 
-  let tableDimensions: TableDimensionsType[] = [];
-  const unsubscribeTableDimensions = tableDimensionsStore.subscribe((value) => {
-    tableDimensions = value;
+  let tableVisibleDimensions: TableVisibleDimensionsType[] = [];
+  const unsubscribeTableVisibleDimensions = tableVisibleDimensionsStore.subscribe((value) => {
+    tableVisibleDimensions = value;
   });
 
   let partitionsData: string[] = [];
@@ -72,8 +72,8 @@
         };
       }) as DSVParsedArray<any>;
 
-      tableDimensions?.unshift({ title: '_partition', visible: true });
-      tableDimensions?.unshift({ title: '_i', visible: true });
+      tableVisibleDimensions?.unshift({ title: '_partition', visible: true });
+      tableVisibleDimensions?.unshift({ title: '_i', visible: true });
 
       sorting = { dim: '_i', direction: 'ASC' };
     }
@@ -178,7 +178,7 @@
   }
 
   function formatCell(value: string, dimIndex: number) {
-    const dimData = $dimensionDataStore.get(tableDimensions[dimIndex].title);
+    const dimData = $dimensionDataStore.get(tableVisibleDimensions[dimIndex].title);
     if (!dimData || dimData.type === 'categorical') return value;
     return parseFloat(value).toFixed(dimData.numberOfDecimals ?? undefined);
   }
@@ -209,7 +209,7 @@
     unsubscribeLinking();
     unsubscribeBrushing();
     unsubscribeHovered();
-    unsubscribeTableDimensions();
+    unsubscribeTableVisibleDimensions();
     unsubscribePartitionsData();
     unsubscribePartitions();
   });
@@ -224,7 +224,7 @@
       <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
         <thead style="font-size: 14px;">
           <tr class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer">
-            {#each tableDimensions as dim}
+            {#each tableVisibleDimensions as dim}
               {#if dim.visible}
                 <th
                   on:click={() => sortDataset(dim.title)}
@@ -271,7 +271,7 @@
               on:mouseleave={() => handleMouseLeave(row._i)}
               on:click={(e) => handleRowClick(e, index, row._i)}
             >
-              {#each tableDimensions as dim, i}
+              {#each tableVisibleDimensions as dim, i}
                 {#if dim.visible}
                   <td
                     class={getCellClass($dimensionDataStore.get(dim.title))}
