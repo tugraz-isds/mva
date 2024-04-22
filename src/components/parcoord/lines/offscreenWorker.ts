@@ -88,7 +88,6 @@ self.onmessage = function (message) {
 };
 
 function drawLines(inputLines: number[][][]) {
-  console.log('Drawing lines');
   scene.children = [];
   inputLines.forEach((currLine: number[][], i: number) => {
     const linePoints: THREE.Vector3[] = [];

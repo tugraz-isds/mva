@@ -1,6 +1,6 @@
 import type { Writable } from 'svelte/store';
 import { reorderArray } from '../../../util/util';
-import type { AxesFilterType, AxisElementsType, DimensionMetadataType } from '../types';
+import type { AxesFilterType, AxisElementsType, DimensionMetadataType, ParcoordVisibleDimensionsType } from '../types';
 import { getAxisDomainValue } from './drawingUtil';
 
 export function moveDraggedAxis(
@@ -42,7 +42,8 @@ export function swapAxes(
   axisElements: AxisElementsType,
   axesFilters: Map<string, AxesFilterType>,
   dimensionsMetadata: Map<string, DimensionMetadataType>,
-  dimensions: string[]
+  dimensions: string[],
+  visibleDimensions: ParcoordVisibleDimensionsType[]
 ) {
   axisElements.lines[newIndex].attr('transform', `translate(${xScales[draggingIndex]}, ${top})`);
   axisElements.titles[newIndex].attr('transform', `translate(${xScales[draggingIndex]}, ${top - 30})`);
@@ -63,11 +64,11 @@ export function swapAxes(
       `translate(${xScales[draggingIndex] + 8}, ${axisFilter.pixels.end + top - 4})`
     );
   }
-  dimensions = reorderArray(dimensions, draggingIndex, newIndex);
-  axisElements.lines = reorderArray(axisElements.lines, draggingIndex, newIndex);
-  axisElements.titles = reorderArray(axisElements.titles, draggingIndex, newIndex);
-  axisElements.filterRectangles = reorderArray(axisElements.filterRectangles, draggingIndex, newIndex);
-  axisElements.invertIcons = reorderArray(axisElements.invertIcons, draggingIndex, newIndex);
+  const draggingDimIndex = visibleDimensions.findIndex((dim) => dim.title === dimensions[draggingIndex]);
+  const newDimIndex = visibleDimensions.findIndex((dim) => dim.title === dimensions[newIndex]);
+  const temp = visibleDimensions[draggingDimIndex];
+  visibleDimensions[draggingDimIndex] = visibleDimensions[newDimIndex];
+  visibleDimensions[newDimIndex] = temp;
 }
 
 export function endAxisDragging(

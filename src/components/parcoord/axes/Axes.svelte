@@ -62,6 +62,7 @@
     filterRectangles: []
   };
 
+  let isMounted = false;
   let axisHeight: number;
   let axesFilters: Map<string, AxesFilterType> = new Map();
   let isCurrentlyFiltering = false;
@@ -80,7 +81,6 @@
     if (axesFilters.size > 0) {
       dimensionsMetadata = value;
       clearSVG();
-      console.log('render from unsubscribeDimData');
       renderAxes();
     }
   });
@@ -108,7 +108,6 @@
 
     if (redrawAxes) {
       clearSVG();
-      console.log('render from unsubscribeFilters');
       renderAxes();
     }
   });
@@ -138,7 +137,6 @@
     if (!dimensions || xScales?.length === 0 || yScales?.length === 0) return;
 
     if (newWidth) width = newWidth;
-    console.log('Rendering axes');
 
     const svg = select('#parcoord-canvas-axes');
 
@@ -314,11 +312,11 @@
               axisElements,
               axesFilters,
               dimensionsMetadata,
-              dimensions
+              dimensions,
+              visibleDimensions
             );
-            const dimensionsVisible = reorderArray($parcoordVisibleDimensionsStore, draggingIndex, newIndex);
-            parcoordVisibleDimensionsStore.set(dimensionsVisible);
-            console.log('swapping', dimensions[draggingIndex], dimensions[newIndex]);
+
+            parcoordVisibleDimensionsStore.set(visibleDimensions);
 
             if ((newIndex === 0 && draggingIndex === 1) || (newIndex === 1 && draggingIndex === 0)) {
               setTimeout(() => {
@@ -539,13 +537,12 @@
 
     filtersArray.set(axesFilters);
     clearSVG();
-    console.log('render from resetAxisFilter');
     renderAxes();
   }
 
   function initAxesFilters() {
     const axesFiltersNew: Map<string, AxesFilterType> = new Map();
-    $parcoordVisibleDimensionsStore.forEach((dim) =>
+    visibleDimensions.forEach((dim) =>
       axesFiltersNew.set(dim.title, {
         pixels: {
           start: 0,
@@ -598,6 +595,7 @@
   };
 
   onMount(() => {
+    isMounted = true;
     initAxesFilters();
     calculateMarginLeft();
   });
@@ -609,10 +607,9 @@
       datasetUploaded = false;
     }
 
-    // resizeFilters();
-    // clearSVG();
-    // console.log('render from afterUpdate');
-    // renderAxes();
+    resizeFilters();
+    clearSVG();
+    renderAxes();
   });
 
   onDestroy(() => {

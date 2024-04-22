@@ -173,9 +173,7 @@
   }
 
   function handleAxesSwapped(fromIndex: number, toIndex: number) {
-    console.log(fromIndex, toIndex);
     linesComponent.swapPoints(fromIndex, toIndex);
-    // dimensions = reorderArray(dimensions, fromIndex, toIndex);
   }
 
   function handleMarginChanged() {
