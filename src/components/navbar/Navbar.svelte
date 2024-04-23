@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron } from 'flowbite-svelte';
+  import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron, ChevronRight } from 'flowbite-svelte';
   import ImportDatasetModal from './dataset/ImportDatasetModal.svelte';
   import ExportDatasetModal from './dataset/ExportDatasetModal.svelte';
   import { isInteractableStore } from '../../stores/brushing';
@@ -40,6 +40,13 @@
         <span class="text-white hover:text-blue-200">Help</span>
       </NavLi>
       <Dropdown triggeredBy="#nav-file" class="w-44 z-20">
+        <DropdownItem class="flex items-center justify-between">
+          Example Datasets<ChevronRight class="w-3 h-3 ms-2" />
+        </DropdownItem>
+        <Dropdown placement="right-start">
+          <DropdownItem>Iris</DropdownItem>
+          <DropdownItem>Penguins</DropdownItem>
+        </Dropdown>
         <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
         <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
       </Dropdown>

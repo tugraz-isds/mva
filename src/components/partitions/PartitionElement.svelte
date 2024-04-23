@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Tooltip, Dropdown, DropdownItem, Input } from 'flowbite-svelte';
-  import { Trash, Plus, Eye, EyeSlash, Check } from 'svelte-heros-v2';
+  import { Trash, PlusCircle, Eye, EyeSlash, Check } from 'svelte-heros-v2';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
   import ColorPickerModal from './ColorPickerModal.svelte';
   import {
@@ -10,7 +10,9 @@
     shape_triangle_icon,
     shape_circle_hollow_icon,
     shape_square_hollow_icon,
-    shape_triangle_hollow_icon
+    shape_triangle_hollow_icon,
+    shape_plus_icon,
+    shape_cross_icon
   } from '../../util/icon-definitions';
   import { rgbaToHexString } from '../../util/colors';
   import type { PartitionShapeType, PartitionType } from './types';
@@ -32,6 +34,8 @@
     ['circle', shape_circle_icon],
     ['triangle', shape_triangle_icon],
     ['square', shape_square_icon],
+    ['plus', shape_plus_icon],
+    ['cross', shape_cross_icon],
     ['circle hollow', shape_circle_hollow_icon],
     ['triangle hollow', shape_triangle_hollow_icon],
     ['square hollow', shape_square_hollow_icon]
@@ -136,7 +140,7 @@
       class="text-grey-900 cursor-pointer"
     />
     <Tooltip style="z-index: 1000;" type="light">Delete Partition</Tooltip>
-    <Plus size="16" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
+    <PlusCircle size="20" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
     <Tooltip style="z-index: 1000;" type="light">Add Records</Tooltip>
     <div id="partition-shape-button-{index}" class="cursor-pointer">
       {@html SHAPES.get(partition.shape)?.replace('<svg', '<svg width="12" height="12" stroke="#fff" fill="#111827"')}
@@ -145,7 +149,7 @@
     <div bind:this={shapesDropdownElement}>
       <Dropdown
         triggeredBy="#partition-shape-button-{index}"
-        ulClass="bg-white border border-gray-300 p-1 h-32"
+        ulClass="bg-white border border-gray-300 p-1 h-42"
         style="z-index: 1000;"
         placement={shapesDropdownElement?.getBoundingClientRect().bottom + 140 > window.innerHeight ? 'top' : 'bottom'}
         bind:open={isShapeDropdownOpen}

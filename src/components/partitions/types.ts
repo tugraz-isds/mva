@@ -4,6 +4,8 @@ export type PartitionShapeType =
   | 'circle'
   | 'triangle'
   | 'square'
+  | 'plus'
+  | 'cross'
   | 'circle hollow'
   | 'triangle hollow'
   | 'square hollow';

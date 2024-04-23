@@ -68,6 +68,39 @@ export function getPartitionGeometry(pointSize: number, partition?: PartitionTyp
     ]);
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     return geometry;
+  } else if (partition.shape === 'plus' || partition.shape === 'cross') {
+    const geometry = new THREE.BufferGeometry();
+    const vertices = new Float32Array([
+      -(pointSize + 1) * 0.3,
+      -(pointSize + 1),
+      0.0,
+      (pointSize + 1) * 0.3,
+      -(pointSize + 1),
+      0.0,
+      (pointSize + 1) * 0.3,
+      pointSize + 1,
+      0.0,
+      -(pointSize + 1) * 0.3,
+      pointSize + 1,
+      0.0,
+      -(pointSize + 1),
+      -(pointSize + 1) * 0.3,
+      0.0,
+      pointSize + 1,
+      -(pointSize + 1) * 0.3,
+      0.0,
+      pointSize + 1,
+      (pointSize + 1) * 0.3,
+      0.0,
+      -(pointSize + 1),
+      (pointSize + 1) * 0.3,
+      0.0
+    ]);
+    const indices = new Uint16Array([0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7]);
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    if (partition.shape === 'cross') geometry.rotateZ(Math.PI / 4);
+    return geometry;
   } else if (partition.shape === 'square' || partition.shape === 'square hollow')
     return new THREE.PlaneGeometry(pointSize * 2, pointSize * 2);
 }
@@ -172,6 +205,8 @@ export function getUpdatedPartition(
       return { updatedPartition: partitionOld[0], updatedProperty: 'shape' };
     if (rgbaToHexNumber(partitionOld[1].color) !== rgbaToHexNumber(partitionNew[1].color))
       return { updatedPartition: partitionOld[0], updatedProperty: 'color' };
+    if (partitionNew[1].size > partitionOld[1].size)
+      return { updatedPartition: partitionOld[0], updatedProperty: 'size' };
   }
 
   return { updatedPartition: null, updatedProperty: null };

@@ -71,6 +71,18 @@ export const shape_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBo
   <circle cx="50" cy="50" r="50" />
 </svg>`;
 
+export const shape_cross_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g transform="rotate(45 50 50)">
+    <rect x="0" y="42" width="100" height="16" fill="black" />
+    <rect x="42" y="0" width="16" height="100" fill="black" />
+  </g>
+</svg>`;
+
+export const shape_plus_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect x="0" y="42" width="100" height="16" fill="black" />
+  <rect x="42" y="0" width="16" height="100" fill="black" />
+</svg>`;
+
 export const shape_square_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="90,90 10,90 10,10 90,10" stroke="black" stroke-width="10" fill="none" />
 </svg>`;

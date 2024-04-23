@@ -377,6 +377,10 @@
     return svgString;
   };
 
+  export function debounceDrawLines() {
+    debouncedDrawLines();
+  }
+
   onMount(() => {
     initializeArrays();
     window.addEventListener('pointermove', handleMouseMove, false);

@@ -22,14 +22,14 @@
   import type { CustomRangeType, ParcoordVisibleDimensionsType } from './types';
   import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
 
-  let isBrowser = false; // Flag to see if we are in browser
+  let isBrowser = false;
 
   let isSvgExportModalOpen = false;
-  let width: number; // Container width
-  let originalWidth: number; // Container original width
-  let height: number; // Container height
-  let dimensions: string[] = []; // Dataset dimensions
-  let dimensionsInitial: string[] = []; // Dataset initial dimensions
+  let width: number;
+  let originalWidth: number;
+  let height: number;
+  let dimensions: string[] = [];
+  let dimensionsInitial: string[] = [];
 
   let xScales: any[] = [];
   let yScales: any = {};
@@ -41,7 +41,7 @@
   let contextMenuPartitions: ContextMenuPartitions;
   let svgExportModal: SvgExportModal;
 
-  let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 }; // Parallel coordinates margin
+  let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 };
   let tooltip: TooltipType = {
     visible: false,
     clientX: 0,
@@ -184,7 +184,7 @@
     setTimeout(() => {
       axesComponent.clearSVG();
       axesComponent.renderAxes(width);
-      linesComponent.drawLines();
+      linesComponent.debounceDrawLines();
     }, 0);
   }
 

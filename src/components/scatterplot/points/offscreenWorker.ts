@@ -223,6 +223,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
       if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
       else if (updatedProperty === 'shape') updatePartitionShape(updatedPartition);
       else if (updatedProperty === 'visible') updatePartitionVisible(updatedPartition);
+      else if (updatedProperty === 'size') updatePartitionShape(updatedPartition, true);
     }
   }
   // Partition was deleted
@@ -245,19 +246,15 @@ function updatePartitionColor(partitionName: string) {
   });
 }
 
-function updatePartitionShape(partitionName: string) {
-  const partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+function updatePartitionShape(partitionName: string, brushed: boolean = false) {
+  let partitionRecords: number[];
+  if (brushed) {
+    partitionRecords = Array.from(brushedPointsIndices);
+  } else {
+    partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+  }
   const partition = partitions.get(partitionName);
   partitionRecords.forEach((i) => {
-    const geometry = getPartitionGeometry(pointSize, partition);
-    const material = getPartitionMaterial(partition);
-    const newPoint = new THREE.Mesh(geometry, material) as PointType;
-    newPoint.position.set(points[i].position.x, points[i].position.y, points[i].position.z);
-    newPoint.index = i;
-    scene.remove(points[i]);
-    scene.add(newPoint);
-    points[i] = newPoint;
-
     scene.remove(strokes[i] as StrokeType);
     if (partition?.shape.includes('hollow')) {
       const materialStroke = getPartitionMaterialStroke(partition);
@@ -270,6 +267,15 @@ function updatePartitionShape(partitionName: string) {
     } else if (strokes[i] !== null) {
       strokes[i] = null;
     }
+
+    const geometry = getPartitionGeometry(pointSize, partition);
+    const material = brushed ? POINT_MATERIAL_BRUSHED : getPartitionMaterial(partition);
+    const newPoint = new THREE.Mesh(geometry, material) as PointType;
+    newPoint.position.set(points[i].position.x, points[i].position.y, brushed ? 1 : points[i].position.z);
+    newPoint.index = i;
+    scene.remove(points[i]);
+    scene.add(newPoint);
+    points[i] = newPoint;
   });
 }
 

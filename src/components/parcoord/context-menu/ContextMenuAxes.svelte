@@ -143,48 +143,50 @@
     <DropdownItem defaultClass={activeClass} on:click={hideDimension}>Hide Dimension</DropdownItem>
     <DropdownItem defaultClass={activeClass} on:click={invertDimension}>Invert Dimension</DropdownItem>
     <DropdownDivider />
-    <DropdownItem defaultClass="{activeClass} flex items-center justify-between">
+    <DropdownItem id="parcoord-axis-context-menu" defaultClass="{activeClass} flex items-center justify-between">
       Show<ChevronRight class="w-3 h-3 ms-2" />
     </DropdownItem>
-    <Dropdown placement="right-start" style="padding: 5px; width: 120px;">
-      <DropdownItem
-        defaultClass="{activeClass} flex items-center"
-        style="width: 110px;"
-        on:click={() => handleShow('labels')}
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimension)?.showLabels ? 'visible' : 'hidden'}"
-        />Labels</DropdownItem
-      >
-      <DropdownItem
-        defaultClass="{activeClass} flex items-center"
-        style="width: 110px;"
-        on:click={() => handleShow('histograms')}
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimension)?.showHistograms ? 'visible' : 'hidden'}"
-        />Histogram</DropdownItem
-      >
-      <DropdownItem
-        defaultClass="{activeClass} flex items-center"
-        style="width: 110px;"
-        on:click={() => handleShow('filter')}
-        ><Check
-          class="w-3 h-3 ms-2 mr-2"
-          style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilter ? 'visible' : 'hidden'}"
-        />Filter</DropdownItem
-      >
-      {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
+    <div on:mouseenter={() => ($isInteractableStore = false)} on:mouseleave={() => ($isInteractableStore = true)}>
+      <Dropdown placement="right-start" style="padding: 5px; width: 120px;" triggeredBy="#parcoord-axis-context-menu">
         <DropdownItem
           defaultClass="{activeClass} flex items-center"
           style="width: 110px;"
-          on:click={() => handleShow('filterValues')}
+          on:click={() => handleShow('labels')}
           ><Check
             class="w-3 h-3 ms-2 mr-2"
-            style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilterValues ? 'visible' : 'hidden'}"
-          />Filter Values</DropdownItem
-        >{/if}
-    </Dropdown>
+            style="visibility: {$parcoordDimMetadata.get(dimension)?.showLabels ? 'visible' : 'hidden'}"
+          />Labels</DropdownItem
+        >
+        <DropdownItem
+          defaultClass="{activeClass} flex items-center"
+          style="width: 110px;"
+          on:click={() => handleShow('histograms')}
+          ><Check
+            class="w-3 h-3 ms-2 mr-2"
+            style="visibility: {$parcoordDimMetadata.get(dimension)?.showHistograms ? 'visible' : 'hidden'}"
+          />Histogram</DropdownItem
+        >
+        <DropdownItem
+          defaultClass="{activeClass} flex items-center"
+          style="width: 110px;"
+          on:click={() => handleShow('filter')}
+          ><Check
+            class="w-3 h-3 ms-2 mr-2"
+            style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilter ? 'visible' : 'hidden'}"
+          />Filter</DropdownItem
+        >
+        {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
+          <DropdownItem
+            defaultClass="{activeClass} flex items-center"
+            style="width: 110px;"
+            on:click={() => handleShow('filterValues')}
+            ><Check
+              class="w-3 h-3 ms-2 mr-2"
+              style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilterValues ? 'visible' : 'hidden'}"
+            />Filter Values</DropdownItem
+          >{/if}
+      </Dropdown>
+    </div>
     {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
       <DropdownDivider />
       <DropdownItem defaultClass={activeClass} on:click={() => openSetRangeModal()}>Set Range...</DropdownItem>
