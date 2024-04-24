@@ -103,12 +103,32 @@ function parsePartitions(
   return { partitionsMap, partitionsData };
 }
 
-export async function parseDataset(files: FileList, cellSeparator: string, decimalSeparator: string) {
-  if (!files || files.length === 0) throw new Error('Upload valid CSV file.');
+export async function getCsvFromFile(files: FileList) {
+  try {
+    const file = files[0];
+    const text = await file.text();
+    return text;
+  } catch {
+    throw new Error('Upload valid CSV file.');
+  }
+}
+
+export async function getCsvFromUrl(url: string) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const text = await response.text();
+    return text;
+  } catch {
+    throw new Error('Dataset URL not valid.');
+  }
+}
+
+export async function parseDataset(text: string, cellSeparator: string, decimalSeparator: string) {
   if (cellSeparator === decimalSeparator) throw new Error('Cell separator cannot be the same as decimal separator.');
 
-  const file = files[0];
-  const text = await file.text();
   const parser = dsvFormat(cellSeparator);
   const dataset: DSVParsedArray<any> = parser.parse(text, autoType);
 

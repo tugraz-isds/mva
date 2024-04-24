@@ -1,9 +1,11 @@
 <script lang="ts">
   import { Navbar, NavLi, NavUl, Dropdown, DropdownItem, Chevron, ChevronRight } from 'flowbite-svelte';
+  import ExampleDatasets from './dataset/ExampleDatasets.svelte';
   import ImportDatasetModal from './dataset/ImportDatasetModal.svelte';
   import ExportDatasetModal from './dataset/ExportDatasetModal.svelte';
   import { isInteractableStore } from '../../stores/brushing';
 
+  let isFileDropdownOpen = false;
   let isImportDatasetModalOpen = false;
   let isExportDatasetModalOpen = false;
 
@@ -18,6 +20,10 @@
     isExportDatasetModalOpen = true;
     $isInteractableStore = false;
   }
+
+  function closeFileDropdown() {
+    isFileDropdownOpen = false;
+  }
 </script>
 
 <ImportDatasetModal isOpen={isImportDatasetModalOpen} />
@@ -30,7 +36,7 @@
       ulClass="h-full flex flex-row p-0 m-0 md:space-x-8 md:mt-0 md:text-sm md:font-medium items-center"
       class="h-full"
     >
-      <NavLi id="nav-file" class="cursor-pointer">
+      <NavLi id="nav-file" on:click={() => (isFileDropdownOpen = true)} class="cursor-pointer">
         <span class="text-white hover:text-blue-200"><Chevron aligned>File</Chevron></span>
       </NavLi>
       <NavLi id="nav-settings" href="#">
@@ -39,14 +45,8 @@
       <NavLi href="#">
         <span class="text-white hover:text-blue-200">Help</span>
       </NavLi>
-      <Dropdown triggeredBy="#nav-file" class="w-44 z-20">
-        <DropdownItem class="flex items-center justify-between">
-          Example Datasets<ChevronRight class="w-3 h-3 ms-2" />
-        </DropdownItem>
-        <Dropdown placement="right-start">
-          <DropdownItem>Iris</DropdownItem>
-          <DropdownItem>Penguins</DropdownItem>
-        </Dropdown>
+      <Dropdown triggeredBy="#nav-file" bind:open={isFileDropdownOpen} class="w-44 z-20">
+        <ExampleDatasets {closeFileDropdown} />
         <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
         <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
       </Dropdown>

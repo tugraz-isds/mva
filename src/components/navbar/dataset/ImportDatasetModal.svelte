@@ -3,13 +3,14 @@
   import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
   import { isInteractableStore } from '../../../stores/brushing';
   import { tableVisibleDimensionsStore } from '../../../stores/table';
-  import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
+  import { isNumber } from '../../../util/util';
   import {
     CELL_SEPARATOR_LIST,
     DECIMAL_SEPARATOR_LIST,
     COLUMN_TYPE_LIST,
     parseDatasetPreview,
-    parseDataset
+    parseDataset,
+    getCsvFromFile
   } from './datasetUtil';
   import type { DimensionType } from '../../../util/types';
   import DatasetPreview from './DatasetPreview.svelte';
@@ -59,8 +60,9 @@
   async function importDataset() {
     isLoading = true;
     try {
+      const datasetText = await getCsvFromFile(files);
       const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
-        await parseDataset(files, cellSeparator, decimalSeparator);
+        await parseDataset(datasetText, cellSeparator, decimalSeparator);
 
       tableVisibleDimensionsStore.set(shownDimensions);
       parcoordVisibleDimensionsStore.set(shownDimensions);
