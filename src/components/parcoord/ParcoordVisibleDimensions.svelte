@@ -14,7 +14,7 @@
   const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
     if (updatedHere) updatedHere = false;
     else {
-      parcoordVisibleDimensions = value;
+      parcoordVisibleDimensions = value?.filter((dim) => dim.title !== '_i' && dim.title !== '_partition');
     }
   });
 

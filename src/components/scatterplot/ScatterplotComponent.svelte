@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
+  import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { scaleLinear } from 'd3-scale';
@@ -17,7 +18,10 @@
   let xDim: string, yDim: string;
   let xScaleAxes: any, yScaleAxes: any, xScalePoints: any, yScalePoints: any;
   let pointsComponent: Points;
+  let axesComponent: Axes;
   let contextMenuPartitions: ContextMenuPartitions;
+  let svgExportModal: SvgExportModal;
+  let isSvgExportModalOpen = false;
 
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
   let tooltip: TooltipType = {
@@ -104,6 +108,32 @@
     tooltip = data;
   }
 
+  export function saveSVG() {
+    let pointsStringSvg = pointsComponent.saveSVG();
+    let axesStringSvg = axesComponent.saveSVG();
+    if (!axesStringSvg || !pointsStringSvg) return;
+
+    isSvgExportModalOpen = false;
+    isSvgExportModalOpen = true;
+
+    pointsStringSvg = pointsStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
+    axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
+
+    const svgString =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
+      '\n<!-- Points -->\n' +
+      pointsStringSvg +
+      '\n<!-- Axes -->\n' +
+      axesStringSvg +
+      '\n</svg>';
+
+    svgExportModal.setSvgString(svgString, 'scatterplot');
+  }
+
+  onMount(() => {
+    window.addEventListener('call-save-svg-scatterplot', saveSVG);
+  });
+
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeXDim();
@@ -124,7 +154,15 @@
   on:contextmenu={contextMenuPartitions.showContextMenu}
 >
   {#if dataset?.length > 0 && width}
-    <Axes {width} {height} {margin} xScale={xScaleAxes} yScale={yScaleAxes} viewTitle="scatterplot" />
+    <Axes
+      bind:this={axesComponent}
+      {width}
+      {height}
+      {margin}
+      xScale={xScaleAxes}
+      yScale={yScaleAxes}
+      viewTitle="scatterplot"
+    />
 
     <Tooltip data={tooltip} maxWidth={120} />
 
@@ -143,4 +181,6 @@
       {setTooltipData}
     />
   {/if}
+
+  <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
 </div>

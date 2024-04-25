@@ -98,7 +98,7 @@
           on:click={openWinbox}
         />
         <Tooltip style="z-index: 1000;" type="light">Expand View</Tooltip>
-        {#if currView.id === 'parcoord'}
+        {#if currView.id === 'parcoord' || currView.id === 'scatterplot'}
           <BookmarkSquare
             id="{currView.id}-save"
             size="16"

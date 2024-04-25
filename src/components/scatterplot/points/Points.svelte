@@ -15,6 +15,7 @@
   import type { DSVParsedArray } from 'd3-dsv';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import type { PartitionType } from '../../partitions/types';
+  import { saveSVGUtil } from './drawingUtil';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -30,6 +31,7 @@
   let offscreenCanvasEl: OffscreenCanvas;
   let worker: Worker;
   let points: number[][] = [];
+  let pointShow: boolean[] = [];
   let mouse: { x: number; y: number } = { x: 0, y: 0 };
   let tooltipPos: { x: number; y: number; clientX: number; clientY: number } = {
     x: 0,
@@ -69,9 +71,10 @@
   }
 
   const unsubscribeLinking = linkingArray.subscribe((value) => {
+    pointShow = value;
     worker?.postMessage({
       function: 'setLinking',
-      pointShow: value
+      pointShow
     });
   });
 
@@ -133,9 +136,10 @@
   }
 
   export function resetPoints() {
+    pointShow = Array(dataset.length).fill(true);
     worker?.postMessage({
       function: 'resetPoints',
-      pointShow: Array(dataset.length).fill(true)
+      pointShow
     });
   }
 
@@ -232,6 +236,32 @@
     }, 0);
   }
 
+  function setTooltip(hoveredLinesSet: Set<number>) {
+    if (hoveredLinesSet.size === 0) {
+      setTooltipData({
+        visible: false,
+        clientX: 0,
+        clientY: 0,
+        text: []
+      });
+    } else {
+      let tooltipText: string[] = [];
+      hoveredLinesSet.forEach((i) => {
+        tooltipText.push(`${dataset[i][$labelDimension]}`);
+      });
+      setTooltipData({
+        visible: true,
+        clientX: tooltipPos.clientX,
+        clientY: tooltipPos.clientY,
+        text: tooltipText
+      });
+    }
+  }
+
+  export const saveSVG = () => {
+    return saveSVGUtil(width, height, pointShow, points, $partitionsStore, $partitionsDataStore, $brushedArray);
+  };
+
   onMount(() => {
     window.addEventListener('pointermove', handleMouseMove, false);
     window.addEventListener('click', handleClick, false);
@@ -251,28 +281,6 @@
       },
       [offscreenCanvasEl]
     );
-
-    function setTooltip(hoveredLinesSet: Set<number>) {
-      if (hoveredLinesSet.size === 0) {
-        setTooltipData({
-          visible: false,
-          clientX: 0,
-          clientY: 0,
-          text: []
-        });
-      } else {
-        let tooltipText: string[] = [];
-        hoveredLinesSet.forEach((i) => {
-          tooltipText.push(`${dataset[i][$labelDimension]}`);
-        });
-        setTooltipData({
-          visible: true,
-          clientX: tooltipPos.clientX,
-          clientY: tooltipPos.clientY,
-          text: tooltipText
-        });
-      }
-    }
 
     worker.onmessage = (message) => {
       const data = message.data;

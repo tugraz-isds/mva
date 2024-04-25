@@ -3,14 +3,12 @@
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { brushedArray } from '../../stores/brushing';
   import {
-    filtersArray,
     parcoordCustomAxisRanges,
     parcoordDimMetadata,
     parcoordVisibleDimensionsStore,
     parcoordHistogramData
   } from '../../stores/parcoord';
   import { scaleLinear, scaleBand } from 'd3-scale';
-  import { reorderArray } from '../../util/util';
   import Axes from './axes/Axes.svelte';
   import Histograms from './histograms/Histograms.svelte';
   import Lines from './lines/Lines.svelte';
@@ -268,7 +266,7 @@
       axesStringSvg +
       '\n</svg>';
 
-    svgExportModal.setSvgString(svgString);
+    svgExportModal.setSvgString(svgString, 'parcoord');
   }
 
   onMount(() => {

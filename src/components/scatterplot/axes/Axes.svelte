@@ -37,6 +37,13 @@
       .call(yAxis);
   }
 
+  export const saveSVG = () => {
+    const svgElement = document.getElementById(`${viewTitle}-canvas-axes`);
+    const serializer = new XMLSerializer();
+    if (!svgElement) return;
+    return serializer.serializeToString(svgElement);
+  };
+
   afterUpdate(() => {
     clearSVG();
     renderAxes();

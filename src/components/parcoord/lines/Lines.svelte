@@ -13,14 +13,13 @@
   import { linkingArray } from '../../../stores/linking';
   import { isCurrentlyResizing } from '../../../stores/views';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
-  import { COLOR_ACTIVE, COLOR_BRUSHED, COLOR_FILTERED } from '../../../util/colors';
-  import { select } from 'd3-selection';
-  import { line as lineD3 } from 'd3-shape';
+  import { COLOR_ACTIVE } from '../../../util/colors';
   import { debounce, throttle } from '../../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { RecordDataType, TooltipType } from '../../../util/types';
   import type { AxesFilterType } from '../types';
   import type { PartitionType } from '../../partitions/types';
+  import { saveSVGUtil } from './drawingUtil';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -323,58 +322,21 @@
   }
 
   export const saveSVG = () => {
-    const tempContainer = document.createElement('div');
-    const svgContainer = select(tempContainer).append('svg').attr('viewBox', `0 0 ${width} ${height}`);
-
-    const lineGenerator = lineD3()
-      .x((d: any) => d[0])
-      .y((d: any) => d[1]);
-
-    const filteredIndices: number[] = [],
-      activeIndices: number[] = [];
-    lineShow.forEach((value: boolean, i: number) => {
-      value ? activeIndices.push(i) : filteredIndices.push(i);
-    });
-
-    const drawLineSVG = (dataRow: any[], color: number, opacity: number) => {
-      const linePoints = [];
-      for (let i = 0; i < dimensions.length; i++) {
-        const dim = dimensions[i];
-
-        let yPos;
-        if ($dimensionDataStore.get(dim)?.type === 'numerical') yPos = yScales[dim](dataRow[dim as any]);
-        else yPos = yScales[dim](dataRow[dim as any]) + yScales[dim].step() / 2; // If data is categorical, add half of step to height
-
-        linePoints.push([xScales[i], isNaN(yScales[dim](dataRow[dim as any])) ? margin.top : yPos + margin.top]);
-      }
-
-      svgContainer
-        .append('path')
-        .datum(linePoints)
-        .attr('fill', 'none')
-        .attr('stroke', `#${color.toString(16).replace(/^0x/, '')}`)
-        .attr('stroke-width', 1)
-        .attr('stroke-opacity', opacity)
-        .attr('d', lineGenerator as any);
-    };
-
-    filteredIndices.forEach((i) => {
-      drawLineSVG(dataset[i], COLOR_FILTERED, 0.75);
-    });
-
-    activeIndices.forEach((i) => {
-      if (lineData[i].color === COLOR_BRUSHED) return;
-      drawLineSVG(dataset[i], COLOR_ACTIVE, 0.75);
-    });
-
-    $brushedArray.forEach((i) => {
-      drawLineSVG(dataset[i], COLOR_BRUSHED, 1);
-    });
-
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgContainer.node() as Node);
-    tempContainer.remove();
-    return svgString;
+    return saveSVGUtil(
+      width,
+      height,
+      dataset,
+      lineShow,
+      lineData,
+      dimensions,
+      yScales,
+      xScales,
+      margin,
+      $dimensionDataStore,
+      $partitionsStore,
+      $partitionsDataStore,
+      $brushedArray
+    );
   };
 
   export function debounceDrawLines() {

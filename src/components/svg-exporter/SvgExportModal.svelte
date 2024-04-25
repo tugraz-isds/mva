@@ -7,9 +7,11 @@
   let numberOfDecimals = 6;
   let keepClasses = true;
   let svgString = '';
+  let svgName = '';
 
-  export function setSvgString(svgStr: string) {
-    svgString = svgStr;
+  export function setSvgString(str: string, name: string) {
+    svgString = str;
+    svgName = name;
   }
 
   function saveSVG() {
@@ -45,7 +47,7 @@
     const downloadLink = document.createElement('a');
 
     downloadLink.href = svgUrl;
-    downloadLink.download = 'parcoord.svg';
+    downloadLink.download = `${svgName}.svg`;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
