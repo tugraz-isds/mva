@@ -1,398 +1,142 @@
 <script lang="ts">
-  import { afterUpdate, onDestroy, onMount } from 'svelte';
-  import { datasetStore, dimensionDataStore } from '../../stores/dataset';
-  import { brushedArray } from '../../stores/brushing';
-  import {
-    parcoordCustomAxisRanges,
-    parcoordDimMetadata,
-    parcoordVisibleDimensionsStore,
-    parcoordHistogramData
-  } from '../../stores/parcoord';
-  import { scaleLinear, scaleBand } from 'd3-scale';
-  import Axes from './axes/Axes.svelte';
-  import Histograms from './histograms/Histograms.svelte';
-  import Lines from './lines/Lines.svelte';
-  import Tooltip from '../tooltip/Tooltip.svelte';
-  import ContextMenuAxes from './context-menu/ContextMenuAxes.svelte';
-  import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
-  import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
-  import type { DSVParsedArray } from 'd3-dsv';
-  import type { CustomRangeType, ParcoordVisibleDimensionsType } from './types';
-  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
+  import { onMount } from 'svelte';
+  import * as THREE from 'three';
+  import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox';
+  import { SelectionHelper } from 'three/examples/jsm/interactive/SelectionHelper';
 
-  let isBrowser = false;
-
-  let isSvgExportModalOpen = false;
+  let canvasEl: HTMLCanvasElement;
+  let camera: THREE.PerspectiveCamera;
+  let scene: THREE.Scene;
+  let renderer: THREE.WebGLRenderer;
   let width: number;
-  let originalWidth: number;
   let height: number;
-  let dimensions: string[] = [];
-  let dimensionsInitial: string[] = [];
+  let selectionBox: SelectionBox;
+  let selectionHelper: SelectionHelper;
 
-  let xScales: any[] = [];
-  let yScales: any = {};
+  function initScene() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 500);
+    camera.position.set(0, 0, 50);
+    renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
+    renderer.setClearColor(0xffff00);
+    renderer.setSize(width, height);
+    const parcoordDiv = document.getElementById('parcoord-canvas');
+    if (parcoordDiv instanceof HTMLElement) parcoordDiv.appendChild(renderer.domElement);
 
-  let parcoordDiv: HTMLElement;
-  let linesComponent: Lines;
-  let axesComponent: Axes;
-  let contextMenuAxes: ContextMenuAxes;
-  let contextMenuPartitions: ContextMenuPartitions;
-  let svgExportModal: SvgExportModal;
+    const light = new THREE.SpotLight(0xffff00, 10000);
+    light.position.set(0, 25, 50);
+    light.angle = Math.PI / 5;
 
-  let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 };
-  let tooltip: TooltipType = {
-    visible: false,
-    clientX: 0,
-    clientY: 0,
-    text: []
-  };
-  let tooltipMaxWidth: number | null = null;
-  let tooltipColor: string;
+    light.castShadow = true;
+    light.shadow.camera.near = 10;
+    light.shadow.camera.far = 100;
+    light.shadow.mapSize.width = 1024;
+    light.shadow.mapSize.height = 1024;
 
-  let customRanges: Map<string, CustomRangeType>;
-  const unsubscribeCustomRanges = parcoordCustomAxisRanges.subscribe((value) => {
-    customRanges = value;
-    calculateYScales();
-    setTimeout(() => {
-      linesComponent?.drawLines();
-    }, 0);
-  });
+    scene.add(light);
 
-  // Set dataset and handle new dataset upload
-  let dataset: DSVParsedArray<any>;
-  const unsubscribeDataset = datasetStore.subscribe((value) => {
-    dataset = value as DSVParsedArray<any>;
-    if (dataset?.length > 0) {
-      setTimeout(() => {
-        linesComponent?.resetLines();
-        calculateYScales();
-        calculateXScales();
-      }, 0);
+    const geometry = new THREE.BoxGeometry();
 
-      dimensions.forEach((dim) => {
-        customRanges && customRanges.set(dim, null);
-        $parcoordDimMetadata.set(dim, {
-          inverted: false,
-          showLabels: true,
-          showHistograms: true,
-          showFilter: true,
-          showFilterValues: true,
-          binNo: null
-        });
-      });
+    for (let i = 0; i < 20; i++) {
+      const object = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff }));
 
-      brushedArray.set(new Set<number>());
+      object.position.x = Math.random() * 80 - 40;
+      object.position.y = Math.random() * 45 - 25;
+      object.position.z = Math.random() * 45 - 25;
 
-      setMarginRight($parcoordHistogramData.visible);
+      object.rotation.x = Math.random() * 2 * Math.PI;
+      object.rotation.y = Math.random() * 2 * Math.PI;
+      object.rotation.z = Math.random() * 2 * Math.PI;
 
-      if (parcoordDiv) parcoordDiv.scrollLeft = 0;
+      object.scale.x = Math.random() * 2 + 1;
+      object.scale.y = Math.random() * 2 + 1;
+      object.scale.z = Math.random() * 2 + 1;
+
+      object.castShadow = true;
+      object.receiveShadow = true;
+
+      scene.add(object);
     }
-  });
 
-  let visibleDimensions: ParcoordVisibleDimensionsType[] = [];
-  let dimensionData: Map<string, DimensionDataType> = new Map();
-  const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
-    if (!value) return;
-    visibleDimensions = value;
-    dimensions = visibleDimensions
-      .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
-      .map((dim) => dim.title);
-
-    setMarginLeft();
-  });
-
-  const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
-    if (value?.size === 0) return;
-    dimensionData = value;
-    dimensions = visibleDimensions
-      .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
-      .map((dim) => dim.title);
-    dimensionsInitial = dimensions;
-
-    setMarginLeft();
-  });
-
-  let histogramsVisible: boolean;
-  const unsubscribeHistograms = parcoordHistogramData.subscribe((value) => {
-    histogramsVisible = value.visible;
-    setMarginRight(histogramsVisible);
-  });
-
-  $: width =
-    originalWidth < 100 * dimensions.length + margin.left + margin.right
-      ? 100 * dimensions.length + margin.left + margin.right
-      : originalWidth;
-
-  $: {
-    if (height > 0 && dataset?.length > 0 && dimensions === dimensionsInitial) {
-      calculateYScales();
-    }
+    selectionBox = new SelectionBox(camera, scene);
+    selectionHelper = new SelectionHelper(renderer, 'selectBox');
   }
 
-  $: {
-    if (margin && width > 0 && dataset?.length > 0 && dimensions) {
-      calculateXScales();
-    }
+  function render() {
+    if (!renderer) return;
+    renderer.render(scene, camera);
   }
 
-  function calculateYScales() {
-    if (height > 0 && dataset?.length > 0) {
-      yScales = dimensions.reduce((acc: any, dim: string) => {
-        if ($dimensionDataStore.get(dim)?.type === 'numerical') {
-          if (customRanges.get(dim) === null) {
-            acc[dim] = scaleLinear()
-              .domain([$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [number, number])
-              .range([height - margin.top - margin.bottom, 0]);
-            if ($parcoordDimMetadata.get(dim)?.inverted) acc[dim].domain(acc[dim].domain().reverse());
-          } else {
-            acc[dim] = scaleLinear()
-              .domain([customRanges.get(dim)?.start as number, customRanges.get(dim)?.end as number])
-              .range([height - margin.top - margin.bottom, 0]);
-          }
-        } else {
-          const categoricalValues = [...new Set(dataset.map((d: any) => d[dim]))];
-          acc[dim] = scaleBand()
-            .domain(categoricalValues.reverse())
-            .range([height - margin.top - margin.bottom, 0]);
-        }
-        return acc;
-      }, {});
-    }
+  function animate() {
+    requestAnimationFrame(animate);
+    render();
   }
 
-  function calculateXScales() {
-    xScales = dimensions.map((_, i) =>
-      scaleLinear()
-        .domain([0, dimensions.length - 1])
-        .range([margin.left, width - margin.right])(i)
-    );
-
-    $parcoordHistogramData.widthLimits.max = xScales[1] - xScales[0];
-  }
-
-  function handleAxesSwapped(fromIndex: number, toIndex: number) {
-    linesComponent.swapPoints(fromIndex, toIndex);
-  }
-
-  function handleMarginChanged() {
-    width =
-      originalWidth < 100 * dimensions.length + margin.left + margin.right
-        ? 100 * dimensions.length + margin.left + margin.right
-        : originalWidth;
-    setTimeout(() => {
-      axesComponent.clearSVG();
-      axesComponent.renderAxes(width);
-      linesComponent.debounceDrawLines();
-    }, 0);
-  }
-
-  function handleAutoscroll(direction: 'left' | 'right') {
-    if (!parcoordDiv) return;
-    if (direction === 'right') parcoordDiv.scrollLeft += 10;
-    else if (direction === 'left') parcoordDiv.scrollLeft -= 10;
-  }
-
-  function handleInvertAxis(axisIndex: number) {
-    yScales[dimensions[axisIndex]] = yScales[dimensions[axisIndex]].domain(
-      yScales[dimensions[axisIndex]].domain().reverse()
-    );
-    linesComponent.handleInvertAxis(axisIndex);
-  }
-
-  function handleHideDimension(idx: number) {
-    idx === 0 && setMarginLeft();
-    setTimeout(() => {
-      linesComponent.drawLines();
-    }, 0);
-  }
-
-  function setTooltipData(data: TooltipType) {
-    tooltip = data;
-    tooltipMaxWidth = 120;
-    tooltipColor = 'bg-gray-100';
-  }
-
-  function setTooltipAxisTitleData(data: TooltipType) {
-    tooltip = {
-      visible: data.visible,
-      clientX: data.clientX,
-      clientY: data.clientY,
-      text: data.text
+  function getNormalizedCoordinates(e, element) {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      y: -((e.clientY - rect.top) / rect.height) * 2 + 1
     };
-    tooltipMaxWidth = null;
-    tooltipColor = 'bg-gray-300';
   }
 
-  function setMarginLeft() {
-    setTimeout(() => {
-      axesComponent.calculateMarginLeft();
-    }, 0);
+  function onPointerDown(e: MouseEvent) {
+    const { x, y } = getNormalizedCoordinates(e, canvasEl);
+
+    for (const item of selectionBox.collection) {
+      item.material.emissive.set(0x000000);
+    }
+
+    selectionBox.startPoint.set(x, y, 0.5);
   }
 
-  function setMarginRight(histogramsVisible: boolean) {
-    const step = xScales[1] - xScales[0];
-    if (!step) return;
-    margin.right =
-      histogramsVisible && $parcoordDimMetadata.get(dimensions[dimensions.length - 1])?.showHistograms
-        ? 10 + (step - 16) * $parcoordHistogramData.width
-        : 40;
+  function onPointerMove(e: MouseEvent) {
+    const { x, y } = getNormalizedCoordinates(e, canvasEl);
+
+    if (selectionHelper.isDown) {
+      for (let i = 0; i < selectionBox.collection.length; i++) {
+        selectionBox.collection[i].material.emissive.set(0x000000);
+      }
+
+      selectionBox.endPoint.set(x, y, 0.5);
+
+      const allSelected = selectionBox.select();
+      for (let i = 0; i < allSelected.length; i++) {
+        allSelected[i].material.emissive.set(0xffffff);
+      }
+    }
   }
 
-  function setMarginBottom(bottom: number) {
-    const isFirefox = navigator.userAgent.includes('Firefox');
-    const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-    if (!isFirefox && !isSafari) return;
-    margin.bottom = bottom;
-    calculateYScales();
-    handleMarginChanged();
-  }
+  function onPointerUp(e: MouseEvent) {
+    const { x, y } = getNormalizedCoordinates(e, canvasEl);
+    selectionBox.endPoint.set(x, y, 0.5);
 
-  export function saveSVG() {
-    let linesStringSvg = linesComponent.saveSVG();
-    let axesStringSvg = axesComponent.saveSVG();
-    if (!axesStringSvg || !linesStringSvg) return;
-
-    isSvgExportModalOpen = false;
-    isSvgExportModalOpen = true;
-
-    linesStringSvg = linesStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
-    axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
-
-    const svgString =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
-      '\n<!-- Lines -->\n' +
-      linesStringSvg +
-      '\n<!-- Axes -->\n' +
-      axesStringSvg +
-      '\n</svg>';
-
-    svgExportModal.setSvgString(svgString, 'parcoord');
+    const allSelected = selectionBox.select();
+    for (let i = 0; i < allSelected.length; i++) {
+      allSelected[i].material.emissive.set(0xffffff);
+    }
   }
 
   onMount(() => {
-    calculateYScales();
-    isBrowser = true;
-    window.addEventListener('call-save-svg-parcoord', saveSVG);
-
-    dimensions.forEach((dim) => {
-      customRanges.set(dim, null);
-      $parcoordDimMetadata.set(dim, {
-        inverted: false,
-        showLabels: true,
-        showHistograms: true,
-        showFilter: true,
-        showFilterValues: true,
-        binNo: null
-      });
-    });
-
-    setTimeout(() => {
-      parcoordHistogramData.set({
-        visible: false,
-        fillOpacity: 0.2,
-        strokeOpacity: 0.3,
-        width: 0.2,
-        widthLimits: {
-          min: 0,
-          max: xScales[1] - xScales[0]
-        }
-      });
-      setMarginRight(true);
-    }, 0);
-  });
-
-  function handleContextMenu(e: MouseEvent) {
-    if (e.offsetY > margin.top) contextMenuPartitions.showContextMenu(e);
-  }
-
-  afterUpdate(() => {
-    if (parcoordDiv.scrollWidth > parcoordDiv.clientWidth && margin.bottom !== 20) {
-      setMarginBottom(20);
-    } else if (parcoordDiv.scrollWidth <= parcoordDiv.clientWidth && margin.bottom !== 10) {
-      setMarginBottom(10);
-    }
-  });
-
-  onDestroy(() => {
-    unsubscribeParcoordVisibleDimensions();
-    unsubscribeDataset();
-    unsubscribeCustomRanges();
-    unsubscribeDimensionData();
-    unsubscribeHistograms();
-    isBrowser && window.removeEventListener('call-save-svg-parcoord', saveSVG);
+    initScene();
+    animate();
   });
 </script>
 
-<div
-  id="parcoord-canvas"
-  class="w-full h-full overflow-x-auto scrollable-div"
-  style="box-sizing: border-box;"
-  bind:this={parcoordDiv}
-  bind:clientWidth={originalWidth}
-  bind:clientHeight={height}
-  on:contextmenu={handleContextMenu}
->
-  {#if dataset?.length === 0}
-    <span>No data available.</span>
-  {:else if yScales && Object.keys(yScales).length !== 0 && xScales && Object.keys(xScales).length !== 0}
-    <Axes
-      bind:this={axesComponent}
-      bind:contextMenuAxes
-      bind:width
-      {height}
-      {dimensions}
-      bind:margin
-      {handleAxesSwapped}
-      {handleInvertAxis}
-      {handleMarginChanged}
-      {handleAutoscroll}
-      {setTooltipAxisTitleData}
-      {setTooltipData}
-      {xScales}
-      bind:yScales
-    />
-
-    {#if histogramsVisible}
-      <Histograms {dataset} {width} {height} {dimensions} {margin} {xScales} {yScales} />
-    {/if}
-
-    <Tooltip data={tooltip} maxWidth={tooltipMaxWidth} color={tooltipColor} />
-
-    <ContextMenuPartitions bind:this={contextMenuPartitions} />
-
-    <ContextMenuAxes
-      bind:this={contextMenuAxes}
-      bind:axesComponent
-      {xScales}
-      bind:yScales
-      bind:dimensions
-      bind:margin
-      {handleHideDimension}
-      calculateMarginLeft={setMarginLeft}
-    />
-
-    <Lines
-      bind:this={linesComponent}
-      {dataset}
-      {width}
-      {height}
-      {dimensions}
-      bind:margin
-      {xScales}
-      {yScales}
-      {setTooltipData}
-    />
-  {/if}
+<div id="parcoord-canvas" class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
+  <canvas
+    bind:this={canvasEl}
+    class="w-full h-full"
+    on:pointerdown={onPointerDown}
+    on:pointermove={onPointerMove}
+    on:pointerup={onPointerUp}
+  />
 </div>
 
-<SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
-
 <style>
-  .scrollable-div {
-    scrollbar-width: thin;
-  }
-
-  .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+  :global(.selectBox) {
+    border: 1px solid #55aaff;
+    background-color: rgba(75, 160, 255, 0.3);
+    position: fixed;
   }
 </style>
