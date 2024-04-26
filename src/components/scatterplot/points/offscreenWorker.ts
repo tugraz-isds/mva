@@ -91,10 +91,19 @@ self.onmessage = function (message) {
 function setLinking(show: boolean[]) {
   pointShow.forEach((isPointShow: boolean, i: number) => {
     if (isPointShow === show[i]) return;
+    const partition = partitions.get(partitionsData[i]);
+    const hasStroke = partition?.shape.includes('hollow');
     if (show[i]) {
       if (brushedPointsIndices.has(i)) drawPoint(points[i], POINT_MATERIAL_BRUSHED, false, 1);
-      else drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
-    } else drawPoint(points[i], POINT_MATERIAL_FILTERED, false, -1);
+      else {
+        if (hasStroke && strokes[i] !== null)
+          (strokes[i] as StrokeType).material = getPartitionMaterialStroke(partition);
+        drawPoint(points[i], getPartitionMaterial(partition), false, 0);
+      }
+    } else {
+      if (hasStroke && strokes[i] !== null) (strokes[i] as StrokeType).material = POINT_MATERIAL_FILTERED;
+      else drawPoint(points[i], POINT_MATERIAL_FILTERED, false, -1);
+    }
   });
   pointShow = show;
 }

@@ -3,22 +3,13 @@
   import { Trash, PlusCircle, Eye, EyeSlash, Check } from 'svelte-heros-v2';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
   import ColorPickerModal from './ColorPickerModal.svelte';
-  import {
-    palette_icon,
-    shape_circle_icon,
-    shape_square_icon,
-    shape_triangle_icon,
-    shape_circle_hollow_icon,
-    shape_square_hollow_icon,
-    shape_triangle_hollow_icon,
-    shape_plus_icon,
-    shape_cross_icon
-  } from '../../util/icon-definitions';
+  import { palette_icon } from '../../util/icon-definitions';
+  import { DEFAULT_PARTITION } from '../../util/util';
+  import { selectedPartitionStore } from '../../stores/partitions';
+  import { PARTITION_SHAPES } from './util';
   import { rgbaToHexString } from '../../util/colors';
   import type { PartitionShapeType, PartitionType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
-  import { DEFAULT_PARTITION } from '../../util/util';
-  import { selectedPartitionStore } from '../../stores/partitions';
 
   export let index: number;
   export let partitionName: string;
@@ -29,17 +20,6 @@
   export let deletePartition: (name: string) => void;
   export let renamePartition: (oldName: string, newName: string, error?: string) => void;
   export let hidePartition: (name: string) => void;
-
-  const SHAPES: Map<PartitionShapeType, string> = new Map([
-    ['circle', shape_circle_icon],
-    ['triangle', shape_triangle_icon],
-    ['square', shape_square_icon],
-    ['plus', shape_plus_icon],
-    ['cross', shape_cross_icon],
-    ['circle hollow', shape_circle_hollow_icon],
-    ['triangle hollow', shape_triangle_hollow_icon],
-    ['square hollow', shape_square_hollow_icon]
-  ]);
 
   let isDeleteModalOpen = false;
   let isShapeDropdownOpen = false;
@@ -143,18 +123,21 @@
     <PlusCircle size="20" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
     <Tooltip style="z-index: 1000;" type="light">Add Records</Tooltip>
     <div id="partition-shape-button-{index}" class="cursor-pointer">
-      {@html SHAPES.get(partition.shape)?.replace('<svg', '<svg width="12" height="12" stroke="#fff" fill="#111827"')}
+      {@html PARTITION_SHAPES.get(partition.shape)?.replace(
+        '<svg',
+        '<svg width="12" height="12" stroke="#fff" fill="#111827"'
+      )}
     </div>
     <Tooltip style="z-index: 1000;" type="light">Partition Shape</Tooltip>
     <div bind:this={shapesDropdownElement}>
       <Dropdown
         triggeredBy="#partition-shape-button-{index}"
-        ulClass="bg-white border border-gray-300 p-1 h-42"
+        ulClass="bg-white border border-gray-300 p-1 h-44"
         style="z-index: 1000;"
-        placement={shapesDropdownElement?.getBoundingClientRect().bottom + 140 > window.innerHeight ? 'top' : 'bottom'}
+        placement={shapesDropdownElement?.getBoundingClientRect().bottom + 180 > window.innerHeight ? 'top' : 'bottom'}
         bind:open={isShapeDropdownOpen}
       >
-        {#each [...SHAPES] as [name]}
+        {#each [...PARTITION_SHAPES] as [name]}
           <DropdownItem
             on:click={() => setShape(name)}
             defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"

@@ -116,7 +116,7 @@
   }
 
   function handleClick(e: MouseEvent) {
-    if (!(e.target instanceof HTMLElement) || e.target.className?.includes('partitions-component')) return;
+    if (!(e.target instanceof HTMLElement) || !e.target.className?.includes('partitions-component')) return;
     $selectedPartitionStore = null;
   }
 

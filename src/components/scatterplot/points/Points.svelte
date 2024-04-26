@@ -11,11 +11,11 @@
     previouslyHoveredArray
   } from '../../../stores/brushing';
   import { labelDimension } from '../../../stores/dataset';
+  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
+  import { POINT_SIZE, saveSVGUtil } from './drawingUtil';
   import type { TooltipType } from '../../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
-  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import type { PartitionType } from '../../partitions/types';
-  import { saveSVGUtil } from './drawingUtil';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -277,7 +277,7 @@
         canvas: offscreenCanvasEl,
         width,
         height,
-        pointSize: 3
+        pointSize: POINT_SIZE
       },
       [offscreenCanvasEl]
     );

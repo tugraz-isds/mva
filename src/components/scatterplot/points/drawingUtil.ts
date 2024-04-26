@@ -3,6 +3,9 @@ import { select } from 'd3-selection';
 import { COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString } from '../../../util/colors';
 import { LINE_MATERIAL_ACTIVE, POINT_MATERIAL_ACTIVE } from '../../../util/materials';
 import type { PartitionType } from '../../partitions/types';
+import { PARTITION_SHAPES } from '../../partitions/util';
+
+export const POINT_SIZE = 3;
 
 export type PointType = THREE.Mesh & {
   index?: number;
@@ -222,17 +225,31 @@ export function getPartitionRecordsByName(data: string[], name: string) {
   }, []);
 }
 
+function getPartitionSvgString(partition: PartitionType) {
+  return (PARTITION_SHAPES.get(partition.shape) ?? '')
+    .replace(/^<svg.*>/, '')
+    .replace('</svg>', '')
+    .replaceAll(/fill=".*?"/g, '')
+    .replaceAll(/stroke=".*?"/g, '')
+    .replaceAll(/stroke-width=".*?"/g, `stroke-width="20"`);
+}
+
 export function saveSVGUtil(
   width: number,
   height: number,
   pointShow: boolean[],
   points: number[][],
-  partitionsStore: Map<string, PartitionType>,
-  partitionsDataStore: string[],
+  partitions: Map<string, PartitionType>,
+  partitionsData: string[],
   brushedArray: Set<number>
 ) {
   const tempContainer = document.createElement('div');
   const svgContainer = select(tempContainer).append('svg').attr('viewBox', `0 0 ${width} ${height}`);
+
+  const defs = svgContainer.append('defs');
+  Array.from(partitions.entries()).forEach((partition) => {
+    defs.append('g').attr('id', partition[0].replaceAll(/\s/g, '')).html(getPartitionSvgString(partition[1]));
+  });
 
   const filteredIndices: number[] = [],
     activeIndices: number[] = [];
@@ -240,27 +257,33 @@ export function saveSVGUtil(
     value ? activeIndices.push(i) : filteredIndices.push(i);
   });
 
-  const drawPointSVG = (point: number[], color: string, opacity: number) => {
-    svgContainer
-      .append('circle')
-      .attr('cx', point[0])
-      .attr('cy', point[1])
-      .attr('r', 5)
-      .attr('fill', color)
-      .attr('fill-opacity', opacity);
+  const drawPointSVG = (i: number, point: number[], opacity: number, color?: string) => {
+    const partition = partitions.get(partitionsData[i]) as PartitionType;
+    const svgPoint = svgContainer
+      .append('use')
+      .attr('href', `#${partitionsData[i].replaceAll(/\s/g, '')}`)
+      .attr('transform', `translate(${point[0] - POINT_SIZE}, ${point[1] - POINT_SIZE}) scale(0.06)`);
+
+    if (partition.shape.includes('hollow')) {
+      svgPoint
+        .attr('fill', 'none')
+        .attr('stroke', color ?? rgbaToHexString(partition.color))
+        .attr('stroke-opacity', opacity);
+      if (opacity === 1) svgPoint.attr('fill', color ?? rgbaToHexString(partition.color));
+    } else svgPoint.attr('fill', color ?? rgbaToHexString(partition.color)).attr('opacity', opacity);
   };
 
   filteredIndices.forEach((i) => {
-    drawPointSVG(points[i], `#${COLOR_FILTERED.toString(16).replace(/^0x/, '')}`, 0.75);
+    drawPointSVG(i, points[i], 0.75, `#${COLOR_FILTERED.toString(16).replace(/^0x/, '')}`);
   });
 
   activeIndices.forEach((i) => {
     if (brushedArray.has(i)) return;
-    drawPointSVG(points[i], rgbaToHexString(partitionsStore.get(partitionsDataStore[i])?.color), 0.75);
+    drawPointSVG(i, points[i], 0.75);
   });
 
   brushedArray.forEach((i) => {
-    drawPointSVG(points[i], `#${COLOR_BRUSHED.toString(16).replace(/^0x/, '')}`, 1);
+    drawPointSVG(i, points[i], 1, `#${COLOR_BRUSHED.toString(16).replace(/^0x/, '')}`);
   });
 
   const serializer = new XMLSerializer();

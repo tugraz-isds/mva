@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { PCA } from 'ml-pca';
   import { UMAP } from 'umap-js';
   import Axes from '../scatterplot/axes/Axes.svelte';
   import Points from '../scatterplot/points/Points.svelte';
   import Tooltip from '../tooltip/Tooltip.svelte';
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
+  import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { simmapMethodStore } from '../../stores/simmap';
   import { scaleLinear } from 'd3-scale';
@@ -20,7 +21,10 @@
   let xData: number[], yData: number[];
   let xScaleAxes: any, yScaleAxes: any, xScalePoints: any, yScalePoints: any;
   let pointsComponent: Points;
+  let axesComponent: Axes;
   let contextMenuPartitions: ContextMenuPartitions;
+  let svgExportModal: SvgExportModal;
+  let isSvgExportModalOpen = false;
   let yMin: number, yMax: number, xMin: number, xMax: number;
 
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
@@ -167,6 +171,32 @@
     tooltip = data;
   }
 
+  export function saveSVG() {
+    let pointsStringSvg = pointsComponent.saveSVG();
+    let axesStringSvg = axesComponent.saveSVG();
+    if (!axesStringSvg || !pointsStringSvg) return;
+
+    isSvgExportModalOpen = false;
+    isSvgExportModalOpen = true;
+
+    pointsStringSvg = pointsStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
+    axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
+
+    const svgString =
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
+      '\n<!-- Points -->\n' +
+      pointsStringSvg +
+      '\n<!-- Axes -->\n' +
+      axesStringSvg +
+      '\n</svg>';
+
+    svgExportModal.setSvgString(svgString, 'simmap');
+  }
+
+  onMount(() => {
+    window.addEventListener('call-save-svg-simmap', saveSVG);
+  });
+
   onDestroy(() => {
     unsubscribeDataset();
     unsubscribeDimensionData();
@@ -187,7 +217,15 @@
   on:contextmenu={contextMenuPartitions.showContextMenu}
 >
   {#if dataset?.length > 0 && width}
-    <Axes {width} {height} {margin} xScale={xScaleAxes} yScale={yScaleAxes} viewTitle="simmap" />
+    <Axes
+      bind:this={axesComponent}
+      {width}
+      {height}
+      {margin}
+      xScale={xScaleAxes}
+      yScale={yScaleAxes}
+      viewTitle="simmap"
+    />
 
     <Tooltip data={tooltip} maxWidth={120} />
 
@@ -206,4 +244,6 @@
       {setTooltipData}
     />
   {/if}
+
+  <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
 </div>
