@@ -34,7 +34,6 @@
     moveDraggedAxis,
     swapAxes
   } from './draggingUtil';
-  import { reorderArray } from '../../../util/util';
 
   export let width: number;
   export let contextMenuAxes: ContextMenuAxes;
@@ -66,14 +65,19 @@
   let axisHeight: number;
   let axesFilters: Map<string, AxesFilterType> = new Map();
   let isCurrentlyFiltering = false;
-  let datasetUploaded = false;
   let autoscrollInterval: number | null = null;
 
   $: axisHeight = height - margin.top - margin.bottom;
 
+  $: if (width && height && isMounted) {
+    resizeFilters();
+    clearSVG();
+    renderAxes();
+  }
+
   let visibleDimensions: ParcoordVisibleDimensionsType[] = [];
   const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
-    visibleDimensions = value;
+    visibleDimensions = value.filter((dim) => dim.title !== '_i' && dim.title !== '_partition');
   });
 
   let dimensionsMetadata: Map<string, DimensionMetadataType>;
@@ -113,8 +117,12 @@
   });
 
   const unsubscribeDataset = datasetStore.subscribe(() => {
-    if (!dimensionsMetadata) return;
-    datasetUploaded = true;
+    if (!dimensionsMetadata || !isMounted) return;
+    initAxesFilters();
+    calculateMarginLeft();
+    resizeFilters();
+    clearSVG();
+    renderAxes();
   });
 
   export function clearSVG() {
@@ -598,18 +606,6 @@
     isMounted = true;
     initAxesFilters();
     calculateMarginLeft();
-  });
-
-  afterUpdate(async () => {
-    if (datasetUploaded) {
-      initAxesFilters();
-      calculateMarginLeft();
-      datasetUploaded = false;
-    }
-
-    resizeFilters();
-    clearSVG();
-    renderAxes();
   });
 
   onDestroy(() => {

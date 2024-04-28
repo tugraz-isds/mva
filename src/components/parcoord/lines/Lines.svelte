@@ -85,7 +85,10 @@
   const unsubscribeFilters = filtersArray.subscribe((value) => {
     if (worker && dataset?.length > 0 && dimensions?.length > 0 && !$isCurrentlyResizing) {
       axesFilters = [];
-      $parcoordVisibleDimensionsStore.forEach((dim) => {
+      const visibleDimensions = $parcoordVisibleDimensionsStore.filter(
+        (dim) => dim.title !== '_i' && dim.title !== '_partition'
+      );
+      visibleDimensions.forEach((dim) => {
         if (dim.visible) axesFilters.push(value.get(dim.title) as AxesFilterType);
       });
       setTimeout(() => {

@@ -7,7 +7,6 @@
 
   export let height: number;
 
-  let menuStyle = '';
   let updatedHere = false;
 
   let tableVisibleDimensions: TableVisibleDimensionsType[] = [];

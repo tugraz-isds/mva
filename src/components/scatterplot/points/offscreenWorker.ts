@@ -278,7 +278,11 @@ function updatePartitionShape(partitionName: string, brushed: boolean = false) {
     }
 
     const geometry = getPartitionGeometry(pointSize, partition);
-    const material = brushed ? POINT_MATERIAL_BRUSHED : getPartitionMaterial(partition);
+    const material = !pointShow[i]
+      ? POINT_MATERIAL_FILTERED
+      : brushed
+      ? POINT_MATERIAL_BRUSHED
+      : getPartitionMaterial(partition);
     const newPoint = new THREE.Mesh(geometry, material) as PointType;
     newPoint.position.set(points[i].position.x, points[i].position.y, brushed ? 1 : points[i].position.z);
     newPoint.index = i;

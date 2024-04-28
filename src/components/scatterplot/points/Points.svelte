@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
+  import SelectBox from './SelectBox.svelte';
   import { debounce, throttle } from '../../../util/util';
   import { linkingArray } from '../../../stores/linking';
   import {
@@ -13,7 +14,7 @@
   import { labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { POINT_SIZE, saveSVGUtil } from './drawingUtil';
-  import type { TooltipType } from '../../../util/types';
+  import type { CoordinateType, TooltipType } from '../../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { PartitionType } from '../../partitions/types';
 
@@ -42,6 +43,11 @@
   let updatedHere = false;
   let currWidth: number = width,
     currHeight: number = height;
+
+  let isDragging = false;
+  let selectBoxStart: CoordinateType = { x: 0, y: 0 };
+  let selectBoxEnd: CoordinateType = { x: 0, y: 0 };
+
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
 
@@ -160,7 +166,12 @@
     )
       return;
 
-    worker.postMessage({ function: 'mouseMove', mouse });
+    selectBoxEnd = { x: event.clientX, y: event.clientY };
+
+    worker.postMessage({
+      function: 'mouseMove',
+      mouse
+    });
 
     tooltipPos = {
       x: event.clientX - canvasRect.left,
@@ -170,8 +181,8 @@
     };
   }
 
-  function handleClick(event: MouseEvent) {
-    if (!canvasEl || !$isInteractableStore) return;
+  function handlePointerDown(event: MouseEvent) {
+    if (!canvasEl || !$isInteractableStore || event.button === 2) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
     mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
@@ -186,6 +197,9 @@
       )
     )
       return;
+
+    isDragging = true;
+    selectBoxStart = { x: event.clientX, y: event.clientY };
 
     setTimeout(() => {
       setTooltipData({
@@ -203,6 +217,26 @@
         }
       });
     }, 1);
+  }
+
+  function handlePointerUp(event: MouseEvent) {
+    if (!canvasEl || !$isInteractableStore) return;
+    // Calculate normalized mouse coordinates relative to the canvas
+    const canvasRect = canvasEl.getBoundingClientRect();
+    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    // If mouse is not in canvas, return
+    if (
+      !(
+        event.clientY >= canvasRect.top + margin.top - 10 &&
+        event.clientY <= canvasRect.bottom &&
+        event.clientX >= canvasRect.left &&
+        event.clientX <= canvasRect.right
+      )
+    )
+      return;
+    selectBoxEnd = { x: event.clientX, y: event.clientY };
+    isDragging = false;
   }
 
   function drawPoints() {
@@ -264,7 +298,8 @@
 
   onMount(() => {
     window.addEventListener('pointermove', handleMouseMove, false);
-    window.addEventListener('click', handleClick, false);
+    window.addEventListener('pointerdown', handlePointerDown, false);
+    window.addEventListener('pointerup', handlePointerUp, false);
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
 
@@ -325,3 +360,5 @@
 </script>
 
 <canvas bind:this={canvasEl} />
+
+<SelectBox visible={isDragging} start={selectBoxStart} end={selectBoxEnd} />

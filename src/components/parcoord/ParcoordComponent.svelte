@@ -93,7 +93,7 @@
   let dimensionData: Map<string, DimensionDataType> = new Map();
   const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
     if (!value) return;
-    visibleDimensions = value;
+    visibleDimensions = value.filter((dim) => dim.title !== '_i' && dim.title !== '_partition');
     dimensions = visibleDimensions
       .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
       .map((dim) => dim.title);
@@ -325,7 +325,7 @@
 
 <div
   id="parcoord-canvas"
-  class="w-full h-full overflow-x-auto scrollable-div"
+  class="w-full h-full overflow-x-auto overflow-y-hidden scrollable-div"
   style="box-sizing: border-box;"
   bind:this={parcoordDiv}
   bind:clientWidth={originalWidth}
