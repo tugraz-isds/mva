@@ -1,13 +1,17 @@
 <script lang="ts">
   import { Button } from 'flowbite-svelte';
   import { onMount } from 'svelte';
-  import ColorPicker, { type RgbaColor } from 'svelte-awesome-color-picker';
+  import ColorPickerCustom from './ColorPickerCustom.svelte';
+  import { PARTITION_COLORS } from './util';
+  import type { RgbaColor } from 'svelte-awesome-color-picker';
+  import { hexStringToRgba, rgbaToHexString } from '../../util/colors';
 
   export let isOpen: boolean;
   export let partitionColor: RgbaColor;
   export let position: { x: number; y: number };
   export let setColor: (color: RgbaColor) => void;
 
+  let isCustomColorPickerOpen = false;
   let rgb: RgbaColor;
   let width: number, height: number;
   let isMounted = false;
@@ -19,10 +23,17 @@
     if (isMounted && position.y + height + 10 > window.innerHeight) position.y = window.innerHeight - height - 10;
   }
 
+  function setCustomColor(color: RgbaColor) {
+    setColor(color);
+    isOpen = false;
+  }
+
   onMount(() => {
     isMounted = true;
   });
 </script>
+
+<ColorPickerCustom isOpen={isCustomColorPickerOpen} {position} {partitionColor} setColor={setCustomColor} />
 
 <div
   bind:clientWidth={width}
@@ -30,17 +41,27 @@
   class="bg-white {isOpen ? 'fixed' : 'hidden'} border border-gray-400 rounded-lg"
   style="left: {position.x}px; top: {position.y}px; z-index: 3; p-4;"
 >
-  <div>
-    <ColorPicker
-      label=""
-      --input-size="16px"
-      --picker-height="200px"
-      --picker-width="200px"
-      --cp-border-color="white"
-      --cp-input-color="#9ca3af"
-      bind:rgb
-      isDialog={false}
-    />
+  <div class="w-full grid grid-cols-6 gap-2 p-2">
+    {#each PARTITION_COLORS as color}
+      <div
+        style="width: 20px; height: 20px; background-color: {color};"
+        class="rounded-md border-black hover:border-solid hover:cursor-pointer {color === rgbaToHexString(rgb)
+          ? 'border-4 border-solid'
+          : 'border-2 border-none'}"
+        on:click={() => (rgb = hexStringToRgba(color))}
+        on:keydown={() => {}}
+      />
+    {/each}
+  </div>
+  <div class="mt-2 mb-8 flex items-center justify-center">
+    <Button
+      size="xs"
+      color="light"
+      on:click={() => {
+        isCustomColorPickerOpen = false;
+        isCustomColorPickerOpen = true;
+      }}>Custom Color</Button
+    >
   </div>
   <div class="my-2 flex items-center justify-center gap-x-4">
     <Button

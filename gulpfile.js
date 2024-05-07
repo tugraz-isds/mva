@@ -25,8 +25,8 @@ function optimizeIcons(done) {
 
   iconsData = iconsData
     .slice(0, -2)
-    .replace(/ stroke="#[0-9A-Fa-f]+"/g, '')
-    .replace(/ fill="#[0-9A-Fa-f]+"/g, '');
+    .replaceAll(/ stroke=".*?"/g, '')
+    .replaceAll(/ fill=".*?"/g, '');
   fs.writeFileSync(utilPath + 'icon-definitions.ts', iconsData);
   done();
 }

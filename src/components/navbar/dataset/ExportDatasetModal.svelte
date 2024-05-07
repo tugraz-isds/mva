@@ -18,9 +18,7 @@
   let exportInactive = false;
   let exportPartitions = true;
 
-  $: if (!isOpen) {
-    $isInteractableStore = true;
-  }
+  $: if (!isOpen) $isInteractableStore = true;
 
   function handleExportDataset() {
     validUpload = true;

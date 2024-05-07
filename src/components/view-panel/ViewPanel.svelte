@@ -38,6 +38,7 @@
   };
 
   const handleMouseUp = () => {
+    if (!isDraggingHorizontal && !isDraggingVertical) return;
     $isInteractableStore = true;
     $isCurrentlyResizing = false;
     disableTextSelection = false;

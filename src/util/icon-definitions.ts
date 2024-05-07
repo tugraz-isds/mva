@@ -12,7 +12,7 @@ export const arrow_filter_down_hover_icon = `<svg xmlns="http://www.w3.org/2000/
 </svg>
 `;
 
-export const arrow_filter_down_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255, 255, 100, 0.5)" viewBox="0 0 5.2916664 5.2916666">
+export const arrow_filter_down_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916664 5.2916666">
   <path stroke-width="0.259554" d="M0.3363627,2.5225803H4.9507688L2.6460125,5.030853Z" />
 </svg>`;
 
@@ -27,18 +27,18 @@ export const arrow_filter_up_hover_icon = `<svg xmlns="http://www.w3.org/2000/sv
 </svg>
 `;
 
-export const arrow_filter_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255, 255, 100, 0.5)" viewBox="0 0 5.2916664 5.2916666" >
+export const arrow_filter_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.2916664 5.2916666" >
   <path stroke-width="0.26" d="M4.9503442,2.7500013H0.3359381L2.6406944,0.24172863Z"/>
 </svg>
 `;
 
 export const arrow_invert_down_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <rect width="16" height="16" fill="transparent" stroke="none" />
+  <rect width="16" height="16" />
   <path d="m 7.9099511,3.5888063 0.01,9.8499997 m 0,0 L 10.80995,9.7888064 M 7.9199511,13.438806 5.1999503,9.7888064 H 10.82995" stroke-linecap="round" stroke-linejoin="round" />
 </svg>`;
 
 export const arrow_invert_up_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <rect width="16" height="16" fill="transparent" stroke="none" />
+  <rect width="16" height="16" />
   <path d="m 8.1199994,13.438806 -0.01,-9.8499999 m 0,0 L 5.22,7.2388059 M 8.1099994,3.5888061 10.83,7.2388059 H 5.2" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
 `;
@@ -59,12 +59,12 @@ export const arrows_right_left_icon = `<svg xmlns="http://www.w3.org/2000/svg" v
 </svg>
 `;
 
-export const palette_icon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z"/>
+export const palette_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z"/>
 </svg>`;
 
-export const shape_circle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="40" stroke="black" stroke-width="10" fill="none" />
+export const shape_circle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke-width="10">
+  <circle cx="50" cy="50" r="40" />
 </svg>`;
 
 export const shape_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
@@ -73,26 +73,26 @@ export const shape_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 
 export const shape_cross_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <g transform="rotate(45 50 50)">
-    <rect x="0" y="42" width="100" height="16" fill="black" />
-    <rect x="42" y="0" width="16" height="100" fill="black" />
+    <rect x="0" y="42" width="100" height="16" />
+    <rect x="42" y="0" width="16" height="100" />
   </g>
 </svg>`;
 
 export const shape_plus_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect x="0" y="42" width="100" height="16" fill="black" />
-  <rect x="42" y="0" width="16" height="100" fill="black" />
+  <rect x="0" y="42" width="100" height="16" />
+  <rect x="42" y="0" width="16" height="100" />
 </svg>`;
 
-export const shape_square_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <polygon points="90,90 10,90 10,10 90,10" stroke="black" stroke-width="10" fill="none" />
+export const shape_square_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke-width="10">
+  <polygon points="90,90 10,90 10,10 90,10" />
 </svg>`;
 
 export const shape_square_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <polygon points="100,100 0,100 0,0 100,0" />
 </svg>`;
 
-export const shape_triangle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <polygon points="90,90 10,90 50,15" stroke="black" stroke-width="10" fill="none" />
+export const shape_triangle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke-width="10">
+  <polygon points="90,90 10,90 50,15" />
 </svg>`;
 
 export const shape_triangle_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">

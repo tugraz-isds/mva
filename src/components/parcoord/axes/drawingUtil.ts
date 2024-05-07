@@ -102,7 +102,9 @@ export function drawAxisInvertIcon(
   return svg
     .append('svg')
     .attr('class', 'parcoord-axis-invert cursor-pointer')
-    .html(inverted ? arrow_invert_down_icon : arrow_invert_up_icon)
+    .html(
+      (inverted ? arrow_invert_down_icon : arrow_invert_up_icon).replace('<rect', '<rect fill="white" stroke="white"')
+    )
     .attr('x', x)
     .attr('y', y)
     .attr('width', '16px')

@@ -5,9 +5,10 @@
   import ColorPickerModal from './ColorPickerModal.svelte';
   import { palette_icon } from '../../util/icon-definitions';
   import { DEFAULT_PARTITION } from '../../util/util';
-  import { selectedPartitionStore } from '../../stores/partitions';
-  import { PARTITION_SHAPES } from './util';
+  import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
+  import { PARTITION_SHAPES, addRecordsToPartition, hidePartition, renamePartition, updatePartition } from './util';
   import { rgbaToHexString } from '../../util/colors';
+  import { brushedArray } from '../../stores/brushing';
   import type { PartitionShapeType, PartitionType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
 
@@ -15,11 +16,6 @@
   export let partitionName: string;
   export let partitions: Map<string, PartitionType>;
   export let partition: PartitionType;
-  export let addRecordsToPartition: (name: string) => void;
-  export let updatePartition: (name: string, partition: PartitionType) => void;
-  export let deletePartition: (name: string) => void;
-  export let renamePartition: (oldName: string, newName: string, error?: string) => void;
-  export let hidePartition: (name: string) => void;
 
   let isDeleteModalOpen = false;
   let isShapeDropdownOpen = false;
@@ -33,13 +29,13 @@
     if (shape === partition.shape) return;
     partition.shape = shape;
     isShapeDropdownOpen = false;
-    updatePartition(partitionName, partition);
+    updatePartition(partitionName, partition, partitions, partitionsStore);
   }
 
   function setColor(color: RgbaColor) {
     if (JSON.stringify(color) === JSON.stringify(partition.color)) return;
     partition.color = color;
-    updatePartition(partitionName, partition);
+    updatePartition(partitionName, partition, partitions, partitionsStore);
   }
 
   function showColorPicker(e: MouseEvent) {
@@ -58,31 +54,47 @@
   function handleBlur(e: FocusEvent) {
     if (!isNameEditable) return;
     isNameEditable = false;
-    let errorMessage: string | undefined;
-    if (partitionName.length === 0) errorMessage = 'Cannot add partition with empty name.';
-    if (Array.from(partitions.keys()).includes(partitionName))
-      errorMessage = 'Partition with this name already exists.';
-    setTimeout(() => {
-      renamePartition(partitionNameOld, partitionName, errorMessage);
-      if (errorMessage) partitionName = partitionNameOld;
-    }, 100);
+    renamePartition(
+      partitionNameOld,
+      partitionName,
+      partitions,
+      $partitionsDataStore,
+      partitionsStore,
+      partitionsDataStore
+    );
   }
 
-  function handleDoubleClick(e: MouseEvent) {
+  function handleRenamePartition(e: MouseEvent) {
     if (partitionName === DEFAULT_PARTITION) return;
     isNameEditable = true;
     (e.target as HTMLElement).focus();
     partitionNameOld = partitionName;
   }
 
-  function handleClick(e: MouseEvent) {
+  function handleSelectPartition(e: MouseEvent) {
     partitionNameOld = partitionName;
     if (e.target instanceof SVGElement) return;
     $selectedPartitionStore = partitionName;
   }
+
+  function getPartitionIcon(partition: PartitionType) {
+    let iconString = PARTITION_SHAPES.get(partition.shape) ?? '';
+    if (partition.shape.includes('hollow'))
+      iconString = iconString.replace(
+        '<svg',
+        `<svg width="12" height="12" stroke="${rgbaToHexString(partition.color)}" fill="none"`
+      );
+    else
+      iconString = iconString.replace(
+        '<svg',
+        `<svg width="12" height="12" stroke="#fff" fill="${rgbaToHexString(partition.color)}"`
+      );
+
+    return iconString;
+  }
 </script>
 
-<DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} {deletePartition} />
+<DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} />
 
 <ColorPickerModal
   isOpen={isColorPickerOpen}
@@ -92,14 +104,14 @@
 />
 
 <div
-  on:click={handleClick}
+  on:click={handleSelectPartition}
   on:keydown={() => {}}
   class={`flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
     $selectedPartitionStore === partitionNameOld ? 'border-4' : 'border-b-4'
   }`}
   style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
 >
-  <div on:dblclick={handleDoubleClick} class="w-1/2">
+  <div on:click={handleRenamePartition} on:keydown={() => {}} class="w-1/2">
     <Input
       bind:value={partitionName}
       on:blur={handleBlur}
@@ -109,7 +121,7 @@
       style="background-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, 0.1)`};"
     />
   </div>
-  <div class="w-1/6 truncate ml-1">{partition.size}</div>
+  <div class="w-1/6 truncate mr-2 text-right">{partition.size}</div>
   <div class="w-1/3 flex flex-row items-center justify-evenly">
     <Trash
       size="16"
@@ -117,16 +129,25 @@
         isDeleteModalOpen = false;
         isDeleteModalOpen = true;
       }}
-      class="text-grey-900 cursor-pointer"
+      class="text-grey-900 cursor-pointer {partitionName === DEFAULT_PARTITION ? 'invisible' : ''}"
     />
     <Tooltip style="z-index: 1000;" type="light">Delete Partition</Tooltip>
-    <PlusCircle size="20" class="text-grey-900 cursor-pointer" on:click={() => addRecordsToPartition(partitionName)} />
-    <Tooltip style="z-index: 1000;" type="light">Add Records</Tooltip>
+    <PlusCircle
+      size="20"
+      class="text-grey-900 cursor-pointer"
+      on:click={() =>
+        addRecordsToPartition(
+          partitionName,
+          partitions,
+          $partitionsDataStore,
+          $brushedArray,
+          partitionsStore,
+          partitionsDataStore
+        )}
+    />
+    <Tooltip style="z-index: 1000;" type="light">Add Selected Records</Tooltip>
     <div id="partition-shape-button-{index}" class="cursor-pointer">
-      {@html PARTITION_SHAPES.get(partition.shape)?.replace(
-        '<svg',
-        '<svg width="12" height="12" stroke="#fff" fill="#111827"'
-      )}
+      {@html getPartitionIcon(partition)}
     </div>
     <Tooltip style="z-index: 1000;" type="light">Partition Shape</Tooltip>
     <div bind:this={shapesDropdownElement}>
@@ -159,14 +180,14 @@
     <Tooltip style="z-index: 1000;" type="light">Partition Color</Tooltip>
     {#if partition.visible}
       <Eye
-        on:click={() => hidePartition(partitionNameOld ?? partitionName)}
+        on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
         size="16"
         class="text-grey-900 cursor-pointer"
       />
       <Tooltip style="z-index: 1000;" type="light">Hide Records</Tooltip>
     {:else}
       <EyeSlash
-        on:click={() => hidePartition(partitionNameOld ?? partitionName)}
+        on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
         size="16"
         class="text-grey-900 cursor-pointer"
       />

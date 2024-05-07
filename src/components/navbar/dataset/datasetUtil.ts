@@ -82,7 +82,7 @@ function parsePartitions(
           {
             size: 0,
             shape: 'circle',
-            color: { r: 65, b: 225, g: 105, a: 1 },
+            color: hexStringToRgba('#4146cb'),
             visible: true
           }
         ],
@@ -94,7 +94,7 @@ function parsePartitions(
     partitionsMap.set(DEFAULT_PARTITION, {
       size: dataset.length,
       shape: 'circle',
-      color: { r: 65, b: 225, g: 105, a: 1 },
+      color: hexStringToRgba('#4146cb'),
       visible: true
     });
     partitionsData = Array(dataset.length).fill(DEFAULT_PARTITION);

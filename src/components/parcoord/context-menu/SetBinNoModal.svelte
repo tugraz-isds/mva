@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button, Modal, Label, NumberInput } from 'flowbite-svelte';
   import { parcoordDimMetadata } from '../../../stores/parcoord';
-  $isInteractableStore = true;
   import type { DimensionMetadataType } from '../types';
   import { isInteractableStore } from '../../../stores/brushing';
 
@@ -11,6 +10,8 @@
   let dimData: Map<string, DimensionMetadataType>;
   let currDimData: DimensionMetadataType;
   let binNo = 0;
+
+  $: if (!isOpen) $isInteractableStore = true;
 
   function loadData() {
     dimData = $parcoordDimMetadata;

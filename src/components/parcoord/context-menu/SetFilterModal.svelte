@@ -15,9 +15,7 @@
   let validUpload = true;
   let errorMessage = '';
 
-  $: if (!isOpen) {
-    $isInteractableStore = true;
-  }
+  $: if (!isOpen) $isInteractableStore = true;
 
   function loadData() {
     const numberOfDecimals = $dimensionDataStore.get(dimension)?.numberOfDecimals;

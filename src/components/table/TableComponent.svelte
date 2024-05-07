@@ -58,7 +58,9 @@
   let longestPartition = '';
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
     partitions = value;
-    longestPartition = getLongestString(Array.from(partitions.keys()));
+    longestPartition = getLongestString(
+      [...partitions].filter(([key, value]) => value.size > 0).map(([key, value]) => key)
+    );
   });
 
   const unsubscribeDataset = datasetStore.subscribe((value) => {
@@ -194,8 +196,8 @@
     return `text-${dimData === undefined || dimData.active ? 'black' : 'gray-400'}`;
   }
 
-  function getCellClass(dimData?: DimensionDataType) {
-    return `px-1 text-${dimData?.type === 'numerical' ? 'right' : 'left'} text-${
+  function getCellClass(dimTitle: string, dimData?: DimensionDataType) {
+    return `px-1 text-${dimData?.type === 'numerical' || dimTitle === '_i' ? 'right' : 'left'} text-${
       dimData === undefined || dimData.active ? 'black' : 'gray-400'
     }`;
   }
@@ -239,7 +241,8 @@
                   ) + 8}px;"
                 >
                   <div
-                    class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type === 'numerical'
+                    class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type === 'numerical' ||
+                    dim.title === '_i'
                       ? 'right'
                       : 'left'}"
                   >
@@ -274,7 +277,7 @@
               {#each tableVisibleDimensions as dim, i}
                 {#if dim.visible}
                   <td
-                    class={getCellClass($dimensionDataStore.get(dim.title))}
+                    class={getCellClass(dim.title, $dimensionDataStore.get(dim.title))}
                     style="font-size: 12px; {getPartitionColor(
                       dim.title,
                       partitions.get(partitionsData[row._i])?.color

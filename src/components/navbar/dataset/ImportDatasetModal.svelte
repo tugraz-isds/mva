@@ -37,9 +37,7 @@
   let previewRows: string[][] = [];
   let selectedColumn: number | null = null;
 
-  $: if (!isOpen) {
-    $isInteractableStore = true;
-  }
+  $: if (!isOpen) $isInteractableStore = true;
 
   $: if (previewHeaderString.length > 0 && previewRowsString.length > 0) {
     const separator = cellSeparator === 'other' ? cellSeparatorOther : cellSeparator;

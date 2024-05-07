@@ -1,6 +1,6 @@
 import type { RgbaColor } from 'svelte-awesome-color-picker';
 
-const COLOR_ACTIVE = 0x4169e1;
+const COLOR_ACTIVE = 0x4146cb;
 const COLOR_HOVERED = 0xef4444;
 const COLOR_BRUSHED = 0xfb923c;
 const COLOR_FILTERED = 0xcbd5e0;

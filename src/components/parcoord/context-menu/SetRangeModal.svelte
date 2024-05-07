@@ -12,9 +12,7 @@
   export let dimIndex: number;
   export let handleResetDimensionRange: () => void;
 
-  $: if (!isOpen) {
-    $isInteractableStore = true;
-  }
+  $: if (!isOpen) $isInteractableStore = true;
 
   let rangeMin: number, rangeMax: number;
   let originalMin: number, originalMax: number;
