@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Checkbox, Tooltip } from 'flowbite-svelte';
-  import { Cog8Tooth } from 'svelte-heros-v2';
+  import { Button, Checkbox, Tooltip } from 'flowbite-svelte';
+  import { CogOutline } from 'flowbite-svelte-icons';
   import { parcoordHistogramData } from '../../../stores/parcoord';
   import HistogramSettingsModal from './HistogramSettingsModal.svelte';
 
@@ -14,8 +14,12 @@
 
 <div class="flex justify-center items-center">
   <span class="text-xs mr-1">Show histograms: </span>
-  <Checkbox bind:checked={$parcoordHistogramData.visible} style="height: 10px; width: 10px; margin-right: 8px;" />
-  <Cog8Tooth size="16" class="text-grey-900 cursor-pointer hover:bg-sky-100" on:click={toggleModal} />
+  <Checkbox bind:checked={$parcoordHistogramData.visible} style="height: 10px; width: 10px;" />
+  <Button on:click={toggleModal} class="p-0 m-0 text-black">
+    <CogOutline
+      class="w-4 h-4 text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+    />
+  </Button>
   <Tooltip style="z-index: 1000;" type="light">Histogram Settings</Tooltip>
 </div>
 

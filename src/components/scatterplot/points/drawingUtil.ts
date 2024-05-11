@@ -248,7 +248,7 @@ export function saveSVGUtil(
 
   const defs = svgContainer.append('defs');
   Array.from(partitions.entries()).forEach((partition) => {
-    defs.append('g').attr('id', partition[0].replaceAll(/\s/g, '')).html(getPartitionSvgString(partition[1]));
+    defs.append('symbol').attr('id', partition[0].replaceAll(/\s/g, '')).html(getPartitionSvgString(partition[1]));
   });
 
   const filteredIndices: number[] = [],

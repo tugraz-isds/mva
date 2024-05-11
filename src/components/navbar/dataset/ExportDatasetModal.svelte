@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Modal, Label, Input, Helper, Select, Spinner, Tooltip, Checkbox } from 'flowbite-svelte';
-  import { QuestionMarkCircle } from 'svelte-heros-v2';
+  import { QuestionCircleOutline } from 'flowbite-svelte-icons';
   import { isInteractableStore } from '../../../stores/brushing';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { CELL_SEPARATOR_LIST, DECIMAL_SEPARATOR_LIST, exportDataset } from './datasetUtil';
@@ -55,7 +55,7 @@
   <form class="flex flex-col space-y-4 px-4 {isLoading ? 'invisible' : 'visible'}">
     <div class="mb-4 flex flex-row items-center space-x-2">
       <h3 class="text-xl font-medium text-gray-900">Export Dataset</h3>
-      <QuestionMarkCircle color="black" />
+      <QuestionCircleOutline color="black" />
       <Tooltip type="light" class="text-xs"
         >Exporting the dataset optionally adds three columns: _partition, _partition_color, and _partition_shape. The
         exported CSV file can be re-imported into the application with defined partitions.</Tooltip

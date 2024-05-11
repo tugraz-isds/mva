@@ -1,9 +1,15 @@
 <script lang="ts">
-  import { Tooltip, Dropdown, DropdownItem, Input } from 'flowbite-svelte';
-  import { Trash, PlusCircle, Eye, EyeSlash, Check } from 'svelte-heros-v2';
+  import { Tooltip, Dropdown, DropdownItem, Input, Button } from 'flowbite-svelte';
+  import {
+    CheckOutline,
+    EyeOutline,
+    EyeSlashOutline,
+    PaletteOutline,
+    CirclePlusOutline,
+    TrashBinOutline
+  } from 'flowbite-svelte-icons';
   import DeletePartitionModal from './DeletePartitionModal.svelte';
   import ColorPickerModal from './ColorPickerModal.svelte';
-  import { palette_icon } from '../../util/icon-definitions';
   import { DEFAULT_PARTITION } from '../../util/util';
   import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
   import { PARTITION_SHAPES, addRecordsToPartition, hidePartition, renamePartition, updatePartition } from './util';
@@ -123,18 +129,17 @@
   </div>
   <div class="w-1/6 truncate mr-2 text-right">{partition.size}</div>
   <div class="w-1/3 flex flex-row items-center justify-evenly">
-    <Trash
-      size="16"
+    <Button
       on:click={() => {
         isDeleteModalOpen = false;
         isDeleteModalOpen = true;
       }}
-      class="text-grey-900 cursor-pointer {partitionName === DEFAULT_PARTITION ? 'invisible' : ''}"
-    />
+      class="text-grey-900 p-0 m-0 bg-inherit hover:bg-inherit {partitionName === DEFAULT_PARTITION ? 'invisible' : ''}"
+    >
+      <TrashBinOutline size="sm" />
+    </Button>
     <Tooltip style="z-index: 1000;" type="light">Delete Partition</Tooltip>
-    <PlusCircle
-      size="20"
-      class="text-grey-900 cursor-pointer"
+    <Button
       on:click={() =>
         addRecordsToPartition(
           partitionName,
@@ -144,7 +149,10 @@
           partitionsStore,
           partitionsDataStore
         )}
-    />
+      class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+    >
+      <CirclePlusOutline size="sm" />
+    </Button>
     <Tooltip style="z-index: 1000;" type="light">Add Selected Records</Tooltip>
     <div id="partition-shape-button-{index}" class="cursor-pointer">
       {@html getPartitionIcon(partition)}
@@ -162,35 +170,38 @@
           <DropdownItem
             on:click={() => setShape(name)}
             defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-            ><Check
-              class="w-3 h-3 ms-2 mr-2"
+            ><CheckOutline
+              size="xs"
+              class="ms-2 mr-2"
               style="visibility: {partition.shape === name ? 'visible' : 'hidden'}"
             />{name[0].toUpperCase() + name.slice(1)}</DropdownItem
           >
         {/each}
       </Dropdown>
     </div>
-    <div on:click={showColorPicker} on:keydown={() => {}} class="cursor-pointer">
-      {@html palette_icon.replace(
-        '<svg',
-        `<svg width="16" height="16" stroke="#fff" fill="${rgbaToHexString(partition.color)}"`
-      )}
-    </div>
-
+    <Button
+      on:click={showColorPicker}
+      class="p-0 m-0 bg-inherit hover:bg-inherit"
+      style="color: {rgbaToHexString(partition.color)};"
+    >
+      <PaletteOutline size="sm" />
+    </Button>
     <Tooltip style="z-index: 1000;" type="light">Partition Color</Tooltip>
     {#if partition.visible}
-      <Eye
+      <Button
         on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
-        size="16"
-        class="text-grey-900 cursor-pointer"
-      />
+        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+      >
+        <EyeOutline size="sm" />
+      </Button>
       <Tooltip style="z-index: 1000;" type="light">Hide Records</Tooltip>
     {:else}
-      <EyeSlash
+      <Button
         on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
-        size="16"
-        class="text-grey-900 cursor-pointer"
-      />
+        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+      >
+        <EyeSlashOutline size="sm" />
+      </Button>
       <Tooltip style="z-index: 1000;" type="light">Show Records</Tooltip>
     {/if}
   </div>

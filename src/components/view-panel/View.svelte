@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { ArrowsRightLeft, ArrowsPointingOut, BookmarkSquare, Bars3 } from 'svelte-heros-v2';
   import { openWindow } from 'svelte-window-system';
-  import { Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
+  import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
+  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, FloppyDiskOutline } from 'flowbite-svelte-icons';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
@@ -78,7 +78,11 @@
     </div>
     <div id="{currView.id}-expand-container">
       <div class="flex flex-row gap-1">
-        <ArrowsRightLeft id="{currView.id}-swap" size="16" class="text-grey-900 cursor-pointer hover:bg-sky-100" />
+        <ArrowUpDownOutline
+          id="{currView.id}-swap"
+          size="sm"
+          class="rotate-90 text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+        />
         <Tooltip style="z-index: 1000;" type="light">Swap View</Tooltip>
         <Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 1000;">
           <div slot="header" class="py-1 px-2">
@@ -91,20 +95,22 @@
             >
           {/each}
         </Dropdown>
-        <ArrowsPointingOut
-          id="{currView.id}-expand"
-          size="16"
-          class="text-grey-900 cursor-pointer hover:bg-sky-100"
-          on:click={openWinbox}
-        />
+        <Button on:click={openWinbox} class="p-0 m-0 text-black">
+          <ExpandOutline
+            id="{currView.id}-expand"
+            size="sm"
+            class="text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+          />
+        </Button>
         <Tooltip style="z-index: 1000;" type="light">Expand View</Tooltip>
         {#if ['parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
-          <BookmarkSquare
-            id="{currView.id}-save"
-            size="16"
-            class="text-grey-900 cursor-pointer hover:bg-sky-100"
-            on:click={saveSVG}
-          />
+          <Button on:click={saveSVG} class="p-0 m-0 text-black">
+            <DownloadOutline
+              id="{currView.id}-expand"
+              size="sm"
+              class="text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+            />
+          </Button>
           <Tooltip style="z-index: 1000;" type="light">Save SVG</Tooltip>
         {/if}
       </div>

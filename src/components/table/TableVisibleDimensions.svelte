@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { Bars3 } from 'svelte-heros-v2';
   import { Checkbox, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
+  import { BarsOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
   import type { TableVisibleDimensionsType } from './types';
   import { tableVisibleDimensionsStore } from '../../stores/table';
 
@@ -27,7 +27,13 @@
   });
 </script>
 
-<Bars3 id="table-dims-dropdown" size="14" class="rotate-90 text-grey-900 cursor-pointer hover:bg-sky-100" />
+<div
+  id="table-dims-dropdown"
+  class="flex flex-row text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+>
+  <BarsOutline size="xs" class="rotate-90" />
+  <ChevronDownOutline size="xs" />
+</div>
 <Tooltip style="z-index: 1000;" type="light">Table Dimensions</Tooltip>
 <Dropdown
   triggeredBy="#table-dims-dropdown"

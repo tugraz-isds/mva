@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
-  import { Check } from 'svelte-heros-v2';
+  import { CheckOutline } from 'flowbite-svelte-icons';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
   import { parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
@@ -152,8 +152,9 @@
           defaultClass="{activeClass} flex items-center"
           style="width: 110px;"
           on:click={() => handleShow('labels')}
-          ><Check
-            class="w-3 h-3 ms-2 mr-2"
+          ><CheckOutline
+            size="xs"
+            class="ms-2 mr-2"
             style="visibility: {$parcoordDimMetadata.get(dimension)?.showLabels ? 'visible' : 'hidden'}"
           />Labels</DropdownItem
         >
@@ -161,8 +162,9 @@
           defaultClass="{activeClass} flex items-center"
           style="width: 110px;"
           on:click={() => handleShow('histograms')}
-          ><Check
-            class="w-3 h-3 ms-2 mr-2"
+          ><CheckOutline
+            size="xs"
+            class="ms-2 mr-2"
             style="visibility: {$parcoordDimMetadata.get(dimension)?.showHistograms ? 'visible' : 'hidden'}"
           />Histogram</DropdownItem
         >
@@ -170,8 +172,9 @@
           defaultClass="{activeClass} flex items-center"
           style="width: 110px;"
           on:click={() => handleShow('filter')}
-          ><Check
-            class="w-3 h-3 ms-2 mr-2"
+          ><CheckOutline
+            size="xs"
+            class="ms-2 mr-2"
             style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilter ? 'visible' : 'hidden'}"
           />Filter</DropdownItem
         >
@@ -180,8 +183,9 @@
             defaultClass="{activeClass} flex items-center"
             style="width: 110px;"
             on:click={() => handleShow('filterValues')}
-            ><Check
-              class="w-3 h-3 ms-2 mr-2"
+            ><CheckOutline
+              size="xs"
+              class="ms-2 mr-2"
               style="visibility: {$parcoordDimMetadata.get(dimension)?.showFilterValues ? 'visible' : 'hidden'}"
             />Filter Values</DropdownItem
           >{/if}
