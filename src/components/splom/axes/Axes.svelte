@@ -1,13 +1,13 @@
 <script lang="ts">
   import { select } from 'd3-selection';
   import { calculateMaxLength } from '../../../util/text';
-  import type { MarginType } from '../../../util/types';
+  import type { CoordinateType, MarginType } from '../../../util/types';
 
   export let dimensions: string[] = [];
   export let size: number;
   export let margin: MarginType;
-  export let activeDim: { x: number; y: number };
-  export let hoveredDim: { x: number; y: number };
+  export let activeDim: CoordinateType;
+  export let hoveredDim: CoordinateType;
 
   let gridSize = 0;
   $: gridSize = size - margin.left - margin.right;

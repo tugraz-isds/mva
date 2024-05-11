@@ -23,7 +23,7 @@
   let svgExportModal: SvgExportModal;
   let isSvgExportModalOpen = false;
 
-  let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
+  let margin: MarginType = { top: 20, right: 20, bottom: 40, left: 40 };
   let tooltip: TooltipType = {
     visible: false,
     clientX: 0,
@@ -161,6 +161,8 @@
       {margin}
       xScale={xScaleAxes}
       yScale={yScaleAxes}
+      xTitle={xDim}
+      yTitle={yDim}
       viewTitle="scatterplot"
     />
 

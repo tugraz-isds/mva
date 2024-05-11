@@ -5,6 +5,7 @@
   import type { PartitionType } from './types';
   import { onDestroy } from 'svelte';
   import AddPartitionModal from './AddPartitionModal.svelte';
+  import type { CoordinateType } from '../../util/types';
 
   let contextMenuElement: HTMLElement;
   let showMenu = false;
@@ -12,7 +13,7 @@
   let debounceTimeout: number;
   let menuStyle = '';
   let submenuStyle = '';
-  let pos: { x: number; y: number };
+  let pos: CoordinateType;
 
   $: {
     if (contextMenuElement) {

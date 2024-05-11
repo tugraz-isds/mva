@@ -2,10 +2,11 @@
   import { Button } from 'flowbite-svelte';
   import { onMount } from 'svelte';
   import ColorPicker, { type RgbaColor } from 'svelte-awesome-color-picker';
+  import type { CoordinateType } from '../../util/types';
 
   export let isOpen: boolean;
   export let partitionColor: RgbaColor;
-  export let position: { x: number; y: number };
+  export let position: CoordinateType;
   export let setColor: (color: RgbaColor) => void;
 
   let rgb: RgbaColor;

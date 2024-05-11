@@ -15,7 +15,7 @@ import {
   type PointType,
   type StrokeType
 } from './drawingUtil';
-import { DEFAULT_PARTITION, areSetsEqual } from '../../../util/util';
+import { DEFAULT_PARTITION, areSetsEqual, getSetDifference } from '../../../util/util';
 import type { PartitionType } from '../../partitions/types';
 
 let width: number, height: number;
@@ -31,9 +31,7 @@ let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
 
 let hoveredPointsIndices = new Set<number>(),
-  previouslyHoveredPointsIndices = new Set<number>(),
-  brushedPointsIndices = new Set<number>(),
-  previouslyBrushedPointsIndices = new Set<number>();
+  brushedPointsIndices = new Set<number>();
 let pointShow: boolean[] = [];
 let partitionsData: string[] = [];
 let partitions: Map<string, PartitionType> = new Map();
@@ -63,16 +61,14 @@ self.onmessage = function (message) {
       handleMouseDown(data.event);
       break;
     case 'updateHovered':
-      drawHoveredPoints(data.indices);
-      break;
-    case 'updatePreviouslyHovered':
-      removePreviouslyHoveredPoints(data.indices);
+      removeHoveredPoints(getSetDifference(data.previouslyHoveredIndices, data.hoveredIndices));
+      hoveredPointsIndices = data.hoveredIndices;
+      drawHoveredPoints(hoveredPointsIndices);
       break;
     case 'updateBrushed':
-      drawBrushedPoints(data.indices);
-      break;
-    case 'updatePreviouslyBrushed':
-      removePreviouslyBrushedPoints(data.indices);
+      removeBrushedPoints(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
+      brushedPointsIndices = data.brushedIndices;
+      drawBrushedPoints(brushedPointsIndices);
       break;
     case 'resizeCanvas':
       ({ width, height } = data);
@@ -135,12 +131,12 @@ function handleMouseMove() {
     const line = intersection.object as any;
     if (pointShow[line.index]) hoveredPointsSet.add(line.index);
   });
-  previouslyHoveredPointsIndices = hoveredPointsIndices;
-  if (areSetsEqual(previouslyHoveredPointsIndices, hoveredPointsSet)) return;
 
+  if (areSetsEqual(hoveredPointsIndices, hoveredPointsSet)) return;
+
+  removeHoveredPoints(getSetDifference(hoveredPointsIndices, hoveredPointsSet));
   hoveredPointsIndices = hoveredPointsSet;
-  removePreviouslyHoveredPoints();
-  drawHoveredPoints();
+  drawHoveredPoints(hoveredPointsIndices);
 
   postMessage({
     function: 'setHovered',
@@ -149,67 +145,63 @@ function handleMouseMove() {
 }
 
 function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
-  previouslyBrushedPointsIndices = brushedPointsIndices;
-
+  let brushedPointsSet: Set<number> = new Set([...brushedPointsIndices]);
   // Add to brushed if Shift key is pressed
   if (event.shiftKey) {
     hoveredPointsIndices.forEach((i) => {
-      brushedPointsIndices.add(i);
+      brushedPointsSet.add(i);
     });
   }
   // Toggle brushed if Ctrl key is pressed
   else if (event.ctrlKey) {
     hoveredPointsIndices.forEach((i) => {
-      if (brushedPointsIndices.has(i)) brushedPointsIndices.delete(i);
-      else brushedPointsIndices.add(i);
+      if (brushedPointsSet.has(i)) brushedPointsSet.delete(i);
+      else brushedPointsSet.add(i);
     });
   }
   // Set brushed to hovered
   else {
-    const newBrushedPointsIndices = new Set<number>();
+    brushedPointsSet = new Set<number>();
     hoveredPointsIndices.forEach((i) => {
-      if (!brushedPointsIndices.has(i) && pointShow[i]) newBrushedPointsIndices.add(i);
+      if (!brushedPointsSet.has(i) && pointShow[i]) brushedPointsSet.add(i);
     });
-    brushedPointsIndices = newBrushedPointsIndices;
   }
 
-  removePreviouslyBrushedPoints();
-  drawBrushedPoints();
+  if (areSetsEqual(brushedPointsIndices, brushedPointsSet)) return;
+
+  removeBrushedPoints(getSetDifference(brushedPointsIndices, brushedPointsSet));
+  brushedPointsIndices = brushedPointsSet;
+  drawBrushedPoints(brushedPointsIndices);
   postMessage({
     function: 'setBrushed',
-    brushedIndices: brushedPointsIndices,
-    previouslyBrushedIndices: previouslyBrushedPointsIndices
+    brushedIndices: brushedPointsIndices
   });
 }
 
-function drawHoveredPoints(hoveredIndices: Set<number> | null = null) {
-  if (hoveredIndices) hoveredPointsIndices = hoveredIndices;
-  hoveredPointsIndices.forEach((i) => {
+function drawHoveredPoints(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!pointShow[i]) return;
     drawPoint(points[i], POINT_MATERIAL_HOVERED, true, 2);
   });
 }
 
-function removePreviouslyHoveredPoints(hoveredIndices: Set<number> | null = null) {
-  if (hoveredIndices) previouslyHoveredPointsIndices = hoveredIndices;
-  previouslyHoveredPointsIndices.forEach((i) => {
-    if (!pointShow[i] || hoveredPointsIndices.has(i)) return;
+function removeHoveredPoints(indices: Set<number>) {
+  indices.forEach((i) => {
+    if (!pointShow[i]) return;
     if (brushedPointsIndices.has(i)) drawPoint(points[i], POINT_MATERIAL_BRUSHED, false, 1);
     else drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
 }
 
-function drawBrushedPoints(brushedIndices: Set<number> | null = null) {
-  if (brushedIndices) brushedPointsIndices = brushedIndices;
-  brushedPointsIndices.forEach((i) => {
+function drawBrushedPoints(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!pointShow[i]) return;
     drawPoint(points[i], POINT_MATERIAL_BRUSHED, true, 1);
   });
 }
 
-function removePreviouslyBrushedPoints(brushedIndices: Set<number> | null = null) {
-  if (brushedIndices) previouslyBrushedPointsIndices = brushedIndices;
-  previouslyBrushedPointsIndices.forEach((i) => {
+function removeBrushedPoints(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!pointShow[i]) return;
     drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });

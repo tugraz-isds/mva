@@ -22,6 +22,10 @@ export function areSetsEqual(set1: Set<number>, set2: Set<number>) {
   return set1.size === set2.size && [...set1].every((value) => set2.has(value));
 }
 
+export function getSetDifference(set1: Set<number>, set2: Set<number>) {
+  return new Set([...set1].filter((x) => !set2.has(x)));
+}
+
 export function isOffscreenCanvasSupported(canvas: HTMLCanvasElement) {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
   let supportOffScreenWebGL = 'transferControlToOffscreen' in canvas;

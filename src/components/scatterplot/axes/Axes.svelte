@@ -9,6 +9,8 @@
   export let margin: MarginType;
   export let xScale: any;
   export let yScale: any;
+  export let xTitle: string | null = null;
+  export let yTitle: string | null = null;
   export let viewTitle: string;
 
   function clearSVG() {
@@ -30,11 +32,29 @@
       .attr('transform', `translate(${margin.left}, ${height - margin.bottom})`)
       .call(xAxis);
 
+    if (xTitle)
+      svg
+        .append('text')
+        .attr('class', `${viewTitle}-axis-title`)
+        .attr('transform', `translate(${width / 2}, ${height - margin.bottom + 35})`)
+        .attr('font-size', '12px')
+        .style('text-anchor', 'middle')
+        .text(xTitle);
+
     svg
       .append('g')
       .attr('class', `${viewTitle}-y-axis`)
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
       .call(yAxis);
+
+    if (yTitle)
+      svg
+        .append('text')
+        .attr('class', `${viewTitle}-axis-title`)
+        .attr('transform', `translate(${5}, ${height / 2}) rotate(90)`)
+        .attr('font-size', '12px')
+        .style('text-anchor', 'middle')
+        .text(yTitle);
   }
 
   export const saveSVG = () => {

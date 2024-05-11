@@ -4,13 +4,7 @@
   import SelectBox from './SelectBox.svelte';
   import { debounce, throttle } from '../../../util/util';
   import { linkingArray } from '../../../stores/linking';
-  import {
-    brushedArray,
-    hoveredArray,
-    isInteractableStore,
-    previouslyBrushedArray,
-    previouslyHoveredArray
-  } from '../../../stores/brushing';
+  import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { POINT_SIZE, saveSVGUtil } from './drawingUtil';
@@ -33,7 +27,7 @@
   let worker: Worker;
   let points: number[][] = [];
   let pointShow: boolean[] = [];
-  let mouse: { x: number; y: number } = { x: 0, y: 0 };
+  let mouse: CoordinateType = { x: 0, y: 0 };
   let tooltipPos: { x: number; y: number; clientX: number; clientY: number } = {
     x: 0,
     y: 0,
@@ -84,27 +78,7 @@
     });
   });
 
-  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value) => {
-    if (!worker) return;
-    worker.postMessage({
-      function: 'updatePreviouslyHovered',
-      indices: value
-    });
-  });
-
-  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value) => {
-    if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
-    worker.postMessage({
-      function: 'updatePreviouslyBrushed',
-      indices: value
-    });
-    updatedHere = false;
-  });
-
+  let hoveredLinesIndices: Set<number> = new Set();
   const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
@@ -113,11 +87,14 @@
     }
     worker.postMessage({
       function: 'updateHovered',
-      indices: value
+      previouslyHoveredIndices: hoveredLinesIndices,
+      hoveredIndices: value
     });
+    hoveredLinesIndices = value;
     updatedHere = false;
   });
 
+  let brushedLinesIndices: Set<number> = new Set();
   const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
@@ -126,8 +103,10 @@
     }
     worker.postMessage({
       function: 'updateBrushed',
-      indices: value
+      previouslyBrushedIndices: brushedLinesIndices,
+      brushedIndices: value
     });
+    brushedLinesIndices = value;
     updatedHere = false;
   });
 
@@ -181,7 +160,7 @@
     };
   }
 
-  function handlePointerDown(event: MouseEvent) {
+  function handleMouseDown(event: MouseEvent) {
     if (!canvasEl || !$isInteractableStore || event.button === 2) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
@@ -219,7 +198,7 @@
     }, 1);
   }
 
-  function handlePointerUp(event: MouseEvent) {
+  function handleMouseUp(event: MouseEvent) {
     if (!canvasEl || !$isInteractableStore) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
@@ -298,8 +277,8 @@
 
   onMount(() => {
     window.addEventListener('pointermove', handleMouseMove, false);
-    window.addEventListener('pointerdown', handlePointerDown, false);
-    window.addEventListener('pointerup', handlePointerUp, false);
+    window.addEventListener('pointerdown', handleMouseDown, false);
+    window.addEventListener('pointerup', handleMouseUp, false);
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
 
@@ -327,7 +306,6 @@
           break;
         case 'setBrushed':
           updatedHere = true;
-          previouslyBrushedArray.set(data.previouslyBrushedIndices);
           brushedArray.set(data.brushedIndices);
           break;
         case 'canvasResized':
@@ -352,8 +330,6 @@
     unsubscribePartitionsData();
     unsubscribePartitions();
     unsubscribeLinking();
-    unsubscribePreviouslyHovered();
-    unsubscribePreviouslyBrushed();
     unsubscribeHovered();
     unsubscribeBrushed();
   });

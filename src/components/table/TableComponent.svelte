@@ -3,13 +3,7 @@
   import { ChevronDown, ChevronUp } from 'flowbite-svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import { linkingArray } from '../../stores/linking';
-  import {
-    brushedArray,
-    hoveredArray,
-    previouslyHoveredArray,
-    previouslyBrushedArray,
-    isInteractableStore
-  } from '../../stores/brushing';
+  import { brushedArray, hoveredArray, isInteractableStore } from '../../stores/brushing';
   import { tableVisibleDimensionsStore } from '../../stores/table';
   import { partitionsStore, partitionsDataStore } from '../../stores/partitions';
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
@@ -92,13 +86,11 @@
   });
 
   const unsubscribeHovered = hoveredArray.subscribe((value) => {
-    previouslyHoveredArray.set(hoveredRowsIndices);
     hoveredRowsIndices = value;
   });
 
   function handleRowClick(event: MouseEvent, index: number, _i: number) {
     if (!rowShow[_i]) return;
-    previouslyBrushedArray.set(brushedRowsIndices);
     if (hoveredLineIndex === null) return;
 
     if (event.ctrlKey) {
@@ -145,7 +137,6 @@
   function handleMouseLeave(index: number) {
     if (!rowShow[index]) return;
     hoveredArray.set(new Set());
-    previouslyHoveredArray.set(new Set([hoveredLineIndex as number]));
     hoveredLineIndex = null;
     hoveredRowsIndices.clear();
   }

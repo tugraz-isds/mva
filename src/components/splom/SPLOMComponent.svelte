@@ -4,7 +4,7 @@
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
-  import type { DimensionDataType, MarginType } from '../../util/types';
+  import type { CoordinateType, DimensionDataType, MarginType } from '../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
 
   const TILE_SIZE = 60;
@@ -12,8 +12,8 @@
   let width: number;
   let originalWidth: number;
   let numericalDimensions: string[] = [];
-  let activeDim: { x: number; y: number } = { x: 0, y: 0 };
-  let hoveredDim: { x: number; y: number };
+  let activeDim: CoordinateType = { x: 0, y: 0 };
+  let hoveredDim: CoordinateType;
   let splomDiv: HTMLDivElement;
 
   let margin: MarginType = { top: 20, right: 2, bottom: 5, left: 20 };

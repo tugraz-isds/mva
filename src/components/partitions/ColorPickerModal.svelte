@@ -3,12 +3,13 @@
   import { onMount } from 'svelte';
   import ColorPickerCustom from './ColorPickerCustom.svelte';
   import { PARTITION_COLORS } from './util';
-  import type { RgbaColor } from 'svelte-awesome-color-picker';
   import { hexStringToRgba, rgbaToHexString } from '../../util/colors';
+  import type { RgbaColor } from 'svelte-awesome-color-picker';
+  import type { CoordinateType } from '../../util/types';
 
   export let isOpen: boolean;
   export let partitionColor: RgbaColor;
-  export let position: { x: number; y: number };
+  export let position: CoordinateType;
   export let setColor: (color: RgbaColor) => void;
 
   let isCustomColorPickerOpen = false;

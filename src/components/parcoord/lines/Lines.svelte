@@ -3,20 +3,14 @@
   import OffscreenWorker from './offscreenWorker?worker';
   import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
   import { filtersArray, parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
-  import {
-    brushedArray,
-    hoveredArray,
-    isInteractableStore,
-    previouslyBrushedArray,
-    previouslyHoveredArray
-  } from '../../../stores/brushing';
+  import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { linkingArray } from '../../../stores/linking';
   import { isCurrentlyResizing } from '../../../stores/views';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { COLOR_ACTIVE } from '../../../util/colors';
   import { debounce, throttle } from '../../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { RecordDataType, TooltipType } from '../../../util/types';
+  import type { CoordinateType, RecordDataType, TooltipType } from '../../../util/types';
   import type { AxesFilterType } from '../types';
   import type { PartitionType } from '../../partitions/types';
   import { saveSVGUtil } from './drawingUtil';
@@ -36,7 +30,7 @@
   let lines: number[][][] = [];
   let lineData: RecordDataType[] = [];
   let lineShow: boolean[] = [];
-  let mouse: { x: number; y: number } = { x: 0, y: 0 };
+  let mouse: CoordinateType = { x: 0, y: 0 };
   let tooltipPos: { x: number; y: number; clientX: number; clientY: number } = {
     x: 0,
     y: 0,
@@ -44,6 +38,7 @@
     clientY: 0
   };
   let updatedHere = false;
+  let isDragging = false;
   let currWidth: number = width,
     currHeight: number = height;
   let throttledDrawLines: () => void;
@@ -112,27 +107,7 @@
     }, 0);
   });
 
-  const unsubscribePreviouslyHovered = previouslyHoveredArray.subscribe((value) => {
-    if (!worker) return;
-    worker.postMessage({
-      function: 'updatePreviouslyHovered',
-      indices: value
-    });
-  });
-
-  const unsubscribePreviouslyBrushed = previouslyBrushedArray.subscribe((value) => {
-    if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
-    worker.postMessage({
-      function: 'updatePreviouslyBrushed',
-      indices: value
-    });
-    updatedHere = false;
-  });
-
+  let hoveredLinesIndices: Set<number> = new Set();
   const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
@@ -141,11 +116,14 @@
     }
     worker.postMessage({
       function: 'updateHovered',
-      indices: value
+      previouslyHoveredIndices: hoveredLinesIndices,
+      hoveredIndices: value
     });
+    hoveredLinesIndices = value;
     updatedHere = false;
   });
 
+  let brushedLinesIndices: Set<number> = new Set();
   const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
     if (updatedHere) {
@@ -154,8 +132,10 @@
     }
     worker.postMessage({
       function: 'updateBrushed',
-      indices: value
+      previouslyBrushedIndices: brushedLinesIndices,
+      brushedIndices: value
     });
+    brushedLinesIndices = value;
     updatedHere = false;
   });
 
@@ -187,7 +167,7 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    if (!canvasEl) return;
+    if (!canvasEl || !$isInteractableStore) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
     mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
@@ -203,7 +183,12 @@
     )
       return;
 
-    worker.postMessage({ function: 'mouseMove', mouse, interactable: $isInteractableStore });
+    worker.postMessage({
+      function: 'mouseMove',
+      mouse,
+      interactable: $isInteractableStore,
+      event: { offsetX: event.offsetX, offsetY: event.offsetY }
+    });
 
     tooltipPos = {
       x: event.clientX - canvasRect.left,
@@ -213,8 +198,8 @@
     };
   }
 
-  function handleClick(event: MouseEvent) {
-    if (!canvasEl) return;
+  function handleMouseDown(event: MouseEvent) {
+    if (!canvasEl || !$isInteractableStore || event.button === 2) return;
     // Calculate normalized mouse coordinates relative to the canvas
     const canvasRect = canvasEl.getBoundingClientRect();
     mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
@@ -230,6 +215,8 @@
     )
       return;
 
+    isDragging = true;
+
     setTimeout(() => {
       setTooltipData({
         visible: false,
@@ -238,17 +225,43 @@
         text: []
       });
 
-      if (!$isInteractableStore) return;
-
       worker.postMessage({
         function: 'mouseDown',
         mouse,
         event: {
+          offsetX: event.offsetX,
+          offsetY: event.offsetY,
           ctrlKey: event.ctrlKey,
           shiftKey: event.shiftKey
         }
       });
     }, 1);
+  }
+
+  function handleMouseUp(event: MouseEvent) {
+    if (!canvasEl || !$isInteractableStore) return;
+    // Calculate normalized mouse coordinates relative to the canvas
+    const canvasRect = canvasEl.getBoundingClientRect();
+    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    // If mouse is not in canvas, return
+    if (
+      !(
+        event.clientY >= canvasRect.top + margin.top - 10 &&
+        event.clientY <= canvasRect.bottom &&
+        event.clientX >= canvasRect.left &&
+        event.clientX <= canvasRect.right
+      ) ||
+      !$isInteractableStore
+    )
+      return;
+
+    isDragging = false;
+
+    worker.postMessage({
+      function: 'mouseUp',
+      mouse
+    });
   }
 
   export function drawLines() {
@@ -349,7 +362,8 @@
   onMount(() => {
     initializeArrays();
     window.addEventListener('pointermove', handleMouseMove, false);
-    window.addEventListener('click', handleClick, false);
+    window.addEventListener('pointerdown', handleMouseDown, false);
+    window.addEventListener('pointerup', handleMouseUp);
     throttledDrawLines = throttle(drawLines, 100);
     debouncedDrawLines = debounce(throttledDrawLines, 100);
 
@@ -374,11 +388,10 @@
           if (!$isInteractableStore) break;
           updatedHere = true;
           hoveredArray.set(data.hoveredIndices);
-          setTooltip(data.hoveredIndices);
+          !isDragging && setTooltip(data.hoveredIndices);
           break;
         case 'setBrushed':
           updatedHere = true;
-          previouslyBrushedArray.set(data.previouslyBrushedIndices);
           brushedArray.set(data.brushedIndices);
           break;
         case 'setLineShow':
@@ -402,8 +415,6 @@
     unsubscribeCustomRanges();
     unsubscribeHovered();
     unsubscribeBrushed();
-    unsubscribePreviouslyHovered();
-    unsubscribePreviouslyBrushed();
   });
 </script>
 

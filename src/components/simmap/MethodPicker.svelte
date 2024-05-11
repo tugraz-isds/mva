@@ -10,7 +10,7 @@
 
 <div class="flex flex-row w-full justify-center">
   <div class="flex flex-row w-1/2">
-    <span class="mr-1/2" style="font-size: 14px;">Y:</span>
+    <span class="mr-1/2" style="font-size: 14px;">Method:</span>
     <Select
       class="w-full"
       size="sm"

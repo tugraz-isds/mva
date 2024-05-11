@@ -1,5 +1,10 @@
 import * as THREE from 'three';
-import { LINE_MATERIAL_BRUSHED, LINE_MATERIAL_FILTERED, LINE_MATERIAL_HOVERED } from '../../../util/materials';
+import {
+  LINE_MATERIAL_BRUSHED,
+  LINE_MATERIAL_FILTERED,
+  LINE_MATERIAL_HOVERED,
+  LINE_MATERIAL_LASSO
+} from '../../../util/materials';
 import {
   changeLinePosition,
   drawLine,
@@ -9,9 +14,9 @@ import {
   initScene,
   resetLines
 } from './drawingUtil';
-import { DEFAULT_PARTITION, areSetsEqual } from '../../../util/util';
+import { DEFAULT_PARTITION, areSetsEqual, getSetDifference } from '../../../util/util';
 import type { AxesFilterType } from '../types';
-import type { MarginType } from '../../../util/types';
+import type { CoordinateType, MarginType } from '../../../util/types';
 import type { PartitionType } from '../../partitions/types';
 
 let width: number, height: number;
@@ -24,11 +29,13 @@ let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let lines: THREE.Line[] = [];
 
+let lassoLineStart: CoordinateType | null = null;
+let lassoLine: THREE.Line;
+let isDragging = false;
+
 let interactable = true;
 let hoveredLinesIndices = new Set<number>(),
-  previouslyHoveredLinesIndices = new Set<number>(),
-  brushedLinesIndices = new Set<number>(),
-  previouslyBrushedLinesIndices = new Set<number>();
+  brushedLinesIndices = new Set<number>();
 let lineShow: boolean[] = [];
 let partitionsData: string[] = [];
 let partitions: Map<string, PartitionType> = new Map();
@@ -48,9 +55,9 @@ self.onmessage = function (message) {
       break;
     case 'mouseMove':
       ({ mouse, interactable } = data);
-      if (interactable) handleMouseMove();
+      if (interactable) handleMouseMove(data.event);
       else if (!interactable && hoveredLinesIndices.size > 0) {
-        removePreviouslyHoveredLines(hoveredLinesIndices);
+        removeHoveredLines(hoveredLinesIndices);
         drawHoveredLines(new Set());
       }
       break;
@@ -58,20 +65,22 @@ self.onmessage = function (message) {
       mouse = data.mouse;
       handleMouseDown(data.event);
       break;
+    case 'mouseUp':
+      mouse = data.mouse;
+      handleMouseUp();
+      break;
     case 'applyFilters':
       applyFilters(data.axesFilters, data.margin);
       break;
     case 'updateHovered':
-      drawHoveredLines(data.indices);
-      break;
-    case 'updatePreviouslyHovered':
-      removePreviouslyHoveredLines(data.indices);
+      removeHoveredLines(getSetDifference(data.previouslyHoveredIndices, data.hoveredIndices));
+      hoveredLinesIndices = data.hoveredIndices;
+      drawHoveredLines(hoveredLinesIndices);
       break;
     case 'updateBrushed':
-      drawBrushedLines(data.indices);
-      break;
-    case 'updatePreviouslyBrushed':
-      removePreviouslyBrushedLines(data.indices);
+      removeBrushedLines(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
+      brushedLinesIndices = data.brushedIndices;
+      drawBrushedLines(brushedLinesIndices);
       break;
     case 'resizeCanvas':
       ({ width, height } = data);
@@ -107,7 +116,14 @@ function drawLines(inputLines: number[][][]) {
   animate();
 }
 
-function handleMouseMove() {
+function handleMouseMove(event: { offsetX: number; offsetY: number }) {
+  if (isDragging) {
+    lassoLine.geometry.setFromPoints([
+      new THREE.Vector3(lassoLineStart?.x, lassoLineStart?.y, 2),
+      new THREE.Vector3(event.offsetX, event.offsetY, 2)
+    ]);
+  }
+
   raycaster.setFromCamera(mouse, camera); // Check for intersections
   const hoveredLinesSet: Set<number> = new Set();
   const intersectingLines = raycaster.intersectObjects(lines);
@@ -115,81 +131,118 @@ function handleMouseMove() {
     const line = intersection.object as any;
     if (lineShow[line.index]) hoveredLinesSet.add(line.index);
   });
-  previouslyHoveredLinesIndices = hoveredLinesIndices;
-  if (areSetsEqual(previouslyHoveredLinesIndices, hoveredLinesSet)) return;
 
-  hoveredLinesIndices = hoveredLinesSet;
-  removePreviouslyHoveredLines();
-  drawHoveredLines();
+  if (areSetsEqual(hoveredLinesIndices, hoveredLinesSet)) return;
 
-  postMessage({
-    function: 'setHovered',
-    hoveredIndices: hoveredLinesIndices
-  });
+  if (isDragging) {
+    const previouslyHoveredLinesIndices = hoveredLinesIndices;
+    hoveredLinesIndices = hoveredLinesSet;
+
+    const brushedLinesSet: Set<number> = new Set([...brushedLinesIndices]);
+    hoveredLinesIndices.forEach((i) => {
+      if (previouslyHoveredLinesIndices.has(i)) return;
+
+      if (brushedLinesSet.has(i)) brushedLinesSet.delete(i);
+      else brushedLinesSet.add(i);
+    });
+
+    if (areSetsEqual(brushedLinesIndices, brushedLinesSet)) return;
+
+    removeBrushedLines(getSetDifference(brushedLinesIndices, brushedLinesSet));
+    brushedLinesIndices = brushedLinesSet;
+    drawBrushedLines(brushedLinesIndices);
+    postMessage({
+      function: 'setBrushed',
+      brushedIndices: brushedLinesIndices
+    });
+  } else {
+    removeHoveredLines(getSetDifference(hoveredLinesIndices, hoveredLinesSet));
+    hoveredLinesIndices = hoveredLinesSet;
+    drawHoveredLines(hoveredLinesIndices);
+
+    postMessage({
+      function: 'setHovered',
+      hoveredIndices: hoveredLinesIndices
+    });
+  }
 }
 
-function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
-  previouslyBrushedLinesIndices = brushedLinesIndices;
+function handleMouseDown(event: { offsetX: number; offsetY: number; ctrlKey: boolean; shiftKey: boolean }) {
+  isDragging = true;
+  const lassoGeometry = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(event.offsetX, event.offsetY, 2),
+    new THREE.Vector3(event.offsetX, event.offsetY, 2)
+  ]);
+  lassoLineStart = {
+    x: event.offsetX,
+    y: event.offsetY
+  };
+  lassoLine = new THREE.Line(lassoGeometry, LINE_MATERIAL_LASSO);
+  scene.add(lassoLine);
 
+  let brushedLinesSet: Set<number> = new Set([...brushedLinesIndices]);
   // Add to brushed if Shift key is pressed
   if (event.shiftKey) {
     hoveredLinesIndices.forEach((i) => {
-      brushedLinesIndices.add(i);
+      brushedLinesSet.add(i);
     });
   }
   // Toggle brushed if Ctrl key is pressed
   else if (event.ctrlKey) {
     hoveredLinesIndices.forEach((i) => {
-      if (brushedLinesIndices.has(i)) brushedLinesIndices.delete(i);
-      else brushedLinesIndices.add(i);
+      if (brushedLinesSet.has(i)) brushedLinesSet.delete(i);
+      else brushedLinesSet.add(i);
     });
   }
   // Set brushed to hovered
   else {
-    const newBrushedLinesIndices = new Set<number>();
+    brushedLinesSet = new Set<number>();
     hoveredLinesIndices.forEach((i) => {
-      if (!brushedLinesIndices.has(i) && lineShow[i]) newBrushedLinesIndices.add(i);
+      if (!brushedLinesSet.has(i) && lineShow[i]) brushedLinesSet.add(i);
     });
-    brushedLinesIndices = newBrushedLinesIndices;
   }
 
-  removePreviouslyBrushedLines();
-  drawBrushedLines();
+  if (areSetsEqual(brushedLinesIndices, brushedLinesSet)) return;
+
+  removeBrushedLines(getSetDifference(brushedLinesIndices, brushedLinesSet));
+  brushedLinesIndices = brushedLinesSet;
+  drawBrushedLines(brushedLinesIndices);
   postMessage({
     function: 'setBrushed',
-    brushedIndices: brushedLinesIndices,
-    previouslyBrushedIndices: previouslyBrushedLinesIndices
+    brushedIndices: brushedLinesIndices
   });
 }
 
-function drawHoveredLines(hoveredIndices: Set<number> | null = null) {
-  if (hoveredIndices) hoveredLinesIndices = hoveredIndices;
-  hoveredLinesIndices.forEach((i) => {
+function handleMouseUp() {
+  isDragging = false;
+  lassoLineStart = null;
+  scene.remove(lassoLine);
+}
+
+function drawHoveredLines(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!lineShow[i]) return;
     drawLine(lines[i], LINE_MATERIAL_HOVERED, true, 2);
   });
 }
 
-function removePreviouslyHoveredLines(hoveredIndices: Set<number> | null = null) {
-  if (hoveredIndices) previouslyHoveredLinesIndices = hoveredIndices;
-  previouslyHoveredLinesIndices.forEach((i) => {
-    if (!lineShow[i] || (interactable && hoveredLinesIndices.has(i))) return;
+function removeHoveredLines(indices: Set<number>) {
+  indices.forEach((i) => {
+    if (!lineShow[i]) return;
     if (brushedLinesIndices.has(i)) drawLine(lines[i], LINE_MATERIAL_BRUSHED, false, 1);
     else drawLine(lines[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
 }
 
-function drawBrushedLines(brushedIndices: Set<number> | null = null) {
-  if (brushedIndices) brushedLinesIndices = brushedIndices;
-  brushedLinesIndices.forEach((i) => {
+function drawBrushedLines(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!lineShow[i]) return;
     drawLine(lines[i], LINE_MATERIAL_BRUSHED, true, 1);
   });
 }
 
-function removePreviouslyBrushedLines(brushedIndices: Set<number> | null = null) {
-  if (brushedIndices) previouslyBrushedLinesIndices = brushedIndices;
-  previouslyBrushedLinesIndices.forEach((i) => {
+function removeBrushedLines(indices: Set<number>) {
+  indices.forEach((i) => {
     if (!lineShow[i]) return;
     drawLine(lines[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
   });
