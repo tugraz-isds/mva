@@ -59,10 +59,6 @@ export const arrows_right_left_icon = `<svg xmlns="http://www.w3.org/2000/svg" v
 </svg>
 `;
 
-export const palette_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7h.01m3.486 1.513h.01m-6.978 0h.01M6.99 12H7m9 4h2.706a1.957 1.957 0 0 0 1.883-1.325A9 9 0 1 0 3.043 12.89 9.1 9.1 0 0 0 8.2 20.1a8.62 8.62 0 0 0 3.769.9 2.013 2.013 0 0 0 2.03-2v-.857A2.036 2.036 0 0 1 16 16Z"/>
-</svg>`;
-
 export const shape_circle_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke-width="10">
   <circle cx="50" cy="50" r="40" />
 </svg>`;
@@ -78,9 +74,18 @@ export const shape_cross_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
   </g>
 </svg>`;
 
+export const shape_lasso_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+  <path d="M13,1C6.935,1,2,5.037,2,10a7.544,7.544,0,0,0,.685,3.107,2.939,2.939,0,0,0-.435,3.072A6.976,6.976,0,0,0,0,21a3.888,3.888,0,0,0,4,4,1,1,0,0,0,.008-2A1.885,1.885,0,0,1,2,21a5.04,5.04,0,0,1,1.683-3.426,10.823,10.823,0,0,0,3.43.435c.3,0,.577-.007.843-.016A13.048,13.048,0,0,0,13,19c6.065,0,11-4.037,11-9S19.065,1,13,1ZM4.29,15.688a.986.986,0,0,1,0-1.4h0a.985.985,0,0,1,1.4,0A8.432,8.432,0,0,1,6.737,16,7.448,7.448,0,0,1,4.29,15.688ZM13,17a11.119,11.119,0,0,1-3.907-.712A14.454,14.454,0,0,0,7.1,12.876a3.042,3.042,0,0,0-2.691-.795A5.535,5.535,0,0,1,4,10c0-3.859,4.037-7,9-7s9,3.141,9,7S17.963,17,13,17Z"/>
+</svg>
+`;
+
 export const shape_plus_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect x="0" y="42" width="100" height="16" />
   <rect x="42" y="0" width="16" height="100" />
+</svg>`;
+
+export const shape_rectangle_dashed_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" stroke-width="10">
+  <polygon points="140,90 10,90 10,10 140,10" stroke-dasharray="20,20" />
 </svg>`;
 
 export const shape_square_hollow_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke-width="10">

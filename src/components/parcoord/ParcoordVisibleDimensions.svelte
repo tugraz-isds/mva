@@ -32,7 +32,7 @@
 
 <div
   id="parcoord-dims-dropdown"
-  class="flex flex-row text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+  class="ml-1 flex flex-row text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
 >
   <BarsOutline size="xs" class="rotate-90" />
   <ChevronDownOutline size="xs" />

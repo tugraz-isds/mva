@@ -1,17 +1,20 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
-  import SelectBox from './SelectBox.svelte';
   import { debounce, throttle } from '../../../util/util';
   import { linkingArray } from '../../../stores/linking';
   import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
-  import { POINT_SIZE, saveSVGUtil } from './drawingUtil';
+  import { scatterplotSelectionShapeStore } from '../../../stores/scatterplot';
+  import { simmapSelectionShapeStore } from '../../../stores/simmap';
+  import { POINT_SIZE, rectangleToPolygon, saveSVGUtil } from './drawingUtil';
   import type { CoordinateType, TooltipType } from '../../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { PartitionType } from '../../partitions/types';
+  import type { ScatterplotSelectionShapeType } from '../types';
 
+  export let title: 'scatterplot' | 'simmap';
   export let dataset: DSVParsedArray<any>;
   export let width: number;
   export let height: number;
@@ -39,11 +42,19 @@
     currHeight: number = height;
 
   let isDragging = false;
-  let selectBoxStart: CoordinateType = { x: 0, y: 0 };
-  let selectBoxEnd: CoordinateType = { x: 0, y: 0 };
+  let lassoLine: CoordinateType[] = [];
 
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
+  let throttledAddLasso: (point: CoordinateType) => void;
+  let debouncedAddLasso: (point: CoordinateType) => void;
+
+  let selectionShape: ScatterplotSelectionShapeType;
+  const unsubscribeSelectionShape = (
+    title === 'scatterplot' ? scatterplotSelectionShapeStore : simmapSelectionShapeStore
+  ).subscribe((value) => {
+    selectionShape = value;
+  });
 
   let partitionsData: string[] | null = null;
   const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
@@ -145,7 +156,7 @@
     )
       return;
 
-    selectBoxEnd = { x: event.clientX, y: event.clientY };
+    if (isDragging) debouncedAddLasso({ x: event.offsetX, y: event.offsetY });
 
     worker.postMessage({
       function: 'mouseMove',
@@ -178,7 +189,7 @@
       return;
 
     isDragging = true;
-    selectBoxStart = { x: event.clientX, y: event.clientY };
+    lassoLine = [{ x: event.offsetX, y: event.offsetY }];
 
     setTimeout(() => {
       setTooltipData({
@@ -214,8 +225,17 @@
       )
     )
       return;
-    selectBoxEnd = { x: event.clientX, y: event.clientY };
     isDragging = false;
+    lassoLine = [];
+
+    worker.postMessage({
+      function: 'mouseUp',
+      mouse,
+      event: {
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey
+      }
+    });
   }
 
   function drawPoints() {
@@ -223,6 +243,16 @@
     worker.postMessage({
       function: 'drawPoints',
       points
+    });
+  }
+
+  function addLassoPoint(point: CoordinateType) {
+    if (selectionShape === 'lasso') lassoLine.push(point);
+    else lassoLine = rectangleToPolygon(lassoLine[0], point);
+
+    worker.postMessage({
+      function: 'drawLasso',
+      points: lassoLine
     });
   }
 
@@ -281,6 +311,8 @@
     window.addEventListener('pointerup', handleMouseUp, false);
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
+    throttledAddLasso = throttle(addLassoPoint, 50);
+    debouncedAddLasso = debounce(throttledAddLasso, 10);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
     worker = new OffscreenWorker();
@@ -327,6 +359,7 @@
   });
 
   onDestroy(() => {
+    unsubscribeSelectionShape();
     unsubscribePartitionsData();
     unsubscribePartitions();
     unsubscribeLinking();
@@ -336,5 +369,3 @@
 </script>
 
 <canvas bind:this={canvasEl} />
-
-<SelectBox visible={isDragging} start={selectBoxStart} end={selectBoxEnd} />

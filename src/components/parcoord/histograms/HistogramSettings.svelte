@@ -12,12 +12,12 @@
   }
 </script>
 
-<div class="flex justify-center items-center">
+<div class="flex justify-center items-center w-full">
   <span class="text-xs mr-1">Show histograms: </span>
   <Checkbox bind:checked={$parcoordHistogramData.visible} style="height: 10px; width: 10px;" />
   <Button on:click={toggleModal} class="p-0 m-0 text-black">
     <CogOutline
-      class="w-4 h-4 text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+      class="w-4 h-4 text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
     />
   </Button>
   <Tooltip style="z-index: 1000;" type="light">Histogram Settings</Tooltip>

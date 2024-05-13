@@ -172,6 +172,7 @@
 
     <Points
       bind:this={pointsComponent}
+      title="scatterplot"
       {dataset}
       {width}
       {height}

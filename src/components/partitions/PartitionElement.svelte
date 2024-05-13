@@ -170,12 +170,14 @@
           <DropdownItem
             on:click={() => setShape(name)}
             defaultClass="flex items-center font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-            ><CheckOutline
+          >
+            <CheckOutline
               size="xs"
               class="ms-2 mr-2"
               style="visibility: {partition.shape === name ? 'visible' : 'hidden'}"
-            />{name[0].toUpperCase() + name.slice(1)}</DropdownItem
-          >
+            />
+            {name[0].toUpperCase() + name.slice(1)}
+          </DropdownItem>
         {/each}
       </Dropdown>
     </div>

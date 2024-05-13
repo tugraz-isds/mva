@@ -10,6 +10,7 @@
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import type { View } from './ViewType';
+  import SelectionShape from '../scatterplot/SelectionShape.svelte';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -67,13 +68,15 @@
         <ParcoordVisibleDimensions height={parentHeight - 10} />
       {/if}
     </div>
-    <div class="w-1/2">
+    <div class="w-1/2 flex flex-row justify-center items-center">
       {#if currView.id === 'parcoord'}
         <HistogramSettings />
       {:else if currView.id === 'scatterplot'}
         <DimensionPickers />
+        <SelectionShape title={currView.id} />
       {:else if currView.id === 'simmap'}
         <MethodPicker />
+        <SelectionShape title={currView.id} />
       {/if}
     </div>
     <div id="{currView.id}-expand-container">
@@ -81,7 +84,7 @@
         <ArrowUpDownOutline
           id="{currView.id}-swap"
           size="sm"
-          class="rotate-90 text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+          class="rotate-90 text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
         />
         <Tooltip style="z-index: 1000;" type="light">Swap View</Tooltip>
         <Dropdown triggeredBy="#{currView.id}-swap" style="z-index: 1000;">
@@ -99,7 +102,7 @@
           <ExpandOutline
             id="{currView.id}-expand"
             size="sm"
-            class="text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+            class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
           />
         </Button>
         <Tooltip style="z-index: 1000;" type="light">Expand View</Tooltip>
@@ -108,7 +111,7 @@
             <DownloadOutline
               id="{currView.id}-expand"
               size="sm"
-              class="text-grey-900 cursor-pointer rounded bg-sky-100 border-solid border-2 border-sky-200 hover:bg-sky-200"
+              class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
             />
           </Button>
           <Tooltip style="z-index: 1000;" type="light">Save SVG</Tooltip>

@@ -31,11 +31,12 @@ export const LINE_MATERIAL_FILTERED = new THREE.LineBasicMaterial({
   opacity: 0.75
 });
 
-export const LINE_MATERIAL_LASSO = new THREE.LineBasicMaterial({
+export const LINE_MATERIAL_LASSO = new THREE.LineDashedMaterial({
   color: 0x000000,
   linewidth: 1,
-  transparent: true,
-  opacity: 1
+  scale: 1,
+  dashSize: 3,
+  gapSize: 3
 });
 
 export const LINE_MATERIAL_MAP: Map<ColorType, THREE.LineBasicMaterial> = new Map([

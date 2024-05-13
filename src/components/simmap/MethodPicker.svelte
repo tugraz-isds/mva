@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Select } from 'flowbite-svelte';
+  import { Select, Tooltip } from 'flowbite-svelte';
   import { simmapMethodStore } from '../../stores/simmap';
 
   const simmapMethods = [
@@ -8,25 +8,17 @@
   ];
 </script>
 
-<div class="flex flex-row w-full justify-center">
-  <div class="flex flex-row w-1/2">
-    <span class="mr-1/2" style="font-size: 14px;">Method:</span>
+<div class="flex flex-row justify-end w-24">
+  <div class="flex flex-row justify-end w-full">
+    <span class="mr-1 text-[14px]">Method:</span>
     <Select
-      class="w-full"
+      class="w-20 h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+      style="padding-right: 1.5rem !important;"
       size="sm"
       items={simmapMethods}
       bind:value={$simmapMethodStore}
       placeholder=""
-      style="height: 18px;
-            padding: 0 16px 0 4px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;"
     />
+    <Tooltip style="z-index: 1000;" type="light">Similarity Map Method</Tooltip>
   </div>
 </div>

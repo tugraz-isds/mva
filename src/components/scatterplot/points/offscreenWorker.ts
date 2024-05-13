@@ -1,4 +1,9 @@
-import { POINT_MATERIAL_BRUSHED, POINT_MATERIAL_FILTERED, POINT_MATERIAL_HOVERED } from '../../../util/materials';
+import {
+  LINE_MATERIAL_LASSO,
+  POINT_MATERIAL_BRUSHED,
+  POINT_MATERIAL_FILTERED,
+  POINT_MATERIAL_HOVERED
+} from '../../../util/materials';
 import * as THREE from 'three';
 import {
   drawPoint,
@@ -11,12 +16,14 @@ import {
   getStroke,
   getUpdatedPartition,
   initScene,
+  isPointInPolygon,
   resetPoints,
   type PointType,
   type StrokeType
 } from './drawingUtil';
 import { DEFAULT_PARTITION, areSetsEqual, getSetDifference } from '../../../util/util';
 import type { PartitionType } from '../../partitions/types';
+import type { CoordinateType } from '../../../util/types';
 
 let width: number, height: number;
 
@@ -29,6 +36,10 @@ let mouse: THREE.Vector2;
 let points: PointType[] = [];
 let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
+
+let lassoLine: THREE.Line;
+let lassoLinePositions: CoordinateType[] = [];
+let isDragging = false;
 
 let hoveredPointsIndices = new Set<number>(),
   brushedPointsIndices = new Set<number>();
@@ -60,12 +71,21 @@ self.onmessage = function (message) {
       mouse = data.mouse;
       handleMouseDown(data.event);
       break;
+    case 'mouseUp':
+      mouse = data.mouse;
+      handleMouseUp(data.event);
+      break;
+    case 'drawLasso':
+      drawLasso(data.points);
+      break;
     case 'updateHovered':
       removeHoveredPoints(getSetDifference(data.previouslyHoveredIndices, data.hoveredIndices));
       hoveredPointsIndices = data.hoveredIndices;
       drawHoveredPoints(hoveredPointsIndices);
       break;
     case 'updateBrushed':
+      console.log(data.previouslyBrushedIndices, data.brushedIndices);
+      console.log(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
       removeBrushedPoints(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
       brushedPointsIndices = data.brushedIndices;
       drawBrushedPoints(brushedPointsIndices);
@@ -145,6 +165,13 @@ function handleMouseMove() {
 }
 
 function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
+  isDragging = true;
+  const lassoGeometry = new THREE.BufferGeometry().setFromPoints([]);
+  lassoLine = new THREE.Line(lassoGeometry, LINE_MATERIAL_LASSO);
+  lassoLine.computeLineDistances();
+  lassoLinePositions = [];
+  scene.add(lassoLine);
+
   let brushedPointsSet: Set<number> = new Set([...brushedPointsIndices]);
   // Add to brushed if Shift key is pressed
   if (event.shiftKey) {
@@ -176,6 +203,45 @@ function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
     function: 'setBrushed',
     brushedIndices: brushedPointsIndices
   });
+}
+
+function handleMouseUp(event: { ctrlKey: boolean; shiftKey: boolean }) {
+  if (lassoLinePositions.length > 1) {
+    let brushedPointsSet: Set<number> = new Set();
+    if (event.ctrlKey || event.shiftKey) brushedPointsSet = new Set([...brushedPointsIndices]);
+    points.forEach((point) => {
+      const i = point.index as number;
+      if (isPointInPolygon({ x: point.position.x, y: point.position.y }, lassoLinePositions)) {
+        if (event.ctrlKey) {
+          if (brushedPointsSet.has(i)) brushedPointsSet.delete(i);
+          else brushedPointsSet.add(i);
+        } else brushedPointsSet.add(i);
+      }
+    });
+
+    removeBrushedPoints(getSetDifference(brushedPointsIndices, brushedPointsSet));
+    brushedPointsIndices = brushedPointsSet;
+    drawBrushedPoints(brushedPointsIndices);
+    postMessage({
+      function: 'setBrushed',
+      brushedIndices: brushedPointsIndices
+    });
+  }
+
+  isDragging = false;
+  lassoLinePositions = [];
+  scene.remove(lassoLine);
+}
+
+function drawLasso(points: CoordinateType[]) {
+  if (!isDragging) return;
+
+  lassoLinePositions = points;
+  lassoLine.geometry.setFromPoints([
+    ...lassoLinePositions.map((point) => new THREE.Vector3(point.x, point.y, 2)),
+    new THREE.Vector3(lassoLinePositions[0].x, lassoLinePositions[0].y, 2)
+  ]);
+  lassoLine.computeLineDistances();
 }
 
 function drawHoveredPoints(indices: Set<number>) {

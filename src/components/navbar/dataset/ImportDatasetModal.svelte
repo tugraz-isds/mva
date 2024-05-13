@@ -160,6 +160,7 @@
         on:change={() => changeColumnType(selectedColumn)}
         items={COLUMN_TYPE_LIST}
         placeholder=""
+        disabled={selectedColumn === null}
       />
     </div>
     {#if !validUpload}

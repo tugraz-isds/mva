@@ -51,7 +51,7 @@
       svg
         .append('text')
         .attr('class', `${viewTitle}-axis-title`)
-        .attr('transform', `translate(${5}, ${height / 2}) rotate(90)`)
+        .attr('transform', `translate(${10}, ${height / 2}) rotate(270)`)
         .attr('font-size', '12px')
         .style('text-anchor', 'middle')
         .text(yTitle);

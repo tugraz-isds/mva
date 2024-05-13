@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { Select } from 'flowbite-svelte';
+  import { Select, Tooltip } from 'flowbite-svelte';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { dimensionDataStore } from '../../stores/dataset';
 
@@ -22,43 +22,27 @@
 
 <div class="flex flex-row w-full">
   <div class="flex flex-row w-full mr-2">
-    <span class="mr-1/2" style="font-size: 14px;">Y:</span>
+    <span class="mr-1 text-[14px]">Y:</span>
     <Select
-      class="w-1/2"
+      class="w-full h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+      style="padding-right: 1.5rem !important;"
       size="sm"
       items={numericalDimensions}
       bind:value={$yDimStore}
       placeholder=""
-      style="height: 18px;
-            padding: 0 16px 0 4px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;"
     />
+    <Tooltip style="z-index: 1000;" type="light">Y Axis</Tooltip>
   </div>
   <div class="flex flex-row w-full">
-    <span class="mr-1/2" style="font-size: 14px;">X:</span>
+    <span class="mr-1 text-[14px]">X:</span>
     <Select
-      class="w-1/2"
+      class="w-full h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+      style="padding-right: 1.5rem !important;"
       size="sm"
       items={numericalDimensions}
       bind:value={$xDimStore}
       placeholder=""
-      style="height: 18px;
-            padding: 0 16px 0 4px;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;"
     />
+    <Tooltip style="z-index: 1000;" type="light">X Axis</Tooltip>
   </div>
 </div>

@@ -233,6 +233,7 @@
 
     <Points
       bind:this={pointsComponent}
+      title="simmap"
       {dataset}
       {width}
       {height}

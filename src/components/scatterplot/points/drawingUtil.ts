@@ -4,6 +4,7 @@ import { COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString } from 
 import { LINE_MATERIAL_ACTIVE, POINT_MATERIAL_ACTIVE } from '../../../util/materials';
 import type { PartitionType } from '../../partitions/types';
 import { PARTITION_SHAPES } from '../../partitions/util';
+import type { CoordinateType } from '../../../util/types';
 
 export const POINT_SIZE = 3;
 
@@ -223,6 +224,32 @@ export function getPartitionRecordsByName(data: string[], name: string) {
     }
     return acc;
   }, []);
+}
+
+export function isPointInPolygon(point: CoordinateType, polygon: CoordinateType[]) {
+  let inside = false;
+  let n = polygon.length;
+
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    let xi = polygon[i].x,
+      yi = polygon[i].y;
+    let xj = polygon[j].x,
+      yj = polygon[j].y;
+
+    let intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
+export function rectangleToPolygon(start: CoordinateType, end: CoordinateType): CoordinateType[] {
+  const topLeft = start;
+  const topRight: CoordinateType = { x: end.x, y: start.y };
+  const bottomLeft: CoordinateType = { x: start.x, y: end.y };
+  const bottomRight = end;
+
+  return [topLeft, topRight, bottomRight, bottomLeft];
 }
 
 function getPartitionSvgString(partition: PartitionType) {
