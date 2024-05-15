@@ -79,6 +79,10 @@ export const shape_lasso_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox
 </svg>
 `;
 
+export const shape_line_dashed_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" stroke-width="10">
+  <line x1="10" y1="10" x2="140" y2="90" stroke-dasharray="20,20" />
+</svg>`;
+
 export const shape_plus_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect x="0" y="42" width="100" height="16" />
   <rect x="42" y="0" width="16" height="100" />

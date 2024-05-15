@@ -1,4 +1,5 @@
 import { range } from 'd3-array';
+import type { CoordinateType } from './types';
 
 export const DEFAULT_PARTITION = 'Default';
 
@@ -71,4 +72,13 @@ export function generateEvenlySpacedNumbers(min: number, max: number, n: number,
   return isInverted
     ? range(0, n).map((i) => max + (i / n) * (min - max))
     : range(0, n).map((i) => min + (i / n) * (max - min));
+}
+
+export function rectangleToPolygon(start: CoordinateType, end: CoordinateType): CoordinateType[] {
+  const topLeft = start;
+  const topRight: CoordinateType = { x: end.x, y: start.y };
+  const bottomLeft: CoordinateType = { x: start.x, y: end.y };
+  const bottomRight = end;
+
+  return [topLeft, topRight, bottomRight, bottomLeft];
 }

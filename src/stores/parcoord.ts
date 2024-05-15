@@ -4,6 +4,7 @@ import type {
   CustomRangeType,
   DimensionMetadataType,
   HistogramsType,
+  ParcoordSelectionShapeType,
   ParcoordVisibleDimensionsType
 } from '../components/parcoord/types';
 
@@ -21,3 +22,4 @@ export const parcoordHistogramData = writable<HistogramsType>({
     max: 0
   }
 });
+export const parcoordSelectionShapeStore = writable<ParcoordSelectionShapeType>('line');

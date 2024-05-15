@@ -53,3 +53,5 @@ export type HistogramsType = {
     max: number;
   };
 };
+
+export type ParcoordSelectionShapeType = 'line' | 'rectangle';

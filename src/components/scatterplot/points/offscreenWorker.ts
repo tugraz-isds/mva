@@ -84,8 +84,6 @@ self.onmessage = function (message) {
       drawHoveredPoints(hoveredPointsIndices);
       break;
     case 'updateBrushed':
-      console.log(data.previouslyBrushedIndices, data.brushedIndices);
-      console.log(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
       removeBrushedPoints(getSetDifference(data.previouslyBrushedIndices, data.brushedIndices));
       brushedPointsIndices = data.brushedIndices;
       drawBrushedPoints(brushedPointsIndices);
@@ -144,6 +142,8 @@ function drawPoints(inputPoints: number[][]) {
 }
 
 function handleMouseMove() {
+  if (isDragging) return;
+
   raycaster.setFromCamera(mouse, camera); // Check for intersections
   const hoveredPointsSet: Set<number> = new Set();
   const intersectingPoints = raycaster.intersectObjects(points);

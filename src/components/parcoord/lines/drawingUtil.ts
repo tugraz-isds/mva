@@ -5,7 +5,11 @@ import { LINE_MATERIAL_ACTIVE } from '../../../util/materials';
 import { COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString } from '../../../util/colors';
 import type { PartitionType } from '../../partitions/types';
 import type { DSVParsedArray } from 'd3-dsv';
-import type { DimensionDataType, MarginType, RecordDataType } from '../../../util/types';
+import type { CoordinateType, DimensionDataType, MarginType, RecordDataType } from '../../../util/types';
+
+export type LineType = THREE.Line & {
+  index?: number;
+};
 
 export function initScene(canvas: OffscreenCanvas, width: number, height: number) {
   const scene = new THREE.Scene();
@@ -72,6 +76,49 @@ export function getPartitionRecordsByName(data: string[], name: string) {
     }
     return acc;
   }, []);
+}
+
+function doesIntersect(a: number, b: number, c: number, d: number, p: number, q: number, r: number, s: number) {
+  let det, gamma, lambda;
+  det = (c - a) * (s - q) - (r - p) * (d - b);
+  if (det === 0) return false;
+
+  lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+  gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+  return 0 < lambda && lambda < 1 && 0 < gamma && gamma < 1;
+}
+
+function getPointsFromLine(line: THREE.Line) {
+  const vertices = line.geometry.attributes.position.array;
+  const points = [];
+  for (let i = 0; i < vertices.length; i += 3) {
+    points.push({ x: vertices[i], y: vertices[i + 1] });
+  }
+  return points;
+}
+
+export function isLineIntersecting(line: THREE.Line, lassoLine: CoordinateType[]) {
+  const linePoints = getPointsFromLine(line);
+
+  for (let i = 0; i < linePoints.length - 1; i++) {
+    for (let j = 0; j < lassoLine.length - 1; j++) {
+      if (
+        doesIntersect(
+          linePoints[i].x,
+          linePoints[i].y,
+          linePoints[i + 1].x,
+          linePoints[i + 1].y,
+          lassoLine[j].x,
+          lassoLine[j].y,
+          lassoLine[j + 1].x,
+          lassoLine[j + 1].y
+        )
+      )
+        return true;
+    }
+  }
+
+  return false;
 }
 
 export function saveSVGUtil(

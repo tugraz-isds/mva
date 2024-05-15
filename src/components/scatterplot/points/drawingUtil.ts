@@ -243,15 +243,6 @@ export function isPointInPolygon(point: CoordinateType, polygon: CoordinateType[
   return inside;
 }
 
-export function rectangleToPolygon(start: CoordinateType, end: CoordinateType): CoordinateType[] {
-  const topLeft = start;
-  const topRight: CoordinateType = { x: end.x, y: start.y };
-  const bottomLeft: CoordinateType = { x: start.x, y: end.y };
-  const bottomRight = end;
-
-  return [topLeft, topRight, bottomRight, bottomLeft];
-}
-
 function getPartitionSvgString(partition: PartitionType) {
   return (PARTITION_SHAPES.get(partition.shape) ?? '')
     .replace(/^<svg.*>/, '')

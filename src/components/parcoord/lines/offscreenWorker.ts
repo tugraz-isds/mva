@@ -12,7 +12,9 @@ import {
   getPartitionRecordsByName,
   getUpdatedPartition,
   initScene,
-  resetLines
+  isLineIntersecting,
+  resetLines,
+  type LineType
 } from './drawingUtil';
 import { DEFAULT_PARTITION, areSetsEqual, getSetDifference } from '../../../util/util';
 import type { AxesFilterType } from '../types';
@@ -27,10 +29,10 @@ let scene: THREE.Scene;
 let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
-let lines: THREE.Line[] = [];
+let lines: LineType[] = [];
 
-let lassoLineStart: CoordinateType | null = null;
 let lassoLine: THREE.Line;
+let lassoLinePositions: CoordinateType[] = [];
 let isDragging = false;
 
 let interactable = true;
@@ -55,7 +57,7 @@ self.onmessage = function (message) {
       break;
     case 'mouseMove':
       ({ mouse, interactable } = data);
-      if (interactable) handleMouseMove(data.event);
+      if (interactable) handleMouseMove();
       else if (!interactable && hoveredLinesIndices.size > 0) {
         removeHoveredLines(hoveredLinesIndices);
         drawHoveredLines(new Set());
@@ -67,7 +69,10 @@ self.onmessage = function (message) {
       break;
     case 'mouseUp':
       mouse = data.mouse;
-      handleMouseUp();
+      handleMouseUp(data.event);
+      break;
+    case 'drawLasso':
+      drawLasso(data.points);
       break;
     case 'applyFilters':
       applyFilters(data.axesFilters, data.margin);
@@ -116,13 +121,8 @@ function drawLines(inputLines: number[][][]) {
   animate();
 }
 
-function handleMouseMove(event: { offsetX: number; offsetY: number }) {
-  if (isDragging) {
-    lassoLine.geometry.setFromPoints([
-      new THREE.Vector3(lassoLineStart?.x, lassoLineStart?.y, 2),
-      new THREE.Vector3(event.offsetX, event.offsetY, 2)
-    ]);
-  }
+function handleMouseMove() {
+  if (isDragging) return;
 
   raycaster.setFromCamera(mouse, camera); // Check for intersections
   const hoveredLinesSet: Set<number> = new Set();
@@ -134,50 +134,22 @@ function handleMouseMove(event: { offsetX: number; offsetY: number }) {
 
   if (areSetsEqual(hoveredLinesIndices, hoveredLinesSet)) return;
 
-  if (isDragging) {
-    const previouslyHoveredLinesIndices = hoveredLinesIndices;
-    hoveredLinesIndices = hoveredLinesSet;
+  removeHoveredLines(getSetDifference(hoveredLinesIndices, hoveredLinesSet));
+  hoveredLinesIndices = hoveredLinesSet;
+  drawHoveredLines(hoveredLinesIndices);
 
-    const brushedLinesSet: Set<number> = new Set([...brushedLinesIndices]);
-    hoveredLinesIndices.forEach((i) => {
-      if (previouslyHoveredLinesIndices.has(i)) return;
-
-      if (brushedLinesSet.has(i)) brushedLinesSet.delete(i);
-      else brushedLinesSet.add(i);
-    });
-
-    if (areSetsEqual(brushedLinesIndices, brushedLinesSet)) return;
-
-    removeBrushedLines(getSetDifference(brushedLinesIndices, brushedLinesSet));
-    brushedLinesIndices = brushedLinesSet;
-    drawBrushedLines(brushedLinesIndices);
-    postMessage({
-      function: 'setBrushed',
-      brushedIndices: brushedLinesIndices
-    });
-  } else {
-    removeHoveredLines(getSetDifference(hoveredLinesIndices, hoveredLinesSet));
-    hoveredLinesIndices = hoveredLinesSet;
-    drawHoveredLines(hoveredLinesIndices);
-
-    postMessage({
-      function: 'setHovered',
-      hoveredIndices: hoveredLinesIndices
-    });
-  }
+  postMessage({
+    function: 'setHovered',
+    hoveredIndices: hoveredLinesIndices
+  });
 }
 
 function handleMouseDown(event: { offsetX: number; offsetY: number; ctrlKey: boolean; shiftKey: boolean }) {
   isDragging = true;
-  const lassoGeometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(event.offsetX, event.offsetY, 2),
-    new THREE.Vector3(event.offsetX, event.offsetY, 2)
-  ]);
-  lassoLineStart = {
-    x: event.offsetX,
-    y: event.offsetY
-  };
+  const lassoGeometry = new THREE.BufferGeometry().setFromPoints([]);
   lassoLine = new THREE.Line(lassoGeometry, LINE_MATERIAL_LASSO);
+  lassoLine.computeLineDistances();
+  lassoLinePositions = [];
   scene.add(lassoLine);
 
   let brushedLinesSet: Set<number> = new Set([...brushedLinesIndices]);
@@ -213,10 +185,40 @@ function handleMouseDown(event: { offsetX: number; offsetY: number; ctrlKey: boo
   });
 }
 
-function handleMouseUp() {
+function handleMouseUp(event: { ctrlKey: boolean; shiftKey: boolean }) {
+  if (lassoLinePositions.length > 1) {
+    let brushedLinesSet: Set<number> = new Set();
+    if (event.ctrlKey || event.shiftKey) brushedLinesSet = new Set([...brushedLinesIndices]);
+    lines.forEach((line) => {
+      const i = line.index as number;
+      if (isLineIntersecting(line, lassoLinePositions)) {
+        if (event.ctrlKey) {
+          if (brushedLinesSet.has(i)) brushedLinesSet.delete(i);
+          else brushedLinesSet.add(i);
+        } else brushedLinesSet.add(i);
+      }
+    });
+
+    removeBrushedLines(getSetDifference(brushedLinesIndices, brushedLinesSet));
+    brushedLinesIndices = brushedLinesSet;
+    drawBrushedLines(brushedLinesIndices);
+    postMessage({
+      function: 'setBrushed',
+      brushedIndices: brushedLinesIndices
+    });
+  }
+
   isDragging = false;
-  lassoLineStart = null;
+  lassoLinePositions = [];
   scene.remove(lassoLine);
+}
+
+function drawLasso(points: CoordinateType[]) {
+  if (!isDragging) return;
+
+  lassoLinePositions = points;
+  lassoLine.geometry.setFromPoints(lassoLinePositions.map((point) => new THREE.Vector3(point.x, point.y, 2)));
+  lassoLine.computeLineDistances();
 }
 
 function drawHoveredLines(indices: Set<number>) {

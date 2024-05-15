@@ -2,18 +2,23 @@
   import { onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
   import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
-  import { filtersArray, parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
+  import {
+    filtersArray,
+    parcoordCustomAxisRanges,
+    parcoordSelectionShapeStore,
+    parcoordVisibleDimensionsStore
+  } from '../../../stores/parcoord';
   import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { linkingArray } from '../../../stores/linking';
   import { isCurrentlyResizing } from '../../../stores/views';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { COLOR_ACTIVE } from '../../../util/colors';
-  import { debounce, throttle } from '../../../util/util';
+  import { debounce, rectangleToPolygon, throttle } from '../../../util/util';
+  import { saveSVGUtil } from './drawingUtil';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { CoordinateType, RecordDataType, TooltipType } from '../../../util/types';
-  import type { AxesFilterType } from '../types';
+  import type { AxesFilterType, ParcoordSelectionShapeType } from '../types';
   import type { PartitionType } from '../../partitions/types';
-  import { saveSVGUtil } from './drawingUtil';
 
   export let dataset: DSVParsedArray<any>;
   export let width: number;
@@ -38,9 +43,12 @@
     clientY: 0
   };
   let updatedHere = false;
-  let isDragging = false;
   let currWidth: number = width,
     currHeight: number = height;
+
+  let isDragging = false;
+  let lassoLine: CoordinateType[] = [];
+
   let throttledDrawLines: () => void;
   let debouncedDrawLines: () => void;
 
@@ -50,6 +58,11 @@
       debouncedDrawLines();
     }
   }
+
+  let selectionShape: ParcoordSelectionShapeType;
+  const unsubscribeSelectionShape = parcoordSelectionShapeStore.subscribe((value) => {
+    selectionShape = value;
+  });
 
   let partitionsData: string[] | null = null;
   const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
@@ -183,11 +196,12 @@
     )
       return;
 
+    if (isDragging) addLassoPoint({ x: event.offsetX, y: event.offsetY });
+
     worker.postMessage({
       function: 'mouseMove',
       mouse,
-      interactable: $isInteractableStore,
-      event: { offsetX: event.offsetX, offsetY: event.offsetY }
+      interactable: $isInteractableStore
     });
 
     tooltipPos = {
@@ -216,6 +230,7 @@
       return;
 
     isDragging = true;
+    lassoLine = [{ x: event.offsetX, y: event.offsetY }];
 
     setTimeout(() => {
       setTooltipData({
@@ -229,8 +244,6 @@
         function: 'mouseDown',
         mouse,
         event: {
-          offsetX: event.offsetX,
-          offsetY: event.offsetY,
           ctrlKey: event.ctrlKey,
           shiftKey: event.shiftKey
         }
@@ -257,10 +270,15 @@
       return;
 
     isDragging = false;
+    lassoLine = [];
 
     worker.postMessage({
       function: 'mouseUp',
-      mouse
+      mouse,
+      event: {
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey
+      }
     });
   }
 
@@ -269,6 +287,16 @@
     worker.postMessage({
       function: 'drawLines',
       lines
+    });
+  }
+
+  function addLassoPoint(point: CoordinateType) {
+    if (selectionShape === 'line') lassoLine[1] = point;
+    else lassoLine = [...rectangleToPolygon(lassoLine[0], point), lassoLine[0]];
+
+    worker.postMessage({
+      function: 'drawLasso',
+      points: lassoLine
     });
   }
 
@@ -409,6 +437,7 @@
   });
 
   onDestroy(() => {
+    unsubscribeSelectionShape();
     unsubscribePartitions();
     unsubscribePartitionsData();
     unsubscribeFilters();

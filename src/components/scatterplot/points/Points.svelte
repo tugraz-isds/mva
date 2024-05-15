@@ -1,14 +1,14 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from './offscreenWorker?worker';
-  import { debounce, throttle } from '../../../util/util';
+  import { debounce, rectangleToPolygon, throttle } from '../../../util/util';
   import { linkingArray } from '../../../stores/linking';
   import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { scatterplotSelectionShapeStore } from '../../../stores/scatterplot';
   import { simmapSelectionShapeStore } from '../../../stores/simmap';
-  import { POINT_SIZE, rectangleToPolygon, saveSVGUtil } from './drawingUtil';
+  import { POINT_SIZE, saveSVGUtil } from './drawingUtil';
   import type { CoordinateType, TooltipType } from '../../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { PartitionType } from '../../partitions/types';
@@ -156,7 +156,10 @@
     )
       return;
 
-    if (isDragging) debouncedAddLasso({ x: event.offsetX, y: event.offsetY });
+    if (isDragging) {
+      if (selectionShape === 'lasso') debouncedAddLasso({ x: event.offsetX, y: event.offsetY });
+      else addLassoPoint({ x: event.offsetX, y: event.offsetY });
+    }
 
     worker.postMessage({
       function: 'mouseMove',

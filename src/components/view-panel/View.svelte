@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import { openWindow } from 'svelte-window-system';
   import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
-  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, FloppyDiskOutline } from 'flowbite-svelte-icons';
+  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline } from 'flowbite-svelte-icons';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
@@ -10,7 +10,8 @@
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import type { View } from './ViewType';
-  import SelectionShape from '../scatterplot/SelectionShape.svelte';
+  import ScatterplotSelectionShape from '../scatterplot/SelectionShape.svelte';
+  import ParcoordSelectionShape from '../parcoord/SelectionShape.svelte';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -71,12 +72,13 @@
     <div class="w-1/2 flex flex-row justify-center items-center">
       {#if currView.id === 'parcoord'}
         <HistogramSettings />
+        <ParcoordSelectionShape />
       {:else if currView.id === 'scatterplot'}
         <DimensionPickers />
-        <SelectionShape title={currView.id} />
+        <ScatterplotSelectionShape title={currView.id} />
       {:else if currView.id === 'simmap'}
         <MethodPicker />
-        <SelectionShape title={currView.id} />
+        <ScatterplotSelectionShape title={currView.id} />
       {/if}
     </div>
     <div id="{currView.id}-expand-container">
