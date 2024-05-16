@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { select } from 'd3-selection';
 import { COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString } from '../../../util/colors';
-import { LINE_MATERIAL_ACTIVE, POINT_MATERIAL_ACTIVE } from '../../../util/materials';
+import { LINE_MATERIAL_ACTIVE, POINT_MATERIAL_ACTIVE, POINT_MATERIAL_HOVERED } from '../../../util/materials';
 import type { PartitionType } from '../../partitions/types';
 import { PARTITION_SHAPES } from '../../partitions/util';
 import type { CoordinateType } from '../../../util/types';
@@ -161,6 +161,16 @@ export function getPoint(
   material.needsUpdate = false;
   point = new THREE.Mesh(pointGeometry, material);
   point.position.set(currPoint[0], currPoint[1], pointData ? pointData.position.z : currPoint[2]);
+  point.index = index;
+
+  return point;
+}
+
+export function getHoveredPoint(currPoint: number[], index: number, pointSize: number, partition?: PartitionType) {
+  let point: PointType;
+  const pointGeometry = getPartitionGeometry(pointSize, partition);
+  point = new THREE.Mesh(pointGeometry, POINT_MATERIAL_HOVERED);
+  point.position.set(currPoint[0], currPoint[1], 2);
   point.index = index;
 
   return point;

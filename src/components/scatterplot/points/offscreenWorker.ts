@@ -7,6 +7,7 @@ import {
 import * as THREE from 'three';
 import {
   drawPoint,
+  getHoveredPoint,
   getPartitionGeometry,
   getPartitionGeometryStroke,
   getPartitionMaterial,
@@ -34,6 +35,7 @@ let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let points: PointType[] = [];
+let hoveredPoints: PointType[] = [];
 let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
 
@@ -148,8 +150,8 @@ function handleMouseMove() {
   const hoveredPointsSet: Set<number> = new Set();
   const intersectingPoints = raycaster.intersectObjects(points);
   intersectingPoints.forEach((intersection) => {
-    const line = intersection.object as any;
-    if (pointShow[line.index]) hoveredPointsSet.add(line.index);
+    const point = intersection.object as any;
+    if (pointShow[point.index]) hoveredPointsSet.add(point.index);
   });
 
   if (areSetsEqual(hoveredPointsIndices, hoveredPointsSet)) return;
@@ -246,16 +248,16 @@ function drawLasso(points: CoordinateType[]) {
 
 function drawHoveredPoints(indices: Set<number>) {
   indices.forEach((i) => {
-    if (!pointShow[i]) return;
-    drawPoint(points[i], POINT_MATERIAL_HOVERED, true, 2);
+    const partition = partitions.get(partitionsData[i]);
+    const hoveredPoint = getHoveredPoint([points[i].position.x, points[i].position.y], i, 4, partition);
+    hoveredPoints.push(hoveredPoint);
+    scene.add(hoveredPoint);
   });
 }
 
 function removeHoveredPoints(indices: Set<number>) {
-  indices.forEach((i) => {
-    if (!pointShow[i]) return;
-    if (brushedPointsIndices.has(i)) drawPoint(points[i], POINT_MATERIAL_BRUSHED, false, 1);
-    else drawPoint(points[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
+  hoveredPoints.forEach((point) => {
+    if (indices.has(point.index as number)) scene.remove(point);
   });
 }
 

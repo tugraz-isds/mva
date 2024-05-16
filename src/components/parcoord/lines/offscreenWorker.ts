@@ -8,8 +8,11 @@ import {
 import {
   changeLinePosition,
   drawLine,
+  getHoveredLine,
+  getLine,
   getPartitionMaterial,
   getPartitionRecordsByName,
+  getPointsFromLine,
   getUpdatedPartition,
   initScene,
   isLineIntersecting,
@@ -30,6 +33,7 @@ let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let lines: LineType[] = [];
+let hoveredLines: LineType[] = [];
 
 let lassoLine: THREE.Line;
 let lassoLinePositions: CoordinateType[] = [];
@@ -104,16 +108,8 @@ self.onmessage = function (message) {
 function drawLines(inputLines: number[][][]) {
   scene.children = [];
   inputLines.forEach((currLine: number[][], i: number) => {
-    const linePoints: THREE.Vector3[] = [];
-    currLine.forEach((point: number[]) => {
-      linePoints.push(new THREE.Vector3(...point));
-    });
     const partition = partitions.get(partitionsData[i]);
-    const material = lineShow[i] ? getPartitionMaterial(partition) : LINE_MATERIAL_FILTERED;
-    material.needsUpdate = false;
-    const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
-    const line: THREE.Line & { index?: number } = new THREE.Line(geometry, material);
-    line.index = i;
+    const line = getLine(currLine, i, lineShow[i], partition);
     lines[i] = line;
     scene.add(line);
   });
@@ -223,16 +219,18 @@ function drawLasso(points: CoordinateType[]) {
 
 function drawHoveredLines(indices: Set<number>) {
   indices.forEach((i) => {
-    if (!lineShow[i]) return;
-    drawLine(lines[i], LINE_MATERIAL_HOVERED, true, 2);
+    [-1, 0, 1].forEach((offset) => {
+      const linePoints = getPointsFromLine(lines[i]).map((point) => [point.x, point.y + offset, 2]);
+      const hoveredLine = getHoveredLine(linePoints, i);
+      hoveredLines.push(hoveredLine);
+      scene.add(hoveredLine);
+    });
   });
 }
 
 function removeHoveredLines(indices: Set<number>) {
-  indices.forEach((i) => {
-    if (!lineShow[i]) return;
-    if (brushedLinesIndices.has(i)) drawLine(lines[i], LINE_MATERIAL_BRUSHED, false, 1);
-    else drawLine(lines[i], getPartitionMaterial(partitions.get(partitionsData[i])), false, 0);
+  hoveredLines.forEach((line) => {
+    if (indices.has(line.index as number)) scene.remove(line);
   });
 }
 
