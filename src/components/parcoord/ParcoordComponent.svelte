@@ -18,7 +18,7 @@
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { CustomRangeType, ParcoordVisibleDimensionsType } from './types';
-  import type { DimensionDataType, MarginType, TooltipType } from '../../util/types';
+  import type { CoordinateType, DimensionDataType, MarginType, TooltipType } from '../../util/types';
 
   let isBrowser = false;
 
@@ -212,6 +212,10 @@
     tooltipColor = 'bg-gray-100';
   }
 
+  function drawSelectionShape(points?: CoordinateType[]) {
+    axesComponent?.drawSelectionShape(points);
+  }
+
   function setTooltipAxisTitleData(data: TooltipType) {
     tooltip = {
       visible: data.visible,
@@ -381,6 +385,7 @@
       {xScales}
       {yScales}
       {setTooltipData}
+      {drawSelectionShape}
     />
   {/if}
 </div>

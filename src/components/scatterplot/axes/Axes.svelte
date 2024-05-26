@@ -2,7 +2,8 @@
   import { afterUpdate } from 'svelte';
   import { axisBottom, axisLeft } from 'd3-axis';
   import { select } from 'd3-selection';
-  import type { MarginType } from '../../../util/types';
+  import { line } from 'd3-shape';
+  import type { CoordinateType, MarginType } from '../../../util/types';
 
   export let width: number;
   export let height: number;
@@ -56,6 +57,27 @@
         .style('text-anchor', 'middle')
         .text(yTitle);
   }
+
+  export const drawSelectionShape = (points?: CoordinateType[]) => {
+    const svg = select(`#${viewTitle}-canvas-axes`);
+    svg.selectAll(`#${viewTitle}-selection-shape`).remove();
+
+    if (!points) return;
+
+    const lineGenerator = line()
+      .x((d: number[]) => d[0])
+      .y((d: number[]) => d[1]);
+
+    svg
+      .append('path')
+      .datum(points.map((point) => [point.x, point.y]))
+      .attr('id', `${viewTitle}-selection-shape`)
+      .attr('fill', 'none')
+      .attr('stroke', 'black')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-dasharray', '3, 3')
+      .attr('d', lineGenerator as any);
+  };
 
   export const saveSVG = () => {
     const svgElement = document.getElementById(`${viewTitle}-canvas-axes`);

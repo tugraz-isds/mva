@@ -24,6 +24,7 @@
   export let xData: any[];
   export let yData: any[];
   export let setTooltipData: (data: TooltipType) => void;
+  export let drawSelectionShape: (points?: CoordinateType[]) => void;
 
   let canvasEl: HTMLCanvasElement;
   let offscreenCanvasEl: OffscreenCanvas;
@@ -42,12 +43,12 @@
     currHeight: number = height;
 
   let isDragging = false;
-  let lassoLine: CoordinateType[] = [];
+  let selectionShapeLine: CoordinateType[] = [];
 
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
-  let throttledAddLasso: (point: CoordinateType) => void;
-  let debouncedAddLasso: (point: CoordinateType) => void;
+  let throttledAddSelectionShapePoint: (point: CoordinateType) => void;
+  let debouncedAddSelectionShapePoint: (point: CoordinateType) => void;
 
   let selectionShape: ScatterplotSelectionShapeType;
   const unsubscribeSelectionShape = (
@@ -157,8 +158,8 @@
       return;
 
     if (isDragging) {
-      if (selectionShape === 'lasso') debouncedAddLasso({ x: event.offsetX, y: event.offsetY });
-      else addLassoPoint({ x: event.offsetX, y: event.offsetY });
+      if (selectionShape === 'lasso') debouncedAddSelectionShapePoint({ x: event.offsetX, y: event.offsetY });
+      else addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
     }
 
     worker.postMessage({
@@ -192,7 +193,7 @@
       return;
 
     isDragging = true;
-    lassoLine = [{ x: event.offsetX, y: event.offsetY }];
+    selectionShapeLine = [{ x: event.offsetX, y: event.offsetY }];
 
     setTimeout(() => {
       setTooltipData({
@@ -229,7 +230,8 @@
     )
       return;
     isDragging = false;
-    lassoLine = [];
+    selectionShapeLine = [];
+    drawSelectionShape();
 
     worker.postMessage({
       function: 'mouseUp',
@@ -249,13 +251,14 @@
     });
   }
 
-  function addLassoPoint(point: CoordinateType) {
-    if (selectionShape === 'lasso') lassoLine.push(point);
-    else lassoLine = rectangleToPolygon(lassoLine[0], point);
+  function addSelectionShapePointPoint(point: CoordinateType) {
+    if (selectionShape === 'lasso') selectionShapeLine.push(point);
+    else selectionShapeLine = [...rectangleToPolygon(selectionShapeLine[0], point), selectionShapeLine[0]];
 
+    drawSelectionShape(selectionShapeLine);
     worker.postMessage({
-      function: 'drawLasso',
-      points: lassoLine
+      function: 'setSelectionShapeLine',
+      points: selectionShapeLine
     });
   }
 
@@ -314,8 +317,8 @@
     window.addEventListener('pointerup', handleMouseUp, false);
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
-    throttledAddLasso = throttle(addLassoPoint, 50);
-    debouncedAddLasso = debounce(throttledAddLasso, 10);
+    throttledAddSelectionShapePoint = throttle(addSelectionShapePointPoint, 50);
+    debouncedAddSelectionShapePoint = debounce(throttledAddSelectionShapePoint, 10);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
     worker = new OffscreenWorker();

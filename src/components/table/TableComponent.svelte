@@ -187,9 +187,9 @@
     return `text-${dimData === undefined || dimData.active ? 'black' : 'gray-400'}`;
   }
 
-  function getCellClass(dimTitle: string, dimData?: DimensionDataType) {
+  function getCellClass(dimTitle: string, rowShow: boolean, dimData?: DimensionDataType) {
     return `px-1 text-${dimData?.type === 'numerical' || dimTitle === '_i' ? 'right' : 'left'} text-${
-      dimData === undefined || dimData.active ? 'black' : 'gray-400'
+      (dimTitle === '_i' || dimTitle === '_partition' || dimData?.active) && rowShow ? 'black' : 'gray-400'
     }`;
   }
 
@@ -268,7 +268,7 @@
               {#each tableVisibleDimensions as dim, i}
                 {#if dim.visible}
                   <td
-                    class={getCellClass(dim.title, $dimensionDataStore.get(dim.title))}
+                    class={getCellClass(dim.title, rowShow[row._i], $dimensionDataStore.get(dim.title))}
                     style="font-size: 12px; {getPartitionColor(
                       dim.title,
                       partitions.get(partitionsData[row._i])?.color

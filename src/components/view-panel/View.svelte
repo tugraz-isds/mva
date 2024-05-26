@@ -10,8 +10,8 @@
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import type { View } from './ViewType';
-  import ScatterplotSelectionShape from '../scatterplot/SelectionShape.svelte';
-  import ParcoordSelectionShape from '../parcoord/SelectionShape.svelte';
+  import ScatterplotSelectionShape from '../scatterplot/SelectionShapePicker.svelte';
+  import ParcoordSelectionShape from '../parcoord/SelectionShapePicker.svelte';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -69,7 +69,7 @@
         <ParcoordVisibleDimensions height={parentHeight - 10} />
       {/if}
     </div>
-    <div class="w-1/2 flex flex-row justify-center items-center">
+    <div class="w-2/3 flex flex-row justify-center items-center">
       {#if currView.id === 'parcoord'}
         <HistogramSettings />
         <ParcoordSelectionShape />

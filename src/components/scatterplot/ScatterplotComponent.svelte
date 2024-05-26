@@ -9,7 +9,7 @@
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
   import { scaleLinear } from 'd3-scale';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { MarginType, TooltipType } from '../../util/types';
+  import type { CoordinateType, MarginType, TooltipType } from '../../util/types';
 
   let width: number;
   let height: number;
@@ -108,6 +108,10 @@
     tooltip = data;
   }
 
+  function drawSelectionShape(points?: CoordinateType[]) {
+    axesComponent?.drawSelectionShape(points);
+  }
+
   export function saveSVG() {
     let pointsStringSvg = pointsComponent.saveSVG();
     let axesStringSvg = axesComponent.saveSVG();
@@ -182,6 +186,7 @@
       {xData}
       {yData}
       {setTooltipData}
+      {drawSelectionShape}
     />
   {/if}
 

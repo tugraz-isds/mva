@@ -2,7 +2,7 @@
   import { Select, Tooltip } from 'flowbite-svelte';
   import { simmapMethodStore } from '../../stores/simmap';
 
-  const simmapMethods = [
+  const SIMMAP_METHODS = [
     { value: 'PCA', name: 'PCA' },
     { value: 'UMAP', name: 'UMAP' }
   ];
@@ -15,7 +15,7 @@
       class="w-20 h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
       style="padding-right: 1.5rem !important;"
       size="sm"
-      items={simmapMethods}
+      items={SIMMAP_METHODS}
       bind:value={$simmapMethodStore}
       placeholder=""
     />

@@ -82,3 +82,7 @@ export function rectangleToPolygon(start: CoordinateType, end: CoordinateType): 
 
   return [topLeft, topRight, bottomRight, bottomLeft];
 }
+
+export function isInternalDimension(header: string) {
+  return header === '_partition' || header === '_partition_shape' || header === '_partition_color';
+}

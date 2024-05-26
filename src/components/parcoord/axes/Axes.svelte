@@ -1,19 +1,12 @@
 <script lang="ts">
-  import { afterUpdate, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { select } from 'd3-selection';
   import { drag } from 'd3-drag';
+  import { line } from 'd3-shape';
   import { filtersArray, parcoordDimMetadata, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
   import { calculateMaxLength, getTextWidth } from '../../../util/text';
-  import type ContextMenuAxes from '../context-menu/ContextMenuAxes.svelte';
-  import type {
-    AxesFilterType,
-    AxisElementsType,
-    DimensionMetadataType,
-    ParcoordVisibleDimensionsType
-  } from '../types';
-  import type { MarginType, TooltipType } from '../../../util/types';
   import {
     drawAxis,
     drawAxisFilterRectangle,
@@ -34,6 +27,14 @@
     moveDraggedAxis,
     swapAxes
   } from './draggingUtil';
+  import type ContextMenuAxes from '../context-menu/ContextMenuAxes.svelte';
+  import type {
+    AxesFilterType,
+    AxisElementsType,
+    DimensionMetadataType,
+    ParcoordVisibleDimensionsType
+  } from '../types';
+  import type { CoordinateType, MarginType, TooltipType } from '../../../util/types';
 
   export let width: number;
   export let contextMenuAxes: ContextMenuAxes;
@@ -499,6 +500,27 @@
       axisElements.filterRectangles[dimensions.indexOf(dim)]?.call(dragBehavior);
     });
   }
+
+  export const drawSelectionShape = (points?: CoordinateType[]) => {
+    const svg = select('#parcoord-canvas-axes');
+    svg.selectAll('#parcoord-selection-shape').remove();
+
+    if (!points) return;
+
+    const lineGenerator = line()
+      .x((d: number[]) => d[0])
+      .y((d: number[]) => d[1]);
+
+    svg
+      .append('path')
+      .datum(points.map((point) => [point.x, point.y]))
+      .attr('id', `parcoord-selection-shape`)
+      .attr('fill', 'none')
+      .attr('stroke', 'black')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-dasharray', '3, 3')
+      .attr('d', lineGenerator as any);
+  };
 
   export function handleOnInvertAxesClick(i: number) {
     handleInvertAxis(i);

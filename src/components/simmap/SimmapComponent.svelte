@@ -12,7 +12,7 @@
   import { scaleLinear } from 'd3-scale';
   import { isNumber } from '../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { MarginType, TooltipType } from '../../util/types';
+  import type { CoordinateType, MarginType, TooltipType } from '../../util/types';
   import type { SimmapMethodsType, SimmapDataType } from './types';
 
   let width: number;
@@ -171,23 +171,23 @@
     tooltip = data;
   }
 
+  function drawSelectionShape(points?: CoordinateType[]) {
+    axesComponent?.drawSelectionShape(points);
+  }
+
   export function saveSVG() {
     let pointsStringSvg = pointsComponent.saveSVG();
-    let axesStringSvg = axesComponent.saveSVG();
-    if (!axesStringSvg || !pointsStringSvg) return;
+    if (!pointsStringSvg) return;
 
     isSvgExportModalOpen = false;
     isSvgExportModalOpen = true;
 
     pointsStringSvg = pointsStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
-    axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
 
     const svgString =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
       '\n<!-- Points -->\n' +
       pointsStringSvg +
-      '\n<!-- Axes -->\n' +
-      axesStringSvg +
       '\n</svg>';
 
     svgExportModal.setSvgString(svgString, 'simmap');
@@ -226,7 +226,6 @@
       yScale={yScaleAxes}
       viewTitle="simmap"
     />
-
     <Tooltip data={tooltip} maxWidth={120} />
 
     <ContextMenuPartitions bind:this={contextMenuPartitions} />
@@ -243,6 +242,7 @@
       {xData}
       {yData}
       {setTooltipData}
+      {drawSelectionShape}
     />
   {/if}
 

@@ -1,9 +1,4 @@
-import {
-  LINE_MATERIAL_LASSO,
-  POINT_MATERIAL_BRUSHED,
-  POINT_MATERIAL_FILTERED,
-  POINT_MATERIAL_HOVERED
-} from '../../../util/materials';
+import { POINT_MATERIAL_BRUSHED, POINT_MATERIAL_FILTERED } from '../../../util/materials';
 import * as THREE from 'three';
 import {
   drawPoint,
@@ -39,8 +34,7 @@ let hoveredPoints: PointType[] = [];
 let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
 
-let lassoLine: THREE.Line;
-let lassoLinePositions: CoordinateType[] = [];
+let selectionShapeLinePositions: CoordinateType[] = [];
 let isDragging = false;
 
 let hoveredPointsIndices = new Set<number>(),
@@ -77,8 +71,8 @@ self.onmessage = function (message) {
       mouse = data.mouse;
       handleMouseUp(data.event);
       break;
-    case 'drawLasso':
-      drawLasso(data.points);
+    case 'setSelectionShapeLine':
+      selectionShapeLinePositions = data.points;
       break;
     case 'updateHovered':
       removeHoveredPoints(getSetDifference(data.previouslyHoveredIndices, data.hoveredIndices));
@@ -168,11 +162,7 @@ function handleMouseMove() {
 
 function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
   isDragging = true;
-  const lassoGeometry = new THREE.BufferGeometry().setFromPoints([]);
-  lassoLine = new THREE.Line(lassoGeometry, LINE_MATERIAL_LASSO);
-  lassoLine.computeLineDistances();
-  lassoLinePositions = [];
-  scene.add(lassoLine);
+  selectionShapeLinePositions = [];
 
   let brushedPointsSet: Set<number> = new Set([...brushedPointsIndices]);
   // Add to brushed if Shift key is pressed
@@ -208,12 +198,12 @@ function handleMouseDown(event: { ctrlKey: boolean; shiftKey: boolean }) {
 }
 
 function handleMouseUp(event: { ctrlKey: boolean; shiftKey: boolean }) {
-  if (lassoLinePositions.length > 1) {
+  if (selectionShapeLinePositions.length > 1) {
     let brushedPointsSet: Set<number> = new Set();
     if (event.ctrlKey || event.shiftKey) brushedPointsSet = new Set([...brushedPointsIndices]);
     points.forEach((point) => {
       const i = point.index as number;
-      if (isPointInPolygon({ x: point.position.x, y: point.position.y }, lassoLinePositions)) {
+      if (isPointInPolygon({ x: point.position.x, y: point.position.y }, selectionShapeLinePositions)) {
         if (event.ctrlKey) {
           if (brushedPointsSet.has(i)) brushedPointsSet.delete(i);
           else brushedPointsSet.add(i);
@@ -231,19 +221,7 @@ function handleMouseUp(event: { ctrlKey: boolean; shiftKey: boolean }) {
   }
 
   isDragging = false;
-  lassoLinePositions = [];
-  scene.remove(lassoLine);
-}
-
-function drawLasso(points: CoordinateType[]) {
-  if (!isDragging) return;
-
-  lassoLinePositions = points;
-  lassoLine.geometry.setFromPoints([
-    ...lassoLinePositions.map((point) => new THREE.Vector3(point.x, point.y, 2)),
-    new THREE.Vector3(lassoLinePositions[0].x, lassoLinePositions[0].y, 2)
-  ]);
-  lassoLine.computeLineDistances();
+  selectionShapeLinePositions = [];
 }
 
 function drawHoveredPoints(indices: Set<number>) {
