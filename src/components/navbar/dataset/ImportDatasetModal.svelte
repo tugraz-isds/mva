@@ -12,10 +12,10 @@
     parseDataset,
     getCsvFromFile
   } from './datasetUtil';
-  import type { DimensionType } from '../../../util/types';
   import DatasetPreview from './DatasetPreview.svelte';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
+  import type { DimensionType } from '../../../util/types';
 
   export let isOpen: boolean;
 
@@ -35,7 +35,6 @@
   let previewHeader: { title: string; type: DimensionType | null }[] = [];
   let previewRowsString: string[] = [];
   let previewRows: string[][] = [];
-  let selectedColumn: number | null = null;
 
   $: if (!isOpen) $isInteractableStore = true;
 
@@ -51,7 +50,6 @@
   async function handleFileUpload(event: Event) {
     files = (event.target as HTMLInputElement).files as FileList;
     if (files.length > 0) ({ previewHeaderString, previewRowsString } = await parseDatasetPreview(files[0]));
-    selectedColumn = null;
     validUpload = true;
   }
 
@@ -78,11 +76,6 @@
     } finally {
       isLoading = false;
     }
-  }
-
-  function selectColumn(i: number, calledFrom: 'click' | 'contextMenu') {
-    selectedColumn = selectedColumn === i && calledFrom === 'click' ? null : i;
-    columnType = previewHeader[i].type ?? 'numerical';
   }
 
   function changeColumnType(idx: number | null, newColumnType: DimensionType | null = null) {
@@ -150,24 +143,11 @@
       </div>
     </div>
     <div class="border-b-2 border-gray-200" />
-    <div class="mb-6 flex items-center space-x-2 w-1/2">
-      <Label for="cell-type-select" class="w-1/4">Column Type:</Label>
-      <Select
-        id="cell-type-select"
-        size="sm"
-        class="w-1/2"
-        bind:value={columnType}
-        on:change={() => changeColumnType(selectedColumn)}
-        items={COLUMN_TYPE_LIST}
-        placeholder=""
-        disabled={selectedColumn === null}
-      />
-    </div>
     {#if !validUpload}
       <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
     {/if}
     {#if previewHeader.length > 0 && previewRowsString.length > 0}
-      <DatasetPreview {selectedColumn} {previewHeader} {previewRows} {changeColumnType} {selectColumn} />
+      <DatasetPreview {previewHeader} {previewRows} />
     {/if}
     <div class="w-full flex justify-center">
       <Button class="w-1/2" on:click={importDataset}>Import Dataset</Button>

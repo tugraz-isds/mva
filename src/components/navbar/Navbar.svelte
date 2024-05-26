@@ -4,6 +4,8 @@
   import ImportDatasetModal from './dataset/ImportDatasetModal.svelte';
   import ExportDatasetModal from './dataset/ExportDatasetModal.svelte';
   import { isInteractableStore } from '../../stores/brushing';
+  import { datasetStore } from '../../stores/dataset';
+  import { partitionsStore } from '../../stores/partitions';
 
   let isFileDropdownOpen = false;
   let isImportDatasetModalOpen = false;
@@ -24,6 +26,12 @@
   function closeFileDropdown() {
     isFileDropdownOpen = false;
   }
+
+  function clearDataset() {
+    localStorage.clear();
+    datasetStore.set([]);
+    partitionsStore.set(new Map());
+  }
 </script>
 
 <ImportDatasetModal isOpen={isImportDatasetModalOpen} />
@@ -39,22 +47,20 @@
       <NavLi id="nav-file" on:click={() => (isFileDropdownOpen = true)} class="cursor-pointer">
         <span class="text-white hover:text-blue-200"><Chevron aligned>File</Chevron></span>
       </NavLi>
-      <NavLi id="nav-settings" href="#">
-        <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
-      </NavLi>
-      <NavLi href="#">
-        <span class="text-white hover:text-blue-200">Help</span>
-      </NavLi>
       <Dropdown triggeredBy="#nav-file" bind:open={isFileDropdownOpen} class="w-44 z-20">
         <ExampleDatasets {closeFileDropdown} />
         <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
         <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
       </Dropdown>
+      <NavLi id="nav-settings" href="#">
+        <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
+      </NavLi>
       <Dropdown triggeredBy="#nav-settings" class="w-44 z-20">
-        <DropdownItem>Item 1</DropdownItem>
-        <DropdownItem>Item 2</DropdownItem>
-        <DropdownItem>Item 3</DropdownItem>
+        <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
       </Dropdown>
+      <NavLi href="#">
+        <span class="text-white hover:text-blue-200">Help</span>
+      </NavLi>
     </NavUl>
   </Navbar>
 </div>
