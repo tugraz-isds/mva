@@ -27,7 +27,6 @@ export const PARTITION_SHAPES: Map<PartitionShapeType, string> = new Map([
 export const PARTITION_COLORS = [
   '#4146cb',
   '#0fb5ae',
-  '#f78510',
   '#df3d83',
   '#7e84fa',
   '#72e06a',
@@ -35,6 +34,7 @@ export const PARTITION_COLORS = [
   '#e8c701',
   '#bce830',
   '#ca5d01',
+  '#f78510',
   '#147af3',
   '#018f5c'
 ];
@@ -56,7 +56,8 @@ export function getPartitionName(name: string, partitionNames: string[]) {
 export function addPartition(
   name: string,
   partitions: Map<string, PartitionType>,
-  partitionsStore: Writable<Map<string, PartitionType>>
+  partitionsStore: Writable<Map<string, PartitionType>>,
+  selectedPartitionStore: Writable<string | null>
 ) {
   const shape = Array.from(PARTITION_SHAPES.keys())[partitions.size % PARTITION_SHAPES.size];
   const color = PARTITION_COLORS[partitions.size % PARTITION_COLORS.length];
@@ -67,6 +68,7 @@ export function addPartition(
     visible: true
   });
   partitionsStore.set(partitions);
+  selectedPartitionStore.set(name);
 }
 
 export function updatePartition(

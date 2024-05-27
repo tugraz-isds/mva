@@ -7,7 +7,7 @@
   export let isOpen: boolean;
   export let partitionColor: RgbaColor;
   export let position: CoordinateType;
-  export let setColor: (color: RgbaColor) => void;
+  export let addCustomColor: (color: RgbaColor) => void;
 
   let rgb: RgbaColor;
   let width: number, height: number;
@@ -16,8 +16,11 @@
   $: if (!isOpen) rgb = partitionColor;
 
   $: {
-    if (isMounted && position.x + width + 10 > window.innerWidth) position.x = window.innerWidth - width - 10;
-    if (isMounted && position.y + height + 10 > window.innerHeight) position.y = window.innerHeight - height - 10;
+    let x = position.x;
+    let y = position.y;
+    if (isMounted && x + width + 10 > window.innerWidth) x = window.innerWidth - width - 10;
+    if (isMounted && y + height + 10 > window.innerHeight) y = window.innerHeight - height - 10;
+    position = { x, y };
   }
 
   onMount(() => {
@@ -47,9 +50,9 @@
     <Button
       size="sm"
       on:click={() => {
-        setColor(rgb);
+        addCustomColor(rgb);
         isOpen = false;
-      }}>Apply</Button
+      }}>Add</Button
     >
     <Button size="sm" color="red" on:click={() => (isOpen = false)}>Cancel</Button>
   </div>

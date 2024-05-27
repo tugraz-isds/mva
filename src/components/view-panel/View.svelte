@@ -2,7 +2,7 @@
   import { onDestroy } from 'svelte';
   import { openWindow } from 'svelte-window-system';
   import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
-  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline } from 'flowbite-svelte-icons';
+  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, RefreshOutline } from 'flowbite-svelte-icons';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
@@ -19,6 +19,7 @@
   export let parentHeight: number;
 
   let showView = true;
+  let unique = {}; // Needed for refreshing view
 
   // Get active views from store
   let activeViews: View[];
@@ -54,6 +55,10 @@
     window.dispatchEvent(event);
   }
 
+  function refresh() {
+    unique = {};
+  }
+
   onDestroy(() => {
     unsubscribeActive();
   });
@@ -83,6 +88,16 @@
     </div>
     <div id="{currView.id}-expand-container">
       <div class="flex flex-row gap-1">
+        {#if currView.id !== 'table' && currView.id !== 'partitions'}
+          <Button on:click={refresh} class="p-0 m-0 text-black">
+            <RefreshOutline
+              id="{currView.id}-refresh"
+              size="sm"
+              class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
+            />
+          </Button>
+          <Tooltip style="z-index: 1000;" type="light">Refresh View</Tooltip>
+        {/if}
         <ArrowUpDownOutline
           id="{currView.id}-swap"
           size="sm"
@@ -121,7 +136,9 @@
       </div>
     </div>
   </div>
-  <div class="view-content" style="height: 95%;">
-    <svelte:component this={currView.component} />
-  </div>
+  {#key unique}
+    <div class="view-content" style="height: 95%;">
+      <svelte:component this={currView.component} />
+    </div>
+  {/key}
 </div>

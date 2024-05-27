@@ -3,8 +3,6 @@
   import { ButtonGroup, Input, Button } from 'flowbite-svelte';
   import PartitionElement from './PartitionElement.svelte';
   import { partitionsStore, partitionsDataStore, selectedPartitionStore } from '../../stores/partitions';
-  import { brushedArray } from '../../stores/brushing';
-  import { DEFAULT_PARTITION } from '../../util/util';
   import { addPartition, getPartitionName } from './util';
   import type { PartitionType } from './types';
 
@@ -28,7 +26,7 @@
 
   function handleAddPartition() {
     partitionName = getPartitionName(partitionName, Array.from(partitions.keys()));
-    addPartition(partitionName, partitions, partitionsStore);
+    addPartition(partitionName, partitions, partitionsStore, selectedPartitionStore);
     partitionName = '';
   }
 

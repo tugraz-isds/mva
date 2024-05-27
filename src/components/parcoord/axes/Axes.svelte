@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { afterUpdate, onDestroy, onMount } from 'svelte';
   import { select } from 'd3-selection';
   import { drag } from 'd3-drag';
   import { line } from 'd3-shape';
@@ -67,14 +67,9 @@
   let axesFilters: Map<string, AxesFilterType> = new Map();
   let isCurrentlyFiltering = false;
   let autoscrollInterval: number | null = null;
+  let datasetUploaded = false;
 
   $: axisHeight = height - margin.top - margin.bottom;
-
-  $: if (width && height && isMounted) {
-    resizeFilters();
-    clearSVG();
-    renderAxes();
-  }
 
   let visibleDimensions: ParcoordVisibleDimensionsType[] = [];
   const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
@@ -119,11 +114,7 @@
 
   const unsubscribeDataset = datasetStore.subscribe(() => {
     if (!dimensionsMetadata || !isMounted) return;
-    initAxesFilters();
-    calculateMarginLeft();
-    resizeFilters();
-    clearSVG();
-    renderAxes();
+    datasetUploaded = true;
   });
 
   export function clearSVG() {
@@ -628,6 +619,17 @@
     isMounted = true;
     initAxesFilters();
     calculateMarginLeft();
+  });
+
+  afterUpdate(async () => {
+    if (datasetUploaded) {
+      initAxesFilters();
+      calculateMarginLeft();
+      datasetUploaded = false;
+    }
+    resizeFilters();
+    clearSVG();
+    renderAxes();
   });
 
   onDestroy(() => {

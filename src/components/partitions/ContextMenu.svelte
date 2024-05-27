@@ -15,6 +15,8 @@
   let submenuStyle = '';
   let pos: CoordinateType;
 
+  $: isInteractableStore.set(!showMenu);
+
   $: {
     if (contextMenuElement) {
       if (pos.x + contextMenuElement.offsetWidth + 10 > window.innerWidth)
@@ -95,12 +97,11 @@
     {#if $selectedPartitionStore !== null}
       <DropdownItem
         on:click={() => addRecordsToPartition($selectedPartitionStore)}
-        defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-        >Add Selected to Partition '{$selectedPartitionStore}'</DropdownItem
+        defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100">Add to Selected Partition</DropdownItem
       >
     {/if}
     <DropdownItem defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 flex items-center justify-between"
-      >Add Selected to Partition<ChevronRight class="w-3 h-3 ms-2" /></DropdownItem
+      >Add to Partition<ChevronRight class="w-3 h-3 ms-2" /></DropdownItem
     >
     <Dropdown class="p-1 w-40 max-h-36 overflow-y-auto overflow-x-hidden" placement={submenuStyle}>
       {#each [...partitions] as [key, value]}

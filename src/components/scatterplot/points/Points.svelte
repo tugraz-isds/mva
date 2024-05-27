@@ -38,7 +38,6 @@
     clientX: 0,
     clientY: 0
   };
-  let updatedHere = false;
   let currWidth: number = width,
     currHeight: number = height;
 
@@ -93,33 +92,23 @@
   let hoveredLinesIndices: Set<number> = new Set();
   const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
     worker.postMessage({
       function: 'updateHovered',
       previouslyHoveredIndices: hoveredLinesIndices,
       hoveredIndices: value
     });
     hoveredLinesIndices = value;
-    updatedHere = false;
   });
 
-  let brushedLinesIndices: Set<number> = new Set();
+  let brushedPointsIndices: Set<number> = new Set();
   const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
     worker.postMessage({
       function: 'updateBrushed',
-      previouslyBrushedIndices: brushedLinesIndices,
+      previouslyBrushedIndices: brushedPointsIndices,
       brushedIndices: value
     });
-    brushedLinesIndices = value;
-    updatedHere = false;
+    brushedPointsIndices = value;
   });
 
   export function setPointData() {
@@ -338,12 +327,10 @@
       const data = message.data;
       switch (data.function) {
         case 'setHovered':
-          updatedHere = true;
           hoveredArray.set(data.hoveredIndices);
           setTooltip(data.hoveredIndices);
           break;
         case 'setBrushed':
-          updatedHere = true;
           brushedArray.set(data.brushedIndices);
           break;
         case 'canvasResized':

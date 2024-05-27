@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button, Modal, Input } from 'flowbite-svelte';
   import { brushedArray, isInteractableStore } from '../../stores/brushing';
-  import { partitionsDataStore, partitionsStore } from '../../stores/partitions';
+  import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
   import { addPartition, addRecordsToPartition, getPartitionName } from './util';
 
   export let isOpen: boolean;
@@ -12,7 +12,7 @@
 
   function handleAddPartition() {
     partitionName = getPartitionName(partitionName, Array.from($partitionsStore.keys()));
-    addPartition(partitionName, $partitionsStore, partitionsStore);
+    addPartition(partitionName, $partitionsStore, partitionsStore, selectedPartitionStore);
     addRecordsToPartition(
       partitionName,
       $partitionsStore,

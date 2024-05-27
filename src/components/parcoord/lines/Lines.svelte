@@ -43,7 +43,6 @@
     clientX: 0,
     clientY: 0
   };
-  let updatedHere = false;
   let currWidth: number = width,
     currHeight: number = height;
 
@@ -124,33 +123,23 @@
   let hoveredLinesIndices: Set<number> = new Set();
   const unsubscribeHovered = hoveredArray.subscribe((value) => {
     if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
     worker.postMessage({
       function: 'updateHovered',
       previouslyHoveredIndices: hoveredLinesIndices,
       hoveredIndices: value
     });
     hoveredLinesIndices = value;
-    updatedHere = false;
   });
 
   let brushedLinesIndices: Set<number> = new Set();
   const unsubscribeBrushed = brushedArray.subscribe((value) => {
     if (!worker) return;
-    if (updatedHere) {
-      updatedHere = false;
-      return;
-    }
     worker.postMessage({
       function: 'updateBrushed',
       previouslyBrushedIndices: brushedLinesIndices,
       brushedIndices: value
     });
     brushedLinesIndices = value;
-    updatedHere = false;
   });
 
   function setLineData() {
@@ -217,7 +206,6 @@
 
   function handleMouseDown(event: MouseEvent) {
     setTimeout(() => {
-      console.log($isInteractableStore);
       if (!canvasEl || !$isInteractableStore || event.button === 2) return;
       // Calculate normalized mouse coordinates relative to the canvas
       const canvasRect = canvasEl.getBoundingClientRect();
@@ -423,12 +411,10 @@
       switch (data.function) {
         case 'setHovered':
           if (!$isInteractableStore) break;
-          updatedHere = true;
           hoveredArray.set(data.hoveredIndices);
           !isDragging && setTooltip(data.hoveredIndices);
           break;
         case 'setBrushed':
-          updatedHere = true;
           brushedArray.set(data.brushedIndices);
           break;
         case 'setLineShow':
