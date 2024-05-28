@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ChevronRight, DropdownItem, Dropdown, Spinner } from 'flowbite-svelte';
-  import { getCsvFromUrl, parseDataset } from './datasetUtil';
+  import { EXAMPLE_DATASETS, getCsvFromUrl, parseDataset } from './datasetUtil';
   import { tableVisibleDimensionsStore } from '../../../stores/table';
   import { datasetStore, dimensionDataStore, labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
@@ -9,13 +9,13 @@
   export let closeFileDropdown: () => void;
 
   let isLoading = false;
+  let loadingIndex: number | null = null;
 
-  async function importDataset() {
+  async function importDataset(url: string, i: number) {
     try {
       isLoading = true;
-      const datasetText = await getCsvFromUrl(
-        'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
-      );
+      loadingIndex = i;
+      const datasetText = await getCsvFromUrl(url);
       const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
         await parseDataset(datasetText, ',', '.');
 
@@ -30,6 +30,7 @@
       throw new Error('Error fetching example dataset');
     } finally {
       isLoading = false;
+      loadingIndex = null;
       closeFileDropdown();
     }
   }
@@ -38,9 +39,11 @@
 <DropdownItem class="flex items-center justify-between">
   Example Datasets<ChevronRight class="w-3 h-3 ms-2" />
 </DropdownItem>
-<Dropdown placement="right-start" class="w-24">
-  <DropdownItem on:click={importDataset} class="flex justify-between items-center"
-    >Iris
-    {#if isLoading}<Spinner size="4" />{/if}</DropdownItem
-  >
+<Dropdown placement="right-start" class="w-40">
+  {#each EXAMPLE_DATASETS as dataset, i}
+    <DropdownItem on:click={() => importDataset(dataset.url, i)} class="flex justify-between items-center"
+      >{dataset.title}
+      {#if isLoading && loadingIndex === i}<Spinner size="4" />{/if}</DropdownItem
+    >
+  {/each}
 </Dropdown>

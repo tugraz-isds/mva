@@ -5,6 +5,21 @@ import type { DimensionDataType } from '../../../util/types';
 import type { PartitionType } from '../../partitions/types';
 import { hexStringToRgba, rgbaToHexString } from '../../../util/colors';
 
+export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
+  {
+    title: 'Iris',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
+  },
+  {
+    title: 'Student Grades',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/student-grades.csv'
+  },
+  {
+    title: 'Cereals',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cereals.csv'
+  }
+];
+
 export const CELL_SEPARATOR_LIST = [
   { value: ',', name: 'Comma' },
   { value: ';', name: 'Semicolon' },
