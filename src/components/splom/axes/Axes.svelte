@@ -40,6 +40,7 @@
   }
 
   function renderRectangle(x: number, y: number, type: 'active' | 'hovered') {
+    if (x === y) return;
     const svg = select('#splom-canvas-axes');
     const spacing = gridSize / dimensions.length;
 
@@ -92,28 +93,9 @@
       const maxTitleLength = calculateMaxLength(dim, 10, 'sans-serif', spacing);
       svg
         .append('text')
-        .attr('class', 'splom-axis-title-top')
-        .attr('x', margin.left + i * spacing + spacing / 2)
-        .attr('y', margin.top - 5)
-        .attr('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
-
-      svg
-        .append('text')
         .attr('class', 'splom-axis-title-diagonal')
         .attr('x', margin.left + i * spacing + spacing / 2)
         .attr('y', margin.top + i * spacing + spacing / 2 + 5)
-        .attr('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
-
-      svg
-        .append('text')
-        .attr('class', 'splom-axis-title-left')
-        .attr('transform', `rotate(-90, ${margin.left - 5}, ${margin.top + i * spacing + spacing / 2})`)
-        .attr('x', margin.left - 5)
-        .attr('y', margin.top + i * spacing + spacing / 2)
         .attr('font-size', '10px')
         .attr('text-anchor', 'middle')
         .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));

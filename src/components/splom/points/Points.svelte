@@ -13,17 +13,19 @@
   export let margin: MarginType;
 
   let canvasEl: HTMLCanvasElement;
+  let numWorkers: number;
   let offscreenCanvasEl: OffscreenCanvas;
-  let worker: Worker;
+  let workers: Worker[] = [];
   let points: number[][] = [];
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
+  let results: number[][][] = [];
 
   let gridSize = 0;
   $: gridSize = size - margin.left - margin.right;
 
   $: if (size && dimensions && margin && debouncedDrawPoints) {
-    worker.postMessage({ function: 'resizeCanvas', width: size, height: size });
+    // worker.postMessage({ function: 'resizeCanvas', width: size, height: size });
     debouncedDrawPoints();
   }
 
@@ -52,10 +54,28 @@
 
   function drawPoints() {
     setPointData();
-    worker.postMessage({
-      function: 'drawPoints',
-      points
-    });
+
+    const chunkSize = Math.ceil(points.length / numWorkers);
+    results = [];
+
+    for (let i = 0; i < numWorkers; i++) {
+      const chunk = points.slice(i * chunkSize, (i + 1) * chunkSize);
+      workers[i].postMessage({ function: 'drawPoints', points: chunk, id: i });
+    }
+  }
+
+  function handleWorkerMessage(event: MessageEvent) {
+    const { id, processedPoints } = event.data;
+    results[id] = processedPoints;
+
+    if (results.flat().length === points.length) {
+      const allProcessedPoints = results.flat();
+      // Combine results and draw on the canvas
+      workers[0].postMessage({
+        function: 'drawPoints',
+        points: allProcessedPoints
+      });
+    }
   }
 
   function calculateXScale(dim: string, max: number) {
@@ -71,10 +91,17 @@
   }
 
   onMount(() => {
+    numWorkers = navigator.hardwareConcurrency || 4;
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
-    worker = new OffscreenWorker();
 
-    worker.postMessage(
+    for (let i = 0; i < numWorkers; i++) {
+      const worker = new OffscreenWorker();
+      worker.addEventListener('message', handleWorkerMessage);
+      workers.push(worker);
+    }
+
+    // Transfer the OffscreenCanvas to only the first worker
+    workers[0].postMessage(
       {
         function: 'init',
         canvas: offscreenCanvasEl,

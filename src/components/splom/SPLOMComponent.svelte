@@ -109,7 +109,7 @@
   });
 </script>
 
-<!-- <div
+<div
   id="splom-canvas"
   class="w-full h-full overflow-x-auto overflow-y-auto scrollable-div"
   bind:this={splomDiv}
@@ -125,7 +125,7 @@
     <Axes dimensions={numericalDimensions} size={width - 12} {margin} {activeDim} {hoveredDim} />
     <Points {dataset} dimensions={numericalDimensions} size={width - 12} {margin} />
   {/if}
-</div> -->
+</div>
 
 <style>
   .scrollable-div {
