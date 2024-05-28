@@ -142,6 +142,7 @@ export function addRecordsToPartition(
   partitions: Map<string, PartitionType>,
   partitionsData: string[],
   brushedArray: Set<number>,
+  brushedArrayStore: Writable<Set<number>>,
   partitionsStore: Writable<Map<string, PartitionType>>,
   partitionsDataStore: Writable<string[]>
 ) {
@@ -157,4 +158,8 @@ export function addRecordsToPartition(
   });
   partitionsDataStore.set(partitionsData);
   partitionsStore.set(partitions);
+
+  setTimeout(() => {
+    brushedArrayStore.set(new Set());
+  }, 0);
 }

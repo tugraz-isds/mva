@@ -53,6 +53,9 @@
         calculateXScale();
         calculateYScale();
       }, 0);
+
+      pointsComponent?.changeXData();
+      pointsComponent?.changeYData();
     }
   });
 

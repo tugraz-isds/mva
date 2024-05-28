@@ -126,6 +126,7 @@
     <Points {dataset} dimensions={numericalDimensions} size={width - 12} {margin} />
   {/if}
 </div> -->
+<div bind:this={splomDiv} />
 
 <style>
   .scrollable-div {

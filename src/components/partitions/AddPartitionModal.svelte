@@ -8,21 +8,24 @@
 
   let partitionName = '';
 
-  $: if (!isOpen) $isInteractableStore = true;
+  $: $isInteractableStore = !isOpen;
 
   function handleAddPartition() {
     partitionName = getPartitionName(partitionName, Array.from($partitionsStore.keys()));
     addPartition(partitionName, $partitionsStore, partitionsStore, selectedPartitionStore);
-    addRecordsToPartition(
-      partitionName,
-      $partitionsStore,
-      $partitionsDataStore,
-      $brushedArray,
-      partitionsStore,
-      partitionsDataStore
-    );
-    partitionName = '';
-    isOpen = false;
+    setTimeout(() => {
+      addRecordsToPartition(
+        partitionName,
+        $partitionsStore,
+        $partitionsDataStore,
+        $brushedArray,
+        brushedArray,
+        partitionsStore,
+        partitionsDataStore
+      );
+      partitionName = '';
+      isOpen = false;
+    }, 0);
   }
 </script>
 

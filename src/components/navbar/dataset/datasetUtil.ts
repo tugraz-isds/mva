@@ -64,6 +64,18 @@ export async function parseDatasetPreview(file: File) {
   return { previewHeaderString, previewRowsString };
 }
 
+function arrangePartitions(partitions: Map<string, PartitionType>, partitionsOrderMap: Map<string, number>) {
+  let entries = Array.from(partitions.entries());
+
+  entries.sort((a, b) => {
+    let orderA = partitionsOrderMap.get(a[0]) as number;
+    let orderB = partitionsOrderMap.get(b[0]) as number;
+    return orderA - orderB;
+  });
+
+  return new Map(entries);
+}
+
 function parsePartitions(
   dimensions: string[],
   dataset: DSVParsedArray<any>,
@@ -71,8 +83,14 @@ function parsePartitions(
   partitionsData: string[]
 ) {
   if (dimensions.includes('_partition')) {
-    if (!dimensions.includes('_partition_color') || !dimensions.includes('_partition_shape'))
+    if (
+      !dimensions.includes('_partition_color') ||
+      !dimensions.includes('_partition_shape') ||
+      !dimensions.includes('_partition_order')
+    )
       throw new Error('Not all required partition columns are present.');
+
+    const partitionsOrderMap: Map<string, number> = new Map();
 
     dataset.forEach((row) => {
       if (partitionsMap.has(row._partition)) {
@@ -86,6 +104,7 @@ function parsePartitions(
           color: hexStringToRgba(row._partition_color),
           visible: true
         });
+        partitionsOrderMap.set(row._partition, row._partition_order);
       }
       partitionsData.push(row._partition);
     });
@@ -104,7 +123,10 @@ function parsePartitions(
         ...Array.from(partitionsMap.entries())
       ]);
       partitionsMap = partitionsMapNew;
+      partitionsOrderMap.set(DEFAULT_PARTITION, 0);
     }
+
+    partitionsMap = arrangePartitions(partitionsMap, partitionsOrderMap);
   } else {
     partitionsMap.set(DEFAULT_PARTITION, {
       size: dataset.length,
@@ -198,6 +220,14 @@ export async function parseDataset(text: string, cellSeparator: string, decimalS
   return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData };
 }
 
+function getPartitionOrderMap(partitions: Map<string, PartitionType>) {
+  const partitionsOrderMap: Map<string, number> = new Map();
+  Array.from(partitions.keys()).forEach((partition, i) => {
+    partitionsOrderMap.set(partition, i);
+  });
+  return partitionsOrderMap;
+}
+
 export function exportDataset(
   dataset: DSVParsedArray<any>[],
   dimensions: string[],
@@ -208,6 +238,7 @@ export function exportDataset(
   partitionsData: string[],
   partitions: Map<string, PartitionType>
 ) {
+  const partitionsOrderMap = getPartitionOrderMap(partitions);
   const rows = dataset
     .map((row: any, i: number) => {
       const dimensionValues = dimensions
@@ -224,7 +255,7 @@ export function exportDataset(
         const partitionInfo = partitions.get(partitionsData[i]);
         return `${dimensionValues}${cellSeparator}${partitionsData[i]}${cellSeparator}${rgbaToHexString(
           partitionInfo?.color
-        )}${cellSeparator}${partitionInfo?.shape}`;
+        )}${cellSeparator}${partitionInfo?.shape}${cellSeparator}${partitionsOrderMap.get(partitionsData[i])}`;
       } else {
         return dimensionValues;
       }
@@ -232,7 +263,7 @@ export function exportDataset(
     .join('\n');
 
   const headers = exportPartitions
-    ? [...dimensions, '_partition', '_partition_color', '_partition_shape'].join(cellSeparator)
+    ? [...dimensions, '_partition', '_partition_color', '_partition_shape', '_partition_order'].join(cellSeparator)
     : dimensions.join(cellSeparator);
 
   const datasetString = `${headers}\n${rows}`;

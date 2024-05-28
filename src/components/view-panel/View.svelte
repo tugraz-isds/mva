@@ -9,9 +9,9 @@
   import MethodPicker from '../simmap/MethodPicker.svelte';
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
-  import type { View } from './ViewType';
   import ScatterplotSelectionShape from '../scatterplot/SelectionShapePicker.svelte';
   import ParcoordSelectionShape from '../parcoord/SelectionShapePicker.svelte';
+  import type { View } from './ViewType';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -65,16 +65,16 @@
 </script>
 
 <div class="w-full h-full p-1 {showView ? 'block' : 'hidden'}">
-  <div class="flex flex-row justify-between" style="height: 18px; font-size: 14px;">
+  <div class="flex flex-row justify-between items-center" style="height: 18px;">
     <div class="flex flex-row items-center">
-      <span>{currView.title}</span>
+      <span class="text-xs">{currView.title}</span>
       {#if currView.id === 'table'}
         <TableVisibleDimensions height={parentHeight - 10} />
       {:else if currView.id === 'parcoord'}
         <ParcoordVisibleDimensions height={parentHeight - 10} />
       {/if}
     </div>
-    <div class="w-2/3 flex flex-row justify-center items-center">
+    <div class="flex flex-row justify-center items-center">
       {#if currView.id === 'parcoord'}
         <HistogramSettings />
         <ParcoordSelectionShape />

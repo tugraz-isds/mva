@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte';
   import { Tooltip, Dropdown, DropdownItem, Input, Button } from 'flowbite-svelte';
   import {
     CheckOutline,
@@ -31,6 +32,11 @@
   let partitionNameOld: string;
   let shapesDropdownElement: HTMLDivElement;
 
+  let selectedPartition: string | null;
+  const unsubscribeSelectedPartition = selectedPartitionStore.subscribe((value) => {
+    selectedPartition = value;
+  });
+
   function setShape(shape: PartitionShapeType) {
     if (shape === partition.shape) return;
     partition.shape = shape;
@@ -57,7 +63,7 @@
     if (!isNameEditable) (e.target as HTMLElement).blur();
   }
 
-  function handleBlur(e: FocusEvent) {
+  function rename() {
     if (!isNameEditable) return;
     isNameEditable = false;
     renamePartition(
@@ -70,17 +76,28 @@
     );
   }
 
-  function handleRenamePartition(e: MouseEvent) {
+  function handleKeyUp(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      partitionName = partitionNameOld;
+      isNameEditable = false;
+      (e.target as HTMLElement).blur();
+    } else if (e.key === 'Enter') {
+      rename();
+      (e.target as HTMLElement).blur();
+    }
+  }
+
+  function editName(e: MouseEvent) {
     if (partitionName === DEFAULT_PARTITION) return;
     isNameEditable = true;
     (e.target as HTMLElement).focus();
     partitionNameOld = partitionName;
   }
 
-  function handleSelectPartition(e: MouseEvent) {
+  function selectPartition(e: MouseEvent) {
     partitionNameOld = partitionName;
     if (e.target instanceof SVGElement) return;
-    $selectedPartitionStore = partitionName;
+    selectedPartitionStore.set(partitionName);
   }
 
   function getPartitionIcon(partition: PartitionType) {
@@ -98,6 +115,14 @@
 
     return iconString;
   }
+
+  onMount(() => {
+    partitionNameOld = partitionName;
+  });
+
+  onDestroy(() => {
+    unsubscribeSelectedPartition();
+  });
 </script>
 
 <DeletePartitionModal isOpen={isDeleteModalOpen} {partitionName} />
@@ -110,18 +135,19 @@
 />
 
 <div
-  on:click={handleSelectPartition}
+  on:click={selectPartition}
   on:keydown={() => {}}
   class={`flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
-    $selectedPartitionStore === partitionNameOld ? 'border-4' : 'border-b-4'
+    selectedPartition === partitionNameOld ? 'border-4' : 'border-b-4'
   }`}
   style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
 >
-  <div on:click={handleRenamePartition} on:keydown={() => {}} class="w-1/2">
+  <div on:click={editName} on:keydown={() => {}} class="w-1/2">
     <Input
       bind:value={partitionName}
-      on:blur={handleBlur}
+      on:blur={rename}
       on:focus={handleFocus}
+      on:keyup={handleKeyUp}
       defaultClass="block w-full disabled:cursor-pointer rtl:text-right"
       class="rounded-lg p-1 {isNameEditable ? '' : 'opacity-50 select-none'}"
       style="background-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, 0.1)`};"
@@ -146,6 +172,7 @@
           partitions,
           $partitionsDataStore,
           $brushedArray,
+          brushedArray,
           partitionsStore,
           partitionsDataStore
         )}

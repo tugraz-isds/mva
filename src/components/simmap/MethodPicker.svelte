@@ -10,9 +10,9 @@
 
 <div class="flex flex-row justify-end w-24">
   <div class="flex flex-row justify-end w-full">
-    <span class="mr-1 text-[14px]">Method:</span>
+    <span class="mr-1 text-xs">Method:</span>
     <Select
-      class="w-20 h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+      class="w-20 h-full text-xs rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
       style="padding-right: 1.5rem !important;"
       size="sm"
       items={SIMMAP_METHODS}
