@@ -12,6 +12,11 @@
         padding: 0;
         height: 100%;
       }
+
+      /* Hide svelte-window-system default close button */
+      .titlebar-button-default:nth-child(2) {
+        display: none;
+      }
     </style>
     %sveltekit.head%
   </head>

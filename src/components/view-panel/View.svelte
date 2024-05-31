@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { openWindow } from 'svelte-window-system';
+  import { closeWindow, openWindow } from 'svelte-window-system';
   import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, RefreshOutline } from 'flowbite-svelte-icons';
-  import { activeViewsStore } from '../../stores/views';
+  import { activeViewsStore, windowIdStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
   import MethodPicker from '../simmap/MethodPicker.svelte';
@@ -20,8 +20,8 @@
 
   let showView = true;
   let unique = {}; // Needed for refreshing view
+  let currWindowId: number;
 
-  // Get active views from store
   let activeViews: View[];
   const unsubscribeActive = activeViewsStore.subscribe((value) => {
     activeViews = value;
@@ -31,24 +31,29 @@
 
   function openWinbox() {
     showView = false;
+    currWindowId = $windowIdStore;
+    windowIdStore.set(currWindowId + 1);
+    console.log(currWindowId);
     activeViewsStore.set(activeViews.filter((view: View) => view.title !== currView.title));
     openWindow(currView.component, {
       width: window.innerWidth * 0.8,
       height: window.innerHeight * 0.8,
       title: currView.title,
-      customTitlebarClass: 'bg-sky-900 font-sans'
-      //customTitlebarButtons: [{ value: 'X', callback: () => {} }]
+      customTitlebarClass: 'bg-sky-900 font-sans',
+      customTitlebarButtons: [
+        {
+          value: 'X',
+          callback: () => {
+            closeWindow(currWindowId);
+            setTimeout(() => {
+              console.log('Setting views');
+              activeViewsStore.set([...activeViews, currView]);
+            }, 300);
+          }
+        }
+      ]
     });
   }
-
-  // onMount(() => {
-  // 	window.addEventListener('closeWinbox', (event: any) => {
-  // 		if (currView.id === event.detail.id) {
-  // 			showView = true;
-  // 			activeViewsStore.set([...activeViews, currView]);
-  // 		}
-  // 	});
-  // });
 
   function saveSVG() {
     const event = new Event(`call-save-svg-${currView.id}`);
