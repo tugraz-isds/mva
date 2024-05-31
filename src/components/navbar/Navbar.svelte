@@ -8,6 +8,7 @@
   import { partitionsStore } from '../../stores/partitions';
 
   let isFileDropdownOpen = false;
+  let isSettingsDropdownOpen = false;
   let isImportDatasetModalOpen = false;
   let isExportDatasetModalOpen = false;
 
@@ -23,14 +24,27 @@
     $isInteractableStore = false;
   }
 
+  function openFileDropdown() {
+    isFileDropdownOpen = true;
+  }
+
   function closeFileDropdown() {
     isFileDropdownOpen = false;
+  }
+
+  function openSettingsDropdown() {
+    isSettingsDropdownOpen = true;
+  }
+
+  function closeSettingsDropdown() {
+    isSettingsDropdownOpen = false;
   }
 
   function clearDataset() {
     localStorage.clear();
     datasetStore.set([]);
     partitionsStore.set(new Map());
+    closeSettingsDropdown();
   }
 
   function refresh() {
@@ -48,18 +62,18 @@
       ulClass="h-full flex flex-row p-0 m-0 md:space-x-8 md:mt-0 md:text-sm md:font-medium items-center"
       class="h-full"
     >
-      <NavLi id="nav-file" on:click={() => (isFileDropdownOpen = true)} class="cursor-pointer">
+      <NavLi id="nav-file" on:click={openFileDropdown} class="cursor-pointer">
         <span class="text-white hover:text-blue-200"><Chevron aligned>File</Chevron></span>
       </NavLi>
-      <Dropdown triggeredBy="#nav-file" bind:open={isFileDropdownOpen} class="w-44 z-20">
+      <Dropdown bind:open={isFileDropdownOpen} class="w-44 z-20">
         <ExampleDatasets {closeFileDropdown} />
         <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
         <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
       </Dropdown>
-      <NavLi id="nav-settings">
+      <NavLi id="nav-settings" on:click={openSettingsDropdown}>
         <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
       </NavLi>
-      <Dropdown triggeredBy="#nav-settings" class="w-44 z-20">
+      <Dropdown bind:open={isSettingsDropdownOpen} class="w-44 z-20">
         <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
         <DropdownItem on:click={refresh}>Refresh Page</DropdownItem>
       </Dropdown>

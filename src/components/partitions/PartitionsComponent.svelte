@@ -24,7 +24,7 @@
     if (isBrowser) localStorage.setItem('partitionsData', JSON.stringify(partitionsData));
   });
 
-  function handleKeyUp(e: KeyboardEvent) {
+  function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter') handleAddPartition();
   }
 
@@ -62,7 +62,7 @@
       size="sm"
       placeholder="New Partition"
       bind:value={partitionName}
-      on:keyup={handleKeyUp}
+      on:keydown={handleKeyDown}
     />
     <Button color="primary" size="sm" on:click={handleAddPartition}>Add</Button>
   </ButtonGroup>

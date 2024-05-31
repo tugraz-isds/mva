@@ -76,7 +76,7 @@
     );
   }
 
-  function handleKeyUp(e: KeyboardEvent) {
+  function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       partitionName = partitionNameOld;
       isNameEditable = false;
@@ -147,7 +147,7 @@
       bind:value={partitionName}
       on:blur={rename}
       on:focus={handleFocus}
-      on:keyup={handleKeyUp}
+      on:keydown={handleKeyDown}
       defaultClass="block w-full disabled:cursor-pointer rtl:text-right"
       class="rounded-lg p-1 {isNameEditable ? '' : 'opacity-50 select-none'}"
       style="background-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, 0.1)`};"
