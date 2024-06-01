@@ -23,6 +23,7 @@
   export let yScale: any;
   export let xData: any[];
   export let yData: any[];
+  export let isDragging: boolean;
   export let setTooltipData: (data: TooltipType) => void;
   export let drawSelectionShape: (points?: CoordinateType[]) => void;
 
@@ -41,7 +42,7 @@
   let currWidth: number = width,
     currHeight: number = height;
 
-  let isDragging = false;
+  let clicked = false;
   let selectionShapeLine: CoordinateType[] = [];
 
   let throttledDrawPoints: () => void;
@@ -146,7 +147,9 @@
     )
       return;
 
-    if (isDragging) {
+    if (clicked) {
+      if (!isDragging) isDragging = true;
+
       if (selectionShape === 'lasso') debouncedAddSelectionShapePoint({ x: event.offsetX, y: event.offsetY });
       else addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
     }
@@ -181,7 +184,7 @@
     )
       return;
 
-    isDragging = true;
+    clicked = true;
     selectionShapeLine = [{ x: event.offsetX, y: event.offsetY }];
 
     setTimeout(() => {
@@ -218,6 +221,8 @@
       )
     )
       return;
+
+    clicked = false;
     isDragging = false;
     selectionShapeLine = [];
     drawSelectionShape();

@@ -49,6 +49,7 @@
   export let setTooltipData: (data: TooltipType) => void;
   export let xScales: any[];
   export let yScales: any;
+  export let isDragging: boolean;
 
   // SVG elements
   let axisElements: AxisElementsType = {
@@ -644,7 +645,9 @@
   id="parcoord-canvas-axes"
   {width}
   {height}
-  style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; user-select: none;"
+  style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; user-select: none; cursor: {isDragging
+    ? 'crosshair'
+    : 'default'};"
   on:contextmenu={(e) => {
     e.preventDefault();
   }}

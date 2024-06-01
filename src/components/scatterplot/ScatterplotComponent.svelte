@@ -23,6 +23,7 @@
   let svgExportModal: SvgExportModal;
   let isSvgExportModalOpen = false;
 
+  let isDragging = false;
   let margin: MarginType = { top: 20, right: 20, bottom: 40, left: 40 };
   let tooltip: TooltipType = {
     visible: false,
@@ -115,6 +116,16 @@
     axesComponent?.drawSelectionShape(points);
   }
 
+  function handleContextMenu(e: MouseEvent) {
+    contextMenuPartitions.showContextMenu(e);
+    setTooltipData({
+      visible: false,
+      clientX: 0,
+      clientY: 0,
+      text: []
+    });
+  }
+
   export function saveSVG() {
     let pointsStringSvg = pointsComponent.saveSVG();
     let axesStringSvg = axesComponent.saveSVG();
@@ -158,7 +169,7 @@
   class="w-full h-full"
   bind:clientWidth={width}
   bind:clientHeight={height}
-  on:contextmenu={contextMenuPartitions.showContextMenu}
+  on:contextmenu={handleContextMenu}
 >
   {#if dataset?.length > 0 && width}
     <Axes
@@ -170,6 +181,7 @@
       yScale={yScaleAxes}
       xTitle={xDim}
       yTitle={yDim}
+      {isDragging}
       viewTitle="scatterplot"
     />
 
@@ -188,6 +200,7 @@
       yScale={yScalePoints}
       {xData}
       {yData}
+      bind:isDragging
       {setTooltipData}
       {drawSelectionShape}
     />

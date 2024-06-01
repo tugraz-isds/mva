@@ -10,7 +10,6 @@ import {
   getPartitionRecordsByName,
   getPoint,
   getStroke,
-  getUpdatedPartition,
   initScene,
   isPointInPolygon,
   resetPoints,
@@ -20,6 +19,7 @@ import {
 import { DEFAULT_PARTITION, areSetsEqual, getSetDifference } from '../../../util/util';
 import type { PartitionType } from '../../partitions/types';
 import type { CoordinateType } from '../../../util/types';
+import { getUpdatedPartition } from '../../partitions/util';
 
 let width: number, height: number;
 
@@ -296,7 +296,7 @@ function updatePartitionColor(partitionName: string) {
 function updatePartitionShape(partitionName: string, brushed: boolean = false) {
   let partitionRecords: number[];
   if (brushed) {
-    partitionRecords = Array.from(brushedPointsIndices);
+    partitionRecords = Array.from(new Set([...brushedPointsIndices, ...hoveredPointsIndices]));
   } else {
     partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
   }
@@ -318,7 +318,7 @@ function updatePartitionShape(partitionName: string, brushed: boolean = false) {
     const geometry = getPartitionGeometry(pointSize, partition);
     const material = !pointShow[i]
       ? POINT_MATERIAL_FILTERED
-      : brushed
+      : brushed && brushedPointsIndices.has(i)
       ? POINT_MATERIAL_BRUSHED
       : getPartitionMaterial(partition);
     const newPoint = new THREE.Mesh(geometry, material) as PointType;

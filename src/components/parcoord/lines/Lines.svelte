@@ -27,6 +27,7 @@
   export let margin: any;
   export let xScales: any[];
   export let yScales: any;
+  export let isDragging: boolean;
   export let setTooltipData: (data: TooltipType) => void;
   export let drawSelectionShape: (points?: CoordinateType[]) => void;
 
@@ -46,7 +47,7 @@
   let currWidth: number = width,
     currHeight: number = height;
 
-  let isDragging = false;
+  let clicked = false;
   let selectionShapeLine: CoordinateType[] = [];
 
   let throttledDrawLines: () => void;
@@ -187,7 +188,11 @@
       )
         return;
 
-      if (isDragging) addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
+      if (clicked) {
+        if (!isDragging) isDragging = true;
+
+        addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
+      }
 
       worker.postMessage({
         function: 'mouseMove',
@@ -222,7 +227,7 @@
       )
         return;
 
-      isDragging = true;
+      clicked = true;
       selectionShapeLine = [{ x: event.offsetX, y: event.offsetY }];
 
       setTimeout(() => {
@@ -263,6 +268,7 @@
       )
         return;
 
+      clicked = false;
       isDragging = false;
       selectionShapeLine = [];
       drawSelectionShape();

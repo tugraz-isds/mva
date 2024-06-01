@@ -39,6 +39,7 @@
   let contextMenuPartitions: ContextMenuPartitions;
   let svgExportModal: SvgExportModal;
 
+  let isDragging = false;
   let margin: MarginType = { top: 40, right: 40, bottom: 10, left: 50 };
   let tooltip: TooltipType = {
     visible: false,
@@ -354,6 +355,7 @@
       {setTooltipData}
       {xScales}
       bind:yScales
+      {isDragging}
     />
 
     {#if histogramsVisible}
@@ -384,6 +386,7 @@
       bind:margin
       {xScales}
       {yScales}
+      bind:isDragging
       {setTooltipData}
       {drawSelectionShape}
     />

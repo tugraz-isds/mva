@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Modal, Input } from 'flowbite-svelte';
-  import { brushedArray, isInteractableStore } from '../../stores/brushing';
+  import { brushedArray, hoveredArray, isInteractableStore } from '../../stores/brushing';
   import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
   import { addPartition, addRecordsToPartition, getPartitionName } from './util';
 
@@ -24,6 +24,8 @@
         $partitionsDataStore,
         $brushedArray,
         brushedArray,
+        $hoveredArray,
+        hoveredArray,
         partitionsStore,
         partitionsDataStore
       );

@@ -8,10 +8,10 @@ import {
   shape_triangle_hollow_icon,
   shape_triangle_icon
 } from '../../util/icon-definitions';
+import { DEFAULT_PARTITION } from '../../util/util';
+import { hexStringToRgba, rgbaToHexNumber } from '../../util/colors';
 import type { Writable } from 'svelte/store';
 import type { PartitionShapeType, PartitionType } from './types';
-import { DEFAULT_PARTITION } from '../../util/util';
-import { hexStringToRgba } from '../../util/colors';
 
 export const PARTITION_SHAPES: Map<PartitionShapeType, string> = new Map([
   ['circle', shape_circle_icon],
@@ -143,10 +143,12 @@ export function addRecordsToPartition(
   partitionsData: string[],
   brushedArray: Set<number>,
   brushedArrayStore: Writable<Set<number>>,
+  hoveredArray: Set<number>,
+  hoveredArrayStore: Writable<Set<number>>,
   partitionsStore: Writable<Map<string, PartitionType>>,
   partitionsDataStore: Writable<string[]>
 ) {
-  brushedArray.forEach((i) => {
+  [...brushedArray, ...hoveredArray].forEach((i) => {
     const oldPartition = partitions.get(partitionsData[i]);
     const newPartition = partitions.get(name);
     if (!oldPartition || !newPartition || partitionsData[i] === name) return;
@@ -161,5 +163,31 @@ export function addRecordsToPartition(
 
   setTimeout(() => {
     brushedArrayStore.set(new Set());
+    hoveredArrayStore.set(new Set());
   }, 0);
+}
+
+export function getUpdatedPartition(
+  partitionsOld: Map<string, PartitionType>,
+  partitionsNew: Map<string, PartitionType>
+): {
+  updatedPartition: string | null;
+  updatedProperty: 'visible' | 'shape' | 'color' | 'size' | null;
+} {
+  const partitionsNewArray = Array.from(partitionsNew.entries());
+  for (let i = 0; i < partitionsOld.size; i++) {
+    const partitionOld = Array.from(partitionsOld.entries())[i];
+    const partitionNew = partitionsNewArray[i];
+
+    if (partitionOld[1].visible !== partitionNew[1].visible)
+      return { updatedPartition: partitionOld[0], updatedProperty: 'visible' };
+    if (partitionOld[1].shape !== partitionNew[1].shape)
+      return { updatedPartition: partitionOld[0], updatedProperty: 'shape' };
+    if (rgbaToHexNumber(partitionOld[1].color) !== rgbaToHexNumber(partitionNew[1].color))
+      return { updatedPartition: partitionOld[0], updatedProperty: 'color' };
+    if (partitionNew[1].size > partitionOld[1].size)
+      return { updatedPartition: partitionOld[0], updatedProperty: 'size' };
+  }
+
+  return { updatedPartition: null, updatedProperty: null };
 }

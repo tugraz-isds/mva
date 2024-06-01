@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
   import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
-  import { brushedArray, isInteractableStore } from '../../stores/brushing';
-  import type { PartitionType } from './types';
-  import { onDestroy } from 'svelte';
+  import { brushedArray, hoveredArray, isInteractableStore } from '../../stores/brushing';
   import AddPartitionModal from './AddPartitionModal.svelte';
+  import { addRecordsToPartition } from './util';
+  import type { PartitionType } from './types';
   import type { CoordinateType } from '../../util/types';
 
   let contextMenuElement: HTMLElement;
@@ -40,19 +41,18 @@
     partitionsData = value;
   });
 
-  function addRecordsToPartition(newPartitionName: string) {
-    $brushedArray.forEach((i) => {
-      const oldPartition = partitions.get(partitionsData[i]);
-      const newPartition = partitions.get(newPartitionName);
-      if (!oldPartition || !newPartition || partitionsData[i] === newPartitionName) return;
-      oldPartition.size--;
-      partitions.set(partitionsData[i], oldPartition);
-      partitionsData[i] = newPartitionName;
-      newPartition.size++;
-      partitions.set(partitionsData[i], newPartition);
-    });
-    partitionsDataStore.set(partitionsData);
-    partitionsStore.set(partitions);
+  function addRecords(newPartitionName: string) {
+    addRecordsToPartition(
+      newPartitionName,
+      $partitionsStore,
+      $partitionsDataStore,
+      $brushedArray,
+      brushedArray,
+      $hoveredArray,
+      hoveredArray,
+      partitionsStore,
+      partitionsDataStore
+    );
     hideContextMenu();
   }
 
@@ -96,7 +96,7 @@
   >
     {#if $selectedPartitionStore !== null}
       <DropdownItem
-        on:click={() => addRecordsToPartition($selectedPartitionStore)}
+        on:click={() => addRecords($selectedPartitionStore)}
         defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100">Add to Selected Partition</DropdownItem
       >
     {/if}
@@ -107,7 +107,7 @@
       {#each [...partitions] as [key, value]}
         <DropdownItem
           defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-          on:click={() => addRecordsToPartition(key)}>{key}</DropdownItem
+          on:click={() => addRecords(key)}>{key}</DropdownItem
         >
       {/each}
     </Dropdown>

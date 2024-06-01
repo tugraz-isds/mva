@@ -15,7 +15,7 @@
   import { partitionsDataStore, partitionsStore, selectedPartitionStore } from '../../stores/partitions';
   import { PARTITION_SHAPES, addRecordsToPartition, hidePartition, renamePartition, updatePartition } from './util';
   import { rgbaToHexString } from '../../util/colors';
-  import { brushedArray } from '../../stores/brushing';
+  import { brushedArray, hoveredArray } from '../../stores/brushing';
   import type { PartitionShapeType, PartitionType } from './types';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
 
@@ -173,6 +173,8 @@
           $partitionsDataStore,
           $brushedArray,
           brushedArray,
+          $hoveredArray,
+          hoveredArray,
           partitionsStore,
           partitionsDataStore
         )}

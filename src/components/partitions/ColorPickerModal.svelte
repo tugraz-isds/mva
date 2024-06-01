@@ -4,6 +4,7 @@
   import { TrashBinOutline } from 'flowbite-svelte-icons';
   import ColorPickerCustom from './ColorPickerCustom.svelte';
   import { PARTITION_COLORS } from './util';
+  import { partitionsStore } from '../../stores/partitions';
   import { hexStringToRgba, rgbaToHexString } from '../../util/colors';
   import type { RgbaColor } from 'svelte-awesome-color-picker';
   import type { CoordinateType } from '../../util/types';
@@ -32,7 +33,16 @@
     }
   }
 
+  let usedColors: string[];
+  partitionsStore.subscribe((value) => {
+    usedColors = [];
+    value.forEach((data, name) => {
+      usedColors.push(rgbaToHexString(data.color));
+    });
+  });
+
   function addCustomColor(color: RgbaColor) {
+    rgb = color;
     customColors = [...customColors, rgbaToHexString(color)];
     localStorage.setItem('partitionsCustomColors', JSON.stringify(customColors));
   }
@@ -63,9 +73,9 @@
     {#each PARTITION_COLORS as color}
       <div
         style="width: 20px; height: 20px; background-color: {color};"
-        class="rounded-md border-black hover:border-solid hover:cursor-pointer {color === rgbaToHexString(rgb)
-          ? 'border-4 border-solid'
-          : 'border-2 border-none'}"
+        class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
+          ? 'border-4 hover:border-4'
+          : ''}"
         on:click={() => {
           rgb = hexStringToRgba(color);
           selectedCustomIndex = null;
@@ -82,9 +92,9 @@
         {#each customColors as color, i}
           <div
             style="width: 20px; height: 20px; background-color: {color};"
-            class="rounded-md border-black hover:border-solid hover:cursor-pointer {color === rgbaToHexString(rgb)
-              ? 'border-4 border-solid'
-              : 'border-2 border-none'}"
+            class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
+              ? 'border-4 hover:border-4'
+              : ''}"
             on:click={() => {
               rgb = hexStringToRgba(color);
               selectedCustomIndex = i;
@@ -106,7 +116,7 @@
       <Button
         size="xs"
         color="red"
-        disabled={selectedCustomIndex === null}
+        disabled={selectedCustomIndex === null || usedColors.includes(rgbaToHexString(rgb))}
         on:click={() => deleteCustomColor(selectedCustomIndex)}><TrashBinOutline /></Button
       >
     </div>

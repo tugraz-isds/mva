@@ -27,6 +27,7 @@
   let isSvgExportModalOpen = false;
   let yMin: number, yMax: number, xMin: number, xMax: number;
 
+  let isDragging = false;
   let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 30 };
   let tooltip: TooltipType = {
     visible: false,
@@ -175,6 +176,16 @@
     axesComponent?.drawSelectionShape(points);
   }
 
+  function handleContextMenu(e: MouseEvent) {
+    contextMenuPartitions.showContextMenu(e);
+    setTooltipData({
+      visible: false,
+      clientX: 0,
+      clientY: 0,
+      text: []
+    });
+  }
+
   export function saveSVG() {
     let pointsStringSvg = pointsComponent.saveSVG();
     if (!pointsStringSvg) return;
@@ -214,7 +225,7 @@
   class="w-full h-full"
   bind:clientWidth={width}
   bind:clientHeight={height}
-  on:contextmenu={contextMenuPartitions.showContextMenu}
+  on:contextmenu={handleContextMenu}
 >
   {#if dataset?.length > 0 && width}
     <Axes
@@ -224,6 +235,7 @@
       {margin}
       xScale={xScaleAxes}
       yScale={yScaleAxes}
+      {isDragging}
       viewTitle="simmap"
     />
     <Tooltip data={tooltip} maxWidth={120} />
@@ -241,6 +253,7 @@
       yScale={yScalePoints}
       {xData}
       {yData}
+      bind:isDragging
       {setTooltipData}
       {drawSelectionShape}
     />

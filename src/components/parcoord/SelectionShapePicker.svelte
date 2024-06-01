@@ -31,7 +31,7 @@
 
 <div
   id="parcoord-selection-shape"
-  class="h-full flex flex-row items-center px-1 text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300 ml-8"
+  class="h-full flex flex-row items-center px-1 text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
 >
   {@html SELECTION_SHAPES.get(selectionShape)?.replace(
     '<svg',

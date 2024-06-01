@@ -7,7 +7,6 @@ import {
   getPartitionMaterial,
   getPartitionRecordsByName,
   getPointsFromLine,
-  getUpdatedPartition,
   initScene,
   isLineIntersecting,
   resetLines,
@@ -18,6 +17,7 @@ import type * as THREE from 'three';
 import type { AxesFilterType } from '../types';
 import type { CoordinateType, MarginType } from '../../../util/types';
 import type { PartitionType } from '../../partitions/types';
+import { getUpdatedPartition } from '../../partitions/util';
 
 let width: number, height: number;
 
@@ -243,7 +243,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
   if (partitionsDiff.length === 0) {
     const { updatedPartition, updatedProperty } = getUpdatedPartition(partitionsOld, partitions);
     if (updatedPartition !== null && updatedProperty !== null) {
-      if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
+      if (updatedProperty === 'color' || updatedProperty === 'size') updatePartitionColor(updatedPartition);
       else if (updatedProperty === 'visible') updatePartitionVisible(updatedPartition);
     }
   }

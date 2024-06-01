@@ -79,24 +79,6 @@ export function drawLine(line: THREE.Line, material: THREE.Material, needsUpdate
   if (newPosition !== undefined) changeLinePosition(line, newPosition);
 }
 
-export function getUpdatedPartition(
-  partitionsOld: Map<string, PartitionType>,
-  partitionsNew: Map<string, PartitionType>
-) {
-  const partitionsNewArray = Array.from(partitionsNew.entries());
-  for (let i = 0; i < partitionsOld.size; i++) {
-    const partitionOld = Array.from(partitionsOld.entries())[i];
-    const partitionNew = partitionsNewArray[i];
-
-    if (partitionOld[1].visible !== partitionNew[1].visible)
-      return { updatedPartition: partitionOld[0], updatedProperty: 'visible' };
-    if (rgbaToHexNumber(partitionOld[1].color) !== rgbaToHexNumber(partitionNew[1].color))
-      return { updatedPartition: partitionOld[0], updatedProperty: 'color' };
-  }
-
-  return { updatedPartition: null, updatedProperty: null };
-}
-
 export function getPartitionRecordsByName(data: string[], name: string) {
   return data.reduce((acc: number[], current, index) => {
     if (current === name) {
