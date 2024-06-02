@@ -151,7 +151,7 @@
       if (!isDragging) isDragging = true;
 
       if (selectionShape === 'lasso') debouncedAddSelectionShapePoint({ x: event.offsetX, y: event.offsetY });
-      else addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
+      else addSelectionShapePoint({ x: event.offsetX, y: event.offsetY });
     }
 
     worker.postMessage({
@@ -245,7 +245,7 @@
     });
   }
 
-  function addSelectionShapePointPoint(point: CoordinateType) {
+  function addSelectionShapePoint(point: CoordinateType) {
     if (selectionShape === 'lasso') selectionShapeLine.push(point);
     else selectionShapeLine = [...rectangleToPolygon(selectionShapeLine[0], point), selectionShapeLine[0]];
 
@@ -311,7 +311,7 @@
     window.addEventListener('pointerup', handleMouseUp, false);
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
-    throttledAddSelectionShapePoint = throttle(addSelectionShapePointPoint, 50);
+    throttledAddSelectionShapePoint = throttle(addSelectionShapePoint, 50);
     debouncedAddSelectionShapePoint = debounce(throttledAddSelectionShapePoint, 10);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();

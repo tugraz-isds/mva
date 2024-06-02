@@ -171,117 +171,111 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    setTimeout(() => {
-      if (!canvasEl || !$isInteractableStore) return;
-      // Calculate normalized mouse coordinates relative to the canvas
-      const canvasRect = canvasEl.getBoundingClientRect();
-      mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-      mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-      // If mouse is not in canvas, return
-      if (
-        !(
-          event.clientY >= canvasRect.top &&
-          event.clientY <= canvasRect.bottom &&
-          event.clientX >= canvasRect.left &&
-          event.clientX <= canvasRect.right
-        )
+    if (!canvasEl || !$isInteractableStore) return;
+    // Calculate normalized mouse coordinates relative to the canvas
+    const canvasRect = canvasEl.getBoundingClientRect();
+    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    // If mouse is not in canvas, return
+    if (
+      !(
+        event.clientY >= canvasRect.top &&
+        event.clientY <= canvasRect.bottom &&
+        event.clientX >= canvasRect.left &&
+        event.clientX <= canvasRect.right
       )
-        return;
+    )
+      return;
 
-      if (clicked) {
-        if (!isDragging) isDragging = true;
+    if (clicked) {
+      if (!isDragging) isDragging = true;
 
-        addSelectionShapePointPoint({ x: event.offsetX, y: event.offsetY });
-      }
+      addSelectionShapePoint({ x: event.offsetX, y: event.offsetY });
+    }
 
-      worker.postMessage({
-        function: 'mouseMove',
-        mouse,
-        interactable: $isInteractableStore
-      });
+    worker.postMessage({
+      function: 'mouseMove',
+      mouse,
+      interactable: $isInteractableStore
+    });
 
-      tooltipPos = {
-        x: event.clientX - canvasRect.left,
-        y: event.clientY - canvasRect.top,
-        clientX: event.clientX,
-        clientY: event.clientY
-      };
-    }, 0);
+    tooltipPos = {
+      x: event.clientX - canvasRect.left,
+      y: event.clientY - canvasRect.top,
+      clientX: event.clientX,
+      clientY: event.clientY
+    };
   }
 
   function handleMouseDown(event: MouseEvent) {
-    setTimeout(() => {
-      if (!canvasEl || !$isInteractableStore || event.button === 2) return;
-      // Calculate normalized mouse coordinates relative to the canvas
-      const canvasRect = canvasEl.getBoundingClientRect();
-      mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-      mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-      // If mouse is not in canvas, return
-      if (
-        !(
-          event.clientY >= canvasRect.top + margin.top - 10 &&
-          event.clientY <= canvasRect.bottom &&
-          event.clientX >= canvasRect.left &&
-          event.clientX <= canvasRect.right
-        )
+    if (!canvasEl || !$isInteractableStore || event.button === 2) return;
+    // Calculate normalized mouse coordinates relative to the canvas
+    const canvasRect = canvasEl.getBoundingClientRect();
+    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    // If mouse is not in canvas, return
+    if (
+      !(
+        event.clientY >= canvasRect.top + margin.top - 10 &&
+        event.clientY <= canvasRect.bottom &&
+        event.clientX >= canvasRect.left &&
+        event.clientX <= canvasRect.right
       )
-        return;
+    )
+      return;
 
-      clicked = true;
-      selectionShapeLine = [{ x: event.offsetX, y: event.offsetY }];
+    clicked = true;
+    selectionShapeLine = [{ x: event.offsetX, y: event.offsetY }];
 
-      setTimeout(() => {
-        setTooltipData({
-          visible: false,
-          clientX: 0,
-          clientY: 0,
-          text: []
-        });
-
-        worker.postMessage({
-          function: 'mouseDown',
-          mouse,
-          event: {
-            ctrlKey: event.ctrlKey,
-            shiftKey: event.shiftKey
-          }
-        });
-      }, 1);
-    }, 0);
-  }
-
-  function handleMouseUp(event: MouseEvent) {
     setTimeout(() => {
-      if (!canvasEl || !$isInteractableStore) return;
-      // Calculate normalized mouse coordinates relative to the canvas
-      const canvasRect = canvasEl.getBoundingClientRect();
-      mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-      mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-      // If mouse is not in canvas, return
-      if (
-        !(
-          event.clientY >= canvasRect.top + margin.top - 10 &&
-          event.clientY <= canvasRect.bottom &&
-          event.clientX >= canvasRect.left &&
-          event.clientX <= canvasRect.right
-        )
-      )
-        return;
-
-      clicked = false;
-      isDragging = false;
-      selectionShapeLine = [];
-      drawSelectionShape();
+      setTooltipData({
+        visible: false,
+        clientX: 0,
+        clientY: 0,
+        text: []
+      });
 
       worker.postMessage({
-        function: 'mouseUp',
+        function: 'mouseDown',
         mouse,
         event: {
           ctrlKey: event.ctrlKey,
           shiftKey: event.shiftKey
         }
       });
-    }, 0);
+    }, 1);
+  }
+
+  function handleMouseUp(event: MouseEvent) {
+    if (!canvasEl || !$isInteractableStore) return;
+    // Calculate normalized mouse coordinates relative to the canvas
+    const canvasRect = canvasEl.getBoundingClientRect();
+    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+    // If mouse is not in canvas, return
+    if (
+      !(
+        event.clientY >= canvasRect.top + margin.top - 10 &&
+        event.clientY <= canvasRect.bottom &&
+        event.clientX >= canvasRect.left &&
+        event.clientX <= canvasRect.right
+      )
+    )
+      return;
+
+    clicked = false;
+    isDragging = false;
+    selectionShapeLine = [];
+    drawSelectionShape();
+
+    worker.postMessage({
+      function: 'mouseUp',
+      mouse,
+      event: {
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey
+      }
+    });
   }
 
   export function drawLines() {
@@ -292,7 +286,7 @@
     });
   }
 
-  function addSelectionShapePointPoint(point: CoordinateType) {
+  function addSelectionShapePoint(point: CoordinateType) {
     if (selectionShape === 'line') selectionShapeLine[1] = point;
     else selectionShapeLine = [...rectangleToPolygon(selectionShapeLine[0], point), selectionShapeLine[0]];
 
