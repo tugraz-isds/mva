@@ -3,7 +3,13 @@
   import { QuestionCircleOutline } from 'flowbite-svelte-icons';
   import { isInteractableStore } from '../../../stores/brushing';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
-  import { CELL_SEPARATOR_LIST, DECIMAL_SEPARATOR_LIST, exportDataset } from './datasetUtil';
+  import {
+    CELL_SEPARATOR_LIST,
+    DECIMAL_SEPARATOR_LIST,
+    DATASET_FORMAT_LIST,
+    exportDataset,
+    type DatasetFormatType
+  } from './datasetUtil';
   import { datasetStore, dimensionDataStore } from '../../../stores/dataset';
 
   export let isOpen: boolean;
@@ -12,6 +18,7 @@
   let cellSeparator = ',';
   let cellSeparatorOther = ',';
   let decimalSeparator = '.';
+  let datasetFormat: DatasetFormatType = 'csv';
   let validUpload = true;
   let errorMessage = '';
   let isLoading = false;
@@ -34,6 +41,7 @@
     );
 
     exportDataset(
+      datasetFormat,
       $datasetStore,
       dimensions,
       separator,
@@ -91,6 +99,18 @@
           bind:value={decimalSeparator}
           on:change={() => (validUpload = true)}
           items={DECIMAL_SEPARATOR_LIST}
+          placeholder=""
+        />
+      </div>
+      <div class="flex items-center space-x-2 w-full ml-2">
+        <Label for="separator-select" class="w-1/3">Dataset Format:</Label>
+        <Select
+          id="dataset-format-select"
+          size="sm"
+          class="w-2/3"
+          bind:value={datasetFormat}
+          on:change={() => (validUpload = true)}
+          items={DATASET_FORMAT_LIST}
           placeholder=""
         />
       </div>

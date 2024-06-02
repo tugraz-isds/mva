@@ -7,10 +7,10 @@
   import {
     CELL_SEPARATOR_LIST,
     DECIMAL_SEPARATOR_LIST,
-    COLUMN_TYPE_LIST,
     parseDatasetPreview,
     parseDataset,
-    getCsvFromFile
+    getCsvFromFile,
+    getDatasetExtension
   } from './datasetUtil';
   import DatasetPreview from './DatasetPreview.svelte';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
@@ -48,17 +48,23 @@
   }
 
   async function handleFileUpload(event: Event) {
-    files = (event.target as HTMLInputElement).files as FileList;
-    if (files.length > 0) ({ previewHeaderString, previewRowsString } = await parseDatasetPreview(files[0]));
-    validUpload = true;
+    try {
+      files = (event.target as HTMLInputElement).files as FileList;
+      if (files.length > 0) ({ previewHeaderString, previewRowsString } = await parseDatasetPreview(files[0]));
+      validUpload = true;
+    } catch (error: any) {
+      errorMessage = error.message;
+      validUpload = false;
+    }
   }
 
   async function importDataset() {
     isLoading = true;
     try {
       const datasetText = await getCsvFromFile(files);
+      const datasetExtension = getDatasetExtension(files[0].name);
       const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
-        await parseDataset(datasetText, cellSeparator, decimalSeparator);
+        await parseDataset(datasetText, datasetExtension, cellSeparator, decimalSeparator);
 
       tableVisibleDimensionsStore.set(shownDimensions);
       parcoordVisibleDimensionsStore.set(shownDimensions);
@@ -100,7 +106,7 @@
           on:change={handleFileUpload}
           id="upload-input"
           class="block ml-2 w-3/4"
-          accept=".csv"
+          accept=".csv,.mva"
         />
       </div>
       {#if fileName?.length > 0}

@@ -2,8 +2,12 @@ import { autoType, dsvFormat, type DSVParsedArray } from 'd3-dsv';
 import { DEFAULT_PARTITION, isNumber } from '../../../util/util';
 import { extent, max } from 'd3-array';
 import type { DimensionDataType } from '../../../util/types';
-import type { PartitionType } from '../../partitions/types';
+import type { PartitionShapeType, PartitionType } from '../../partitions/types';
 import { hexStringToRgba, rgbaToHexString } from '../../../util/colors';
+
+type DatasetExtensionType = 'csv' | 'mva';
+
+export type DatasetFormatType = 'csv' | 'small-csv' | 'mva';
 
 export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
   {
@@ -27,17 +31,27 @@ export const CELL_SEPARATOR_LIST = [
   { value: ' ', name: 'Space' },
   { value: 'other', name: 'Other' }
 ];
+
 export const DECIMAL_SEPARATOR_LIST = [
   { value: '.', name: 'Dot' },
   { value: ',', name: 'Comma' }
 ];
+
 export const COLUMN_TYPE_LIST = [
   { value: 'numerical', name: 'Numerical' },
   { value: 'categorical', name: 'Categorical' }
 ];
+
+export const DATASET_FORMAT_LIST = [
+  { value: 'csv', name: 'CSV' },
+  { value: 'small-csv', name: 'Small CSV' },
+  { value: 'mva', name: 'MVA' }
+];
+
 const PREVIEW_ROW_NO = 10;
 
 export async function parseDatasetPreview(file: File) {
+  const extension = getDatasetExtension(file.name);
   const reader = file.stream().getReader();
   let previewHeaderString = '';
   const previewRowsString = [];
@@ -45,6 +59,7 @@ export async function parseDatasetPreview(file: File) {
   let { value: chunk, done } = await reader.read();
   let textChunk = decoder.decode(chunk, { stream: true });
   let startIndex = 0;
+  let readContent = false;
 
   while (!done && previewRowsString.length < PREVIEW_ROW_NO) {
     const endIndex = textChunk.indexOf('\n', startIndex);
@@ -54,8 +69,13 @@ export async function parseDatasetPreview(file: File) {
       continue;
     }
 
-    if (startIndex === 0) previewHeaderString = textChunk.substring(startIndex, endIndex);
-    else previewRowsString.push(textChunk.substring(startIndex, endIndex));
+    if (!(extension === 'mva' && textChunk.charAt(startIndex) === '#')) {
+      if (!readContent) {
+        readContent = true;
+        previewHeaderString = textChunk.substring(startIndex, endIndex);
+      } else previewRowsString.push(textChunk.substring(startIndex, endIndex));
+    }
+
     startIndex = endIndex + 1;
 
     if (previewRowsString.length === PREVIEW_ROW_NO) break;
@@ -76,7 +96,7 @@ function arrangePartitions(partitions: Map<string, PartitionType>, partitionsOrd
   return new Map(entries);
 }
 
-function parsePartitions(
+function parsePartitionsCsv(
   dimensions: string[],
   dataset: DSVParsedArray<any>,
   partitionsMap: Map<string, PartitionType>,
@@ -140,6 +160,51 @@ function parsePartitions(
   return { partitionsMap, partitionsData };
 }
 
+function parsePartitionsMva(
+  dimensions: string[],
+  dataset: DSVParsedArray<any>,
+  partitionsString: string,
+  partitionsMap: Map<string, PartitionType>,
+  partitionsData: string[]
+) {
+  if (dimensions.includes('_partition')) {
+    partitionsString.split('\n').forEach((row) => {
+      const partitionData = row.replace('#', '').split(',');
+      if (partitionData.length === 3)
+        partitionsMap.set(partitionData[0], {
+          color: hexStringToRgba(partitionData[1]),
+          shape: partitionData[2] as PartitionShapeType,
+          size: 0,
+          visible: true
+        });
+    });
+
+    dataset.forEach((row) => {
+      const partition = partitionsMap.get(row._partition) as PartitionType;
+      partition.size++;
+      partitionsMap.set(row._partition, partition);
+      partitionsData.push(row._partition);
+    });
+  } else {
+    partitionsMap.set(DEFAULT_PARTITION, {
+      size: dataset.length,
+      shape: 'circle',
+      color: hexStringToRgba('#4146cb'),
+      visible: true
+    });
+    partitionsData = Array(dataset.length).fill(DEFAULT_PARTITION);
+  }
+
+  return { partitionsMap, partitionsData };
+}
+
+export function getDatasetExtension(fileName: string): DatasetExtensionType {
+  let datasetExtension = fileName.match(/\.(\w+)$/);
+  if (!datasetExtension || (datasetExtension[0] !== '.mva' && datasetExtension[0] !== '.csv'))
+    throw new Error('Invalid dataset format.');
+  return datasetExtension[0].replace('.', '') as DatasetExtensionType;
+}
+
 export async function getCsvFromFile(files: FileList) {
   try {
     const file = files[0];
@@ -163,17 +228,44 @@ export async function getCsvFromUrl(url: string) {
   }
 }
 
-export async function parseDataset(text: string, cellSeparator: string, decimalSeparator: string) {
+export async function parseDataset(
+  text: string,
+  extension: 'mva' | 'csv',
+  cellSeparator: string,
+  decimalSeparator: string
+) {
   if (cellSeparator === decimalSeparator) throw new Error('Cell separator cannot be the same as decimal separator.');
 
   const parser = dsvFormat(cellSeparator);
-  const dataset: DSVParsedArray<any> = parser.parse(text, autoType);
+  let dataset: DSVParsedArray<any>;
 
-  let dimensions = Object.keys(dataset[0]);
-
+  let dimensions: string[];
   let partitionsMap: Map<string, PartitionType> = new Map();
   let partitionsData: string[] = [];
-  ({ partitionsMap, partitionsData } = parsePartitions(dimensions, dataset, partitionsMap, partitionsData));
+  if (extension === 'csv') {
+    dataset = parser.parse(text, autoType);
+    dimensions = Object.keys(dataset[0]);
+    ({ partitionsMap, partitionsData } = parsePartitionsCsv(dimensions, dataset, partitionsMap, partitionsData));
+  } else {
+    const match = text.match(/^(#.*\n)+/);
+    let partitionRows = '';
+    let datasetRows = '';
+
+    if (match) {
+      partitionRows = match[0];
+      datasetRows = text.slice(match[0].length);
+    } else datasetRows = text;
+
+    dataset = parser.parse(datasetRows, autoType);
+    dimensions = Object.keys(dataset[0]);
+    ({ partitionsMap, partitionsData } = parsePartitionsMva(
+      dimensions,
+      dataset,
+      partitionRows,
+      partitionsMap,
+      partitionsData
+    ));
+  }
 
   dimensions = dimensions.filter((dim) => !dim.includes('_partition'));
 
@@ -220,15 +312,60 @@ export async function parseDataset(text: string, cellSeparator: string, decimalS
   return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData };
 }
 
-function getPartitionOrderMap(partitions: Map<string, PartitionType>) {
-  const partitionsOrderMap: Map<string, number> = new Map();
+type PartitionHelperType = {
+  order: number;
+  inserted: boolean;
+};
+
+function getPartitionHelperMap(partitions: Map<string, PartitionType>) {
+  const partitionsHelperMap: Map<string, PartitionHelperType> = new Map();
   Array.from(partitions.keys()).forEach((partition, i) => {
-    partitionsOrderMap.set(partition, i);
+    partitionsHelperMap.set(partition, {
+      order: i,
+      inserted: false
+    });
   });
-  return partitionsOrderMap;
+  return partitionsHelperMap;
+}
+
+function addRowPartitionsInfo(
+  i: number,
+  dimensionValues: string,
+  partitionsHelperMap: Map<string, PartitionHelperType>,
+  datasetFormat: DatasetFormatType,
+  cellSeparator: string,
+  partitionsData: string[],
+  partitions: Map<string, PartitionType>
+) {
+  const partitionInfo = partitions.get(partitionsData[i]);
+  const partitionHelper = partitionsHelperMap.get(partitionsData[i]) as PartitionHelperType;
+  if (datasetFormat === 'csv')
+    return `${dimensionValues}${cellSeparator}${partitionsData[i]}${cellSeparator}${rgbaToHexString(
+      partitionInfo?.color
+    )}${cellSeparator}${partitionInfo?.shape}${cellSeparator}${partitionHelper?.order}`;
+  else if (datasetFormat === 'small-csv') {
+    if (partitionHelper?.inserted)
+      return `${dimensionValues}${cellSeparator}${partitionsData[i]}${cellSeparator}${cellSeparator}${cellSeparator}`;
+    else {
+      partitionHelper.inserted = true;
+      partitionsHelperMap.set(partitionsData[i], partitionHelper);
+      return `${dimensionValues}${cellSeparator}${partitionsData[i]}${cellSeparator}${rgbaToHexString(
+        partitionInfo?.color
+      )}${cellSeparator}${partitionInfo?.shape}${cellSeparator}${partitionHelper.order}`;
+    }
+  }
+}
+
+function getMvaPartitionsInfo(partitions: Map<string, PartitionType>) {
+  let partitionsInfo = '';
+  partitions.forEach((data, name) => {
+    partitionsInfo += `#${name},${rgbaToHexString(data.color)},${data.shape}\n`;
+  });
+  return partitionsInfo;
 }
 
 export function exportDataset(
+  datasetFormat: DatasetFormatType,
   dataset: DSVParsedArray<any>[],
   dimensions: string[],
   cellSeparator: string,
@@ -238,7 +375,7 @@ export function exportDataset(
   partitionsData: string[],
   partitions: Map<string, PartitionType>
 ) {
-  const partitionsOrderMap = getPartitionOrderMap(partitions);
+  const partitionsHelperMap = getPartitionHelperMap(partitions);
   const rows = dataset
     .map((row: any, i: number) => {
       const dimensionValues = dimensions
@@ -252,10 +389,17 @@ export function exportDataset(
         .join(cellSeparator);
 
       if (exportPartitions) {
-        const partitionInfo = partitions.get(partitionsData[i]);
-        return `${dimensionValues}${cellSeparator}${partitionsData[i]}${cellSeparator}${rgbaToHexString(
-          partitionInfo?.color
-        )}${cellSeparator}${partitionInfo?.shape}${cellSeparator}${partitionsOrderMap.get(partitionsData[i])}`;
+        if (datasetFormat === 'mva') return `${dimensionValues}${cellSeparator}${partitionsData[i]}`;
+        else
+          return addRowPartitionsInfo(
+            i,
+            dimensionValues,
+            partitionsHelperMap,
+            datasetFormat,
+            cellSeparator,
+            partitionsData,
+            partitions
+          );
       } else {
         return dimensionValues;
       }
@@ -263,10 +407,14 @@ export function exportDataset(
     .join('\n');
 
   const headers = exportPartitions
-    ? [...dimensions, '_partition', '_partition_color', '_partition_shape', '_partition_order'].join(cellSeparator)
+    ? datasetFormat === 'mva'
+      ? [...dimensions, '_partition'].join(cellSeparator)
+      : [...dimensions, '_partition', '_partition_color', '_partition_shape', '_partition_order'].join(cellSeparator)
     : dimensions.join(cellSeparator);
 
-  const datasetString = `${headers}\n${rows}`;
+  const datasetString = `${
+    exportPartitions && datasetFormat === 'mva' ? getMvaPartitionsInfo(partitions) : ''
+  }${headers}\n${rows}`;
 
   const datasetBlob = new Blob([datasetString], {
     type: 'text/csv'
@@ -274,7 +422,7 @@ export function exportDataset(
   const datasetUrl = URL.createObjectURL(datasetBlob);
   const downloadLink = document.createElement('a');
   downloadLink.href = datasetUrl;
-  downloadLink.download = 'dataset.csv';
+  downloadLink.download = `dataset.${datasetFormat === 'mva' ? 'mva' : 'csv'}`;
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);

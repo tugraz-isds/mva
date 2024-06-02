@@ -17,7 +17,7 @@
       loadingIndex = i;
       const datasetText = await getCsvFromUrl(url);
       const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
-        await parseDataset(datasetText, ',', '.');
+        await parseDataset(datasetText, 'csv', ',', '.');
 
       tableVisibleDimensionsStore.set(shownDimensions);
       parcoordVisibleDimensionsStore.set(shownDimensions);
