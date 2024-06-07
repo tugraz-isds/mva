@@ -4,24 +4,21 @@
   import Axes from './axes/Axes.svelte';
   import Points from './points/Points.svelte';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
-  import type { CoordinateType, DimensionDataType, MarginType } from '../../util/types';
+  import { splomXDimensionsStore, splomYDimensionsStore } from '../../stores/splom';
+  import { SPLOM_DIMENSIONS_NUM } from './util';
+  import type { CoordinateType, MarginType } from '../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
-
-  const TILE_SIZE = 60;
 
   let width: number;
   let originalWidth: number;
   let numericalDimensions: string[] = [];
+  let activeDimensionsX: string[] = [];
+  let activeDimensionsY: string[] = [];
   let activeDim: CoordinateType = { x: 0, y: 0 };
   let hoveredDim: CoordinateType;
   let splomDiv: HTMLDivElement;
 
   let margin: MarginType = { top: 20, right: 2, bottom: 5, left: 20 };
-
-  $: {
-    if (width && width < TILE_SIZE * numericalDimensions.length + margin.left + margin.right)
-      width = TILE_SIZE * numericalDimensions.length + margin.left + margin.right;
-  }
 
   let gridSize = 0;
   $: gridSize = width - margin.left - margin.right;
@@ -29,6 +26,8 @@
   let dataset: DSVParsedArray<any>;
   const unsubscribeDataset = datasetStore.subscribe((value) => {
     dataset = value as DSVParsedArray<any>;
+    splomXDimensionsStore.set(0);
+    splomYDimensionsStore.set(0);
   });
 
   const unsubscribeDimensionData = dimensionDataStore.subscribe((value) => {
@@ -36,17 +35,34 @@
     const numericalDimensionsNew = Array.from(value.keys()).filter(
       (dim) => value.get(dim)?.active && value.get(dim)?.type === 'numerical'
     );
-    activeDim.x = numericalDimensionsNew.findIndex((dim) => dim === numericalDimensions[activeDim.x]);
-    activeDim.y = numericalDimensionsNew.findIndex((dim) => dim === numericalDimensions[activeDim.y]);
     numericalDimensions = numericalDimensionsNew;
+    activeDim.x = numericalDimensions.findIndex((dim) => dim === activeDimensionsX[activeDim.x]);
+    activeDim.y = numericalDimensions.findIndex((dim) => dim === activeDimensionsX[activeDim.y]);
+    activeDimensionsX = numericalDimensions.slice(0, SPLOM_DIMENSIONS_NUM);
   });
 
   const unsubscribeXDim = xDimStore.subscribe((value) => {
-    activeDim.x = numericalDimensions.findIndex((dim) => dim === value);
+    activeDim.x = activeDimensionsX.findIndex((dim) => dim === value);
   });
 
   const unsubscribeYDim = yDimStore.subscribe((value) => {
-    activeDim.y = numericalDimensions.findIndex((dim) => dim === value);
+    activeDim.y = activeDimensionsX.findIndex((dim) => dim === value);
+  });
+
+  let splomXStart: number;
+  const unsubscribeStartXDim = splomXDimensionsStore.subscribe((value) => {
+    if (splomXStart < value) activeDim.x--;
+    else activeDim.x++;
+    splomXStart = value;
+    activeDimensionsX = numericalDimensions.slice(splomXStart, splomXStart + SPLOM_DIMENSIONS_NUM);
+  });
+
+  let splomYStart: number;
+  const unsubscribeStartYDim = splomYDimensionsStore.subscribe((value) => {
+    if (splomYStart < value) activeDim.y--;
+    else activeDim.y++;
+    splomYStart = value;
+    activeDimensionsY = numericalDimensions.slice(splomYStart, splomYStart + SPLOM_DIMENSIONS_NUM);
   });
 
   function isScrollbarHovered(x: number, y: number) {
@@ -64,18 +80,17 @@
   function handleMouseDown(event: MouseEvent) {
     if (isScrollbarHovered(event.clientX, event.clientY)) return;
 
-    const spacing = gridSize / numericalDimensions.length;
+    const spacing = gridSize / activeDimensionsX.length;
     const xIndex = Math.floor((event.offsetX - margin.left) / spacing);
     const yIndex = Math.floor((event.offsetY - margin.top) / spacing);
 
-    if (xIndex < 0 || xIndex >= numericalDimensions.length || yIndex < 0 || yIndex >= numericalDimensions.length)
-      return;
+    if (xIndex < 0 || xIndex >= activeDimensionsX.length || yIndex < 0 || yIndex >= activeDimensionsX.length) return;
     activeDim = {
       x: xIndex,
       y: yIndex
     };
-    xDimStore.set(numericalDimensions[activeDim.x]);
-    yDimStore.set(numericalDimensions[activeDim.y]);
+    xDimStore.set(activeDimensionsX[activeDim.x]);
+    yDimStore.set(activeDimensionsX[activeDim.y]);
   }
 
   function handleMouseMove(event: MouseEvent) {
@@ -87,7 +102,7 @@
       return;
     }
 
-    const spacing = gridSize / numericalDimensions.length;
+    const spacing = gridSize / activeDimensionsX.length;
     const xIndex = Math.floor((event.offsetX - margin.left) / spacing);
     const yIndex = Math.floor((event.offsetY - margin.top) / spacing);
 
@@ -106,10 +121,12 @@
     unsubscribeDimensionData();
     unsubscribeXDim();
     unsubscribeYDim();
+    unsubscribeStartXDim();
+    unsubscribeStartYDim();
   });
 </script>
 
-<!-- <div
+<div
   id="splom-canvas"
   class="w-full h-full overflow-x-auto overflow-y-auto scrollable-div"
   bind:this={splomDiv}
@@ -122,11 +139,17 @@
   }}
 >
   {#if dataset?.length > 0 && width > 0}
-    <Axes dimensions={numericalDimensions} size={width - 12} {margin} {activeDim} {hoveredDim} />
-    <Points {dataset} dimensions={numericalDimensions} size={width - 12} {margin} />
+    <Axes
+      dimensionsX={activeDimensionsX}
+      dimensionsY={activeDimensionsY}
+      size={width - 12}
+      {margin}
+      {activeDim}
+      {hoveredDim}
+    />
+    <Points {dataset} dimensionsX={activeDimensionsX} dimensionsY={activeDimensionsY} size={width - 12} {margin} />
   {/if}
-</div> -->
-<div bind:this={splomDiv} />
+</div>
 
 <style>
   .scrollable-div {

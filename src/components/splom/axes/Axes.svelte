@@ -3,7 +3,8 @@
   import { calculateMaxLength } from '../../../util/text';
   import type { CoordinateType, MarginType } from '../../../util/types';
 
-  export let dimensions: string[] = [];
+  export let dimensionsX: string[] = [];
+  export let dimensionsY: string[] = [];
   export let size: number;
   export let margin: MarginType;
   export let activeDim: CoordinateType;
@@ -12,7 +13,7 @@
   let gridSize = 0;
   $: gridSize = size - margin.left - margin.right;
 
-  $: if (size && dimensions && margin) {
+  $: if (size && margin && dimensionsX && dimensionsY) {
     clearSVG();
     renderAxes();
     renderRectangle(activeDim.x, activeDim.y, 'active');
@@ -25,7 +26,12 @@
 
   $: if (size && hoveredDim) {
     clearRectangle('hovered');
-    if (hoveredDim.x >= 0 && hoveredDim.x < dimensions.length && hoveredDim.y >= 0 && hoveredDim.y < dimensions.length)
+    if (
+      hoveredDim.x >= 0 &&
+      hoveredDim.x < dimensionsX.length &&
+      hoveredDim.y >= 0 &&
+      hoveredDim.y < dimensionsY.length
+    )
       renderRectangle(hoveredDim.x, hoveredDim.y, 'hovered');
   }
 
@@ -40,8 +46,9 @@
   }
 
   function renderRectangle(x: number, y: number, type: 'active' | 'hovered') {
+    if (x < 0 || y < 0) return;
     const svg = select('#splom-canvas-axes');
-    const spacing = gridSize / dimensions.length;
+    const spacing = gridSize / dimensionsX.length;
 
     svg
       .append('rect')
@@ -56,13 +63,13 @@
   }
 
   function renderAxes() {
-    if (!dimensions) return;
+    if (!dimensionsX || !dimensionsY) return;
 
     const svg = select('#splom-canvas-axes');
-    const spacing = gridSize / dimensions.length;
+    const spacing = gridSize / dimensionsX.length;
 
     // Draw horizontal grid lines
-    for (let i = 0; i <= dimensions.length; i++) {
+    for (let i = 0; i <= dimensionsY.length; i++) {
       svg
         .append('line')
         .attr('class', 'splom-axis-line-horizontal')
@@ -75,7 +82,7 @@
     }
 
     // Draw vertical grid lines
-    for (let i = 0; i <= dimensions.length; i++) {
+    for (let i = 0; i <= dimensionsX.length; i++) {
       svg
         .append('line')
         .attr('class', 'splom-axis-line-vertical')
@@ -88,7 +95,7 @@
     }
 
     // Add axis titles
-    dimensions.forEach((dim, i) => {
+    dimensionsX.forEach((dim, i) => {
       const maxTitleLength = calculateMaxLength(dim, 10, 'sans-serif', spacing);
       svg
         .append('text')
@@ -98,16 +105,10 @@
         .attr('font-size', '10px')
         .attr('text-anchor', 'middle')
         .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
+    });
 
-      svg
-        .append('text')
-        .attr('class', 'splom-axis-title-diagonal')
-        .attr('x', margin.left + i * spacing + spacing / 2)
-        .attr('y', margin.top + i * spacing + spacing / 2 + 5)
-        .attr('font-size', '10px')
-        .attr('text-anchor', 'middle')
-        .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
-
+    dimensionsY.forEach((dim, i) => {
+      const maxTitleLength = calculateMaxLength(dim, 10, 'sans-serif', spacing);
       svg
         .append('text')
         .attr('class', 'splom-axis-title-left')
@@ -117,6 +118,22 @@
         .attr('font-size', '10px')
         .attr('text-anchor', 'middle')
         .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
+    });
+
+    dimensionsX.forEach((dimX, i) => {
+      dimensionsY.forEach((dimY, j) => {
+        if (dimX === dimY) {
+          const maxTitleLength = calculateMaxLength(dimX, 10, 'sans-serif', spacing);
+          svg
+            .append('text')
+            .attr('class', 'splom-axis-title-diagonal')
+            .attr('x', margin.left + i * spacing + spacing / 2)
+            .attr('y', margin.top + j * spacing + spacing / 2 + 5)
+            .attr('font-size', '10px')
+            .attr('text-anchor', 'middle')
+            .text(dimX.substring(0, maxTitleLength) + (dimX.length === maxTitleLength ? '' : '...'));
+        }
+      });
     });
   }
 </script>

@@ -8,7 +8,8 @@
   import type { MarginType } from '../../../util/types';
 
   export let dataset: DSVParsedArray<any>;
-  export let dimensions: string[] = [];
+  export let dimensionsX: string[] = [];
+  export let dimensionsY: string[] = [];
   export let size: number;
   export let margin: MarginType;
 
@@ -22,19 +23,19 @@
   let gridSize = 0;
   $: gridSize = size - margin.left - margin.right;
 
-  $: if (size && dimensions && margin && debouncedDrawPoints) {
+  $: if (size && dimensionsX && dimensionsY && margin && debouncedDrawPoints) {
     worker.postMessage({ function: 'resizeCanvas', width: size, height: size });
     debouncedDrawPoints();
   }
 
   function setPointData() {
     points = [];
-    const spacing = gridSize / dimensions.length;
+    const spacing = gridSize / dimensionsX.length;
 
-    dimensions.forEach((dimX, i) => {
+    dimensionsX.forEach((dimX, i) => {
       const dimDataX = dataset.map((row) => row[dimX]);
-      dimensions.forEach((dimY, j) => {
-        if (i === j) return;
+      dimensionsY.forEach((dimY, j) => {
+        if (dimX === dimY) return;
 
         const dimDataY = dataset.map((row) => row[dimY]);
 
