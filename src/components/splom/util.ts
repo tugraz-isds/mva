@@ -1,1 +1,1 @@
-export const SPLOM_DIMENSIONS_NUM = 5;
+export const SPLOM_SHOWN_DIMENSIONS_NUM = 5;

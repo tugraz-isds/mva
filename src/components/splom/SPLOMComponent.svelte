@@ -2,10 +2,11 @@
   import { onDestroy, onMount } from 'svelte';
   import { datasetStore, dimensionDataStore } from '../../stores/dataset';
   import Axes from './axes/Axes.svelte';
+  import AxesOverview from './axes/AxesOverview.svelte';
   import Points from './points/Points.svelte';
   import { xDimStore, yDimStore } from '../../stores/scatterplot';
-  import { splomXDimensionsStore, splomYDimensionsStore } from '../../stores/splom';
-  import { SPLOM_DIMENSIONS_NUM } from './util';
+  import { showSplomOverviewStore, splomXDimensionsStore, splomYDimensionsStore } from '../../stores/splom';
+  import { SPLOM_SHOWN_DIMENSIONS_NUM } from './util';
   import type { CoordinateType, MarginType } from '../../util/types';
   import type { DSVParsedArray } from 'd3-dsv';
 
@@ -38,7 +39,7 @@
     numericalDimensions = numericalDimensionsNew;
     activeDim.x = numericalDimensions.findIndex((dim) => dim === activeDimensionsX[activeDim.x]);
     activeDim.y = numericalDimensions.findIndex((dim) => dim === activeDimensionsX[activeDim.y]);
-    activeDimensionsX = numericalDimensions.slice(0, SPLOM_DIMENSIONS_NUM);
+    activeDimensionsX = numericalDimensions.slice(0, SPLOM_SHOWN_DIMENSIONS_NUM);
   });
 
   const unsubscribeXDim = xDimStore.subscribe((value) => {
@@ -49,20 +50,31 @@
     activeDim.y = activeDimensionsX.findIndex((dim) => dim === value);
   });
 
-  let splomXStart: number;
+  let shownDimensionsXStart: number;
   const unsubscribeStartXDim = splomXDimensionsStore.subscribe((value) => {
-    if (splomXStart < value) activeDim.x--;
+    if (shownDimensionsXStart < value) activeDim.x--;
     else activeDim.x++;
-    splomXStart = value;
-    activeDimensionsX = numericalDimensions.slice(splomXStart, splomXStart + SPLOM_DIMENSIONS_NUM);
+    shownDimensionsXStart = value;
+    activeDimensionsX = numericalDimensions.slice(
+      shownDimensionsXStart,
+      shownDimensionsXStart + SPLOM_SHOWN_DIMENSIONS_NUM
+    );
   });
 
-  let splomYStart: number;
+  let shownDimensionsYStart: number;
   const unsubscribeStartYDim = splomYDimensionsStore.subscribe((value) => {
-    if (splomYStart < value) activeDim.y--;
+    if (shownDimensionsYStart < value) activeDim.y--;
     else activeDim.y++;
-    splomYStart = value;
-    activeDimensionsY = numericalDimensions.slice(splomYStart, splomYStart + SPLOM_DIMENSIONS_NUM);
+    shownDimensionsYStart = value;
+    activeDimensionsY = numericalDimensions.slice(
+      shownDimensionsYStart,
+      shownDimensionsYStart + SPLOM_SHOWN_DIMENSIONS_NUM
+    );
+  });
+
+  let showOverview: boolean;
+  const unsubscribeShowOverview = showSplomOverviewStore.subscribe((value) => {
+    showOverview = value;
   });
 
   function isScrollbarHovered(x: number, y: number) {
@@ -123,6 +135,7 @@
     unsubscribeYDim();
     unsubscribeStartXDim();
     unsubscribeStartYDim();
+    unsubscribeShowOverview();
   });
 </script>
 
@@ -150,6 +163,23 @@
     <Points {dataset} dimensionsX={activeDimensionsX} dimensionsY={activeDimensionsY} size={width - 12} {margin} />
   {/if}
 </div>
+
+{#if dataset?.length > 0 && width > 0 && showOverview}
+  <div
+    style="position: fixed; left: {splomDiv?.offsetLeft +
+      splomDiv?.clientWidth +
+      20}px; top: {splomDiv?.offsetTop}px; width: 200px; height: 200px; z-index: 4;"
+    class="bg-gray-100 border border-black"
+  >
+    <AxesOverview
+      dimensions={numericalDimensions}
+      size={200}
+      {activeDim}
+      shownDimensionsStart={{ x: shownDimensionsXStart, y: shownDimensionsYStart }}
+      {hoveredDim}
+    />
+  </div>
+{/if}
 
 <style>
   .scrollable-div {

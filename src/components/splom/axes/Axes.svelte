@@ -46,7 +46,7 @@
   }
 
   function renderRectangle(x: number, y: number, type: 'active' | 'hovered') {
-    if (x < 0 || y < 0) return;
+    if (x < 0 || y < 0 || x >= dimensionsX.length || y >= dimensionsY.length) return;
     const svg = select('#splom-canvas-axes');
     const spacing = gridSize / dimensionsX.length;
 
