@@ -102,7 +102,7 @@
       y: yIndex
     };
     xDimStore.set(activeDimensionsX[activeDim.x]);
-    yDimStore.set(activeDimensionsX[activeDim.y]);
+    yDimStore.set(activeDimensionsY[activeDim.y]);
   }
 
   function handleMouseMove(event: MouseEvent) {
