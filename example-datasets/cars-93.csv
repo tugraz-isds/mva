@@ -1,0 +1,94 @@
+Manufacturer,Model,Type,Min.Price,Price,Max.Price,MPG.city,MPG.highway,AirBags,DriveTrain,Cylinders,EngineSize,Horsepower,RPM,Rev.per.mile,Man.trans.avail,Fuel.tank.capacity,Passengers,Length,Wheelbase,Width,Turn.circle,Rear.seat.room,Luggage.room,Weight,Origin,Make
+Acura,Integra,Small,129,159,188,25,31,None,Front,4,18,140,6300,2890,Yes,132,5,177,102,68,37,26.5,11,2705,non-USA,Acura Integra
+Acura,Legend,Midsize,292,339,387,18,25,Driver & Passenger,Front,6,32,200,5500,2335,Yes,18,5,195,115,71,38,30,15,3560,non-USA,Acura Legend
+Audi,90,Compact,259,291,323,20,26,Driver only,Front,6,28,172,5500,2280,Yes,169,5,180,102,67,37,28,14,3375,non-USA,Audi 90
+Audi,100,Midsize,308,377,446,19,26,Driver & Passenger,Front,6,28,172,5500,2535,Yes,211,6,193,106,70,37,31,17,3405,non-USA,Audi 100
+BMW,535i,Midsize,237,30,362,22,30,Driver only,Rear,4,35,208,5700,2545,Yes,211,4,186,109,69,39,27,13,3640,non-USA,BMW 535i
+Buick,Century,Midsize,142,157,173,22,31,Driver only,Front,4,22,110,5200,2565,No,164,6,189,105,69,41,28,16,2880,USA,Buick Century
+Buick,LeSabre,Large,199,208,217,19,28,Driver only,Front,6,38,170,4800,1570,No,18,6,200,111,74,42,30.5,17,3470,USA,Buick LeSabre
+Buick,Roadmaster,Large,226,237,249,16,25,Driver only,Rear,6,57,180,4000,1320,No,23,6,216,116,78,45,30.5,21,4105,USA,Buick Roadmaster
+Buick,Riviera,Midsize,263,263,263,19,27,Driver only,Front,6,38,170,4800,1690,No,188,5,198,108,73,41,26.5,14,3495,USA,Buick Riviera
+Cadillac,DeVille,Large,33,347,363,16,25,Driver only,Front,8,49,200,4100,1510,No,18,6,206,114,73,43,35,18,3620,USA,Cadillac DeVille
+Cadillac,Seville,Midsize,375,401,427,16,25,Driver & Passenger,Front,8,46,295,6000,1985,No,20,5,204,111,74,44,31,14,3935,USA,Cadillac Seville
+Chevrolet,Cavalier,Compact,85,134,183,25,36,None,Front,4,22,110,5200,2380,Yes,152,5,182,101,66,38,25,13,2490,USA,Chevrolet Cavalier
+Chevrolet,Corsica,Compact,114,114,114,25,34,Driver only,Front,4,22,110,5200,2665,Yes,156,5,184,103,68,39,26,14,2785,USA,Chevrolet Corsica
+Chevrolet,Camaro,Sporty,134,151,168,19,28,Driver & Passenger,Rear,6,34,160,4600,1805,Yes,155,4,193,101,74,43,25,13,3240,USA,Chevrolet Camaro
+Chevrolet,Lumina,Midsize,134,159,184,21,29,None,Front,4,22,110,5200,2595,No,165,6,198,108,71,40,28.5,16,3195,USA,Chevrolet Lumina
+Chevrolet,Lumina_APV,Van,147,163,18,18,23,None,Front,6,38,170,4800,1690,No,20,7,178,110,74,44,30.5,NA,3715,USA,Chevrolet Lumina_APV
+Chevrolet,Astro,Van,147,166,186,15,20,None,4WD,6,43,165,4000,1790,No,27,8,194,111,78,42,33.5,NA,4025,USA,Chevrolet Astro
+Chevrolet,Caprice,Large,18,188,196,17,26,Driver only,Rear,8,5,170,4200,1350,No,23,6,214,116,77,42,29.5,20,3910,USA,Chevrolet Caprice
+Chevrolet,Corvette,Sporty,346,38,415,17,25,Driver only,Rear,8,57,300,5000,1450,Yes,20,2,179,96,74,43,NA,NA,3380,USA,Chevrolet Corvette
+Chrylser,Concorde,Large,184,184,184,20,28,Driver & Passenger,Front,6,33,153,5300,1990,No,18,6,203,113,74,40,31,15,3515,USA,Chrylser Concorde
+Chrysler,LeBaron,Compact,145,158,171,23,28,Driver & Passenger,Front,4,3,141,5000,2090,No,16,6,183,104,68,41,30.5,14,3085,USA,Chrysler LeBaron
+Chrysler,Imperial,Large,295,295,295,20,26,Driver only,Front,6,33,147,4800,1785,No,16,6,203,110,69,44,36,17,3570,USA,Chrysler Imperial
+Dodge,Colt,Small,79,92,106,29,33,None,Front,4,15,92,6000,3285,Yes,132,5,174,98,66,32,26.5,11,2270,USA,Dodge Colt
+Dodge,Shadow,Small,84,113,142,23,29,Driver only,Front,4,22,93,4800,2595,Yes,14,5,172,97,67,38,26.5,13,2670,USA,Dodge Shadow
+Dodge,Spirit,Compact,119,133,147,22,27,Driver only,Front,4,25,100,4800,2535,Yes,16,6,181,104,68,39,30.5,14,2970,USA,Dodge Spirit
+Dodge,Caravan,Van,136,19,244,17,21,Driver only,4WD,6,3,142,5000,1970,No,20,7,175,112,72,42,26.5,NA,3705,USA,Dodge Caravan
+Dodge,Dynasty,Midsize,148,156,164,21,27,Driver only,Front,4,25,100,4800,2465,No,16,6,192,105,69,42,30.5,16,3080,USA,Dodge Dynasty
+Dodge,Stealth,Sporty,185,258,331,18,24,Driver only,4WD,6,3,300,6000,2120,Yes,198,4,180,97,72,40,20,11,3805,USA,Dodge Stealth
+Eagle,Summit,Small,79,122,165,29,33,None,Front,4,15,92,6000,2505,Yes,132,5,174,98,66,36,26.5,11,2295,USA,Eagle Summit
+Eagle,Vision,Large,175,193,212,20,28,Driver & Passenger,Front,6,35,214,5800,1980,No,18,6,202,113,74,40,30,15,3490,USA,Eagle Vision
+Ford,Festiva,Small,69,74,79,31,33,None,Front,4,13,63,5000,3150,Yes,10,4,141,90,63,33,26,12,1845,USA,Ford Festiva
+Ford,Escort,Small,84,101,119,23,30,None,Front,4,18,127,6500,2410,Yes,132,5,171,98,67,36,28,12,2530,USA,Ford Escort
+Ford,Tempo,Compact,104,113,122,22,27,None,Front,4,23,96,4200,2805,Yes,159,5,177,100,68,39,27.5,13,2690,USA,Ford Tempo
+Ford,Mustang,Sporty,108,159,21,22,29,Driver only,Rear,4,23,105,4600,2285,Yes,154,4,180,101,68,40,24,12,2850,USA,Ford Mustang
+Ford,Probe,Sporty,128,14,152,24,30,Driver only,Front,4,2,115,5500,2340,Yes,155,4,179,103,70,38,23,18,2710,USA,Ford Probe
+Ford,Aerostar,Van,145,199,253,15,20,Driver only,4WD,6,3,145,4800,2080,Yes,21,7,176,119,72,45,30,NA,3735,USA,Ford Aerostar
+Ford,Taurus,Midsize,156,202,248,21,30,Driver only,Front,6,3,140,4800,1885,No,16,5,192,106,71,40,27.5,18,3325,USA,Ford Taurus
+Ford,Crown_Victoria,Large,201,209,217,18,26,Driver only,Rear,8,46,190,4200,1415,No,20,6,212,114,78,43,30,21,3950,USA,Ford Crown_Victoria
+Geo,Metro,Small,67,84,10,46,50,None,Front,3,1,55,5700,3755,Yes,106,4,151,93,63,34,27.5,10,1695,non-USA,Geo Metro
+Geo,Storm,Sporty,115,125,135,30,36,Driver only,Front,4,16,90,5400,3250,Yes,124,4,164,97,67,37,24.5,11,2475,non-USA,Geo Storm
+Honda,Prelude,Sporty,17,198,227,24,31,Driver & Passenger,Front,4,23,160,5800,2855,Yes,159,4,175,100,70,39,23.5,8,2865,non-USA,Honda Prelude
+Honda,Civic,Small,84,121,158,42,46,Driver only,Front,4,15,102,5900,2650,Yes,119,4,173,103,67,36,28,12,2350,non-USA,Honda Civic
+Honda,Accord,Compact,138,175,212,24,31,Driver & Passenger,Front,4,22,140,5600,2610,Yes,17,4,185,107,67,41,28,14,3040,non-USA,Honda Accord
+Hyundai,Excel,Small,68,8,92,29,33,None,Front,4,15,81,5500,2710,Yes,119,5,168,94,63,35,26,11,2345,non-USA,Hyundai Excel
+Hyundai,Elantra,Small,9,10,11,22,29,None,Front,4,18,124,6000,2745,Yes,137,5,172,98,66,36,28,12,2620,non-USA,Hyundai Elantra
+Hyundai,Scoupe,Sporty,91,10,11,26,34,None,Front,4,15,92,5550,2540,Yes,119,4,166,94,64,34,23.5,9,2285,non-USA,Hyundai Scoupe
+Hyundai,Sonata,Midsize,124,139,153,20,27,None,Front,4,2,128,6000,2335,Yes,172,5,184,104,69,41,31,14,2885,non-USA,Hyundai Sonata
+Infiniti,Q45,Midsize,454,479,504,17,22,Driver only,Rear,8,45,278,6000,1955,No,225,5,200,113,72,42,29,15,4000,non-USA,Infiniti Q45
+Lexus,ES300,Midsize,275,28,284,18,24,Driver only,Front,6,3,185,5200,2325,Yes,185,5,188,103,70,40,27.5,14,3510,non-USA,Lexus ES300
+Lexus,SC300,Midsize,347,352,356,18,23,Driver & Passenger,Rear,6,3,225,6000,2510,Yes,206,4,191,106,71,39,25,9,3515,non-USA,Lexus SC300
+Lincoln,Continental,Midsize,333,343,353,17,26,Driver & Passenger,Front,6,38,160,4400,1835,No,184,6,205,109,73,42,30,19,3695,USA,Lincoln Continental
+Lincoln,Town_Car,Large,344,361,378,18,26,Driver & Passenger,Rear,8,46,210,4600,1840,No,20,6,219,117,77,45,31.5,22,4055,USA,Lincoln Town_Car
+Mazda,323,Small,74,83,91,29,37,None,Front,4,16,82,5000,2370,Yes,132,4,164,97,66,34,27,16,2325,non-USA,Mazda 323
+Mazda,Protege,Small,109,116,123,28,36,None,Front,4,18,103,5500,2220,Yes,145,5,172,98,66,36,26.5,13,2440,non-USA,Mazda Protege
+Mazda,626,Compact,143,165,187,26,34,Driver only,Front,4,25,164,5600,2505,Yes,155,5,184,103,69,40,29.5,14,2970,non-USA,Mazda 626
+Mazda,MPV,Van,166,191,217,18,24,None,4WD,6,3,155,5000,2240,No,196,7,190,110,72,39,27.5,NA,3735,non-USA,Mazda MPV
+Mazda,RX-7,Sporty,325,325,325,17,25,Driver only,Rear,rotary,13,255,6500,2325,Yes,20,2,169,96,69,37,NA,NA,2895,non-USA,Mazda RX-7
+Mercedes-Benz,190E,Compact,29,319,349,20,29,Driver only,Rear,4,23,130,5100,2425,Yes,145,5,175,105,67,34,26,12,2920,non-USA,Mercedes-Benz 190E
+Mercedes-Benz,300E,Midsize,438,619,80,19,25,Driver & Passenger,Rear,6,32,217,5500,2220,No,185,5,187,110,69,37,27,15,3525,non-USA,Mercedes-Benz 300E
+Mercury,Capri,Sporty,133,141,15,23,26,Driver only,Front,4,16,100,5750,2475,Yes,111,4,166,95,65,36,19,6,2450,USA,Mercury Capri
+Mercury,Cougar,Midsize,149,149,149,19,26,None,Rear,6,38,140,3800,1730,No,18,5,199,113,73,38,28,15,3610,USA,Mercury Cougar
+Mitsubishi,Mirage,Small,77,103,129,29,33,None,Front,4,15,92,6000,2505,Yes,132,5,172,98,67,36,26,11,2295,non-USA,Mitsubishi Mirage
+Mitsubishi,Diamante,Midsize,224,261,299,18,24,Driver only,Front,6,3,202,6000,2210,No,19,5,190,107,70,43,27.5,14,3730,non-USA,Mitsubishi Diamante
+Nissan,Sentra,Small,87,118,149,29,33,Driver only,Front,4,16,110,6000,2435,Yes,132,5,170,96,66,33,26,12,2545,non-USA,Nissan Sentra
+Nissan,Altima,Compact,13,157,183,24,30,Driver only,Front,4,24,150,5600,2130,Yes,159,5,181,103,67,40,28.5,14,3050,non-USA,Nissan Altima
+Nissan,Quest,Van,167,191,215,17,23,None,Front,6,3,151,4800,2065,No,20,7,190,112,74,41,27,NA,4100,non-USA,Nissan Quest
+Nissan,Maxima,Midsize,21,215,22,21,26,Driver only,Front,6,3,160,5200,2045,No,185,5,188,104,69,41,28.5,14,3200,non-USA,Nissan Maxima
+Oldsmobile,Achieva,Compact,13,135,14,24,31,None,Front,4,23,155,6000,2380,No,152,5,188,103,67,39,28,14,2910,USA,Oldsmobile Achieva
+Oldsmobile,Cutlass_Ciera,Midsize,142,163,184,23,31,Driver only,Front,4,22,110,5200,2565,No,165,5,190,105,70,42,28,16,2890,USA,Oldsmobile Cutlass_Ciera
+Oldsmobile,Silhouette,Van,195,195,195,18,23,None,Front,6,38,170,4800,1690,No,20,7,194,110,74,44,30.5,NA,3715,USA,Oldsmobile Silhouette
+Oldsmobile,Eighty-Eight,Large,195,207,219,19,28,Driver only,Front,6,38,170,4800,1570,No,18,6,201,111,74,42,31.5,17,3470,USA,Oldsmobile Eighty-Eight
+Plymouth,Laser,Sporty,114,144,174,23,30,None,4WD,4,18,92,5000,2360,Yes,159,4,173,97,67,39,24.5,8,2640,USA,Plymouth Laser
+Pontiac,LeMans,Small,82,9,99,31,41,None,Front,4,16,74,5600,3130,Yes,132,4,177,99,66,35,25.5,17,2350,USA,Pontiac LeMans
+Pontiac,Sunbird,Compact,94,111,128,23,31,None,Front,4,2,110,5200,2665,Yes,152,5,181,101,66,39,25,13,2575,USA,Pontiac Sunbird
+Pontiac,Firebird,Sporty,14,177,214,19,28,Driver & Passenger,Rear,6,34,160,4600,1805,Yes,155,4,196,101,75,43,25,13,3240,USA,Pontiac Firebird
+Pontiac,Grand_Prix,Midsize,154,185,216,19,27,None,Front,6,34,200,5000,1890,Yes,165,5,195,108,72,41,28.5,16,3450,USA,Pontiac Grand_Prix
+Pontiac,Bonneville,Large,194,244,294,19,28,Driver & Passenger,Front,6,38,170,4800,1565,No,18,6,177,111,74,43,30.5,18,3495,USA,Pontiac Bonneville
+Saab,900,Compact,203,287,371,20,26,Driver only,Front,4,21,140,6000,2910,Yes,18,5,184,99,67,37,26.5,14,2775,non-USA,Saab 900
+Saturn,SL,Small,92,111,129,28,38,Driver only,Front,4,19,85,5000,2145,Yes,128,5,176,102,68,40,26.5,12,2495,USA,Saturn SL
+Subaru,Justy,Small,73,84,95,33,37,None,4WD,3,12,73,5600,2875,Yes,92,4,146,90,60,32,23.5,10,2045,non-USA,Subaru Justy
+Subaru,Loyale,Small,105,109,113,25,30,None,4WD,4,18,90,5200,3375,Yes,159,5,175,97,65,35,27.5,15,2490,non-USA,Subaru Loyale
+Subaru,Legacy,Compact,163,195,227,23,30,Driver only,4WD,4,22,130,5600,2330,Yes,159,5,179,102,67,37,27,14,3085,non-USA,Subaru Legacy
+Suzuki,Swift,Small,73,86,10,39,43,None,Front,3,13,70,6000,3360,Yes,106,4,161,93,63,34,27.5,10,1965,non-USA,Suzuki Swift
+Toyota,Tercel,Small,78,98,118,32,37,Driver only,Front,4,15,82,5200,3505,Yes,119,5,162,94,65,36,24,11,2055,non-USA,Toyota Tercel
+Toyota,Celica,Sporty,142,184,226,25,32,Driver only,Front,4,22,135,5400,2405,Yes,159,4,174,99,69,39,23,13,2950,non-USA,Toyota Celica
+Toyota,Camry,Midsize,152,182,212,22,29,Driver only,Front,4,22,130,5400,2340,Yes,185,5,188,103,70,38,28.5,15,3030,non-USA,Toyota Camry
+Toyota,Previa,Van,189,227,266,18,22,Driver only,4WD,4,24,138,5000,2515,Yes,198,7,187,113,71,41,35,NA,3785,non-USA,Toyota Previa
+Volkswagen,Fox,Small,87,91,95,25,33,None,Front,4,18,81,5500,2550,Yes,124,4,163,93,63,34,26,10,2240,non-USA,Volkswagen Fox
+Volkswagen,Eurovan,Van,166,197,227,17,21,None,Front,5,25,109,4500,2915,Yes,211,7,187,115,72,38,34,NA,3960,non-USA,Volkswagen Eurovan
+Volkswagen,Passat,Compact,176,20,224,21,30,None,Front,4,2,134,5800,2685,Yes,185,5,180,103,67,35,31.5,14,2985,non-USA,Volkswagen Passat
+Volkswagen,Corrado,Sporty,229,233,237,18,25,None,Front,6,28,178,5800,2385,Yes,185,4,159,97,66,36,26,15,2810,non-USA,Volkswagen Corrado
+Volvo,240,Compact,218,227,235,21,28,Driver only,Rear,4,23,114,5400,2215,Yes,158,5,190,104,67,37,29.5,14,2985,non-USA,Volvo 240
+Volvo,850,Midsize,248,267,285,20,28,Driver & Passenger,Front,5,24,168,6200,2310,Yes,193,5,184,105,69,38,30,15,3245,non-USA,Volvo 850

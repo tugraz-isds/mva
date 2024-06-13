@@ -21,6 +21,14 @@ export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
   {
     title: 'Cereals',
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cereals.csv'
+  },
+  {
+    title: 'Cars 93',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cars-93.csv'
+  },
+  {
+    title: 'Premier League',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/premier-league-player-stats.csv'
   }
 ];
 
