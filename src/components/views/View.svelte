@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { openWindow } from 'svelte-window-system';
   import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
   import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, RefreshOutline } from 'flowbite-svelte-icons';
   import { activeViewsStore } from '../../stores/views';
@@ -16,39 +15,18 @@
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
   export let currView: View;
-  export let parentHeight: number;
 
   let showView = true;
   let unique = {}; // Needed for refreshing view
 
-  // Get active views from store
-  let activeViews: View[];
+  let views: View[];
   const unsubscribeActive = activeViewsStore.subscribe((value) => {
-    activeViews = value;
+    views = value;
   });
 
-  $: otherViews = otherViews?.filter((view: View) => view.title !== currView.title);
+  $: otherViews = views?.filter((view: View) => view.visible && view.title !== currView.title);
 
-  function openWinbox() {
-    showView = false;
-    activeViewsStore.set(activeViews.filter((view: View) => view.title !== currView.title));
-    openWindow(currView.component, {
-      width: window.innerWidth * 0.8,
-      height: window.innerHeight * 0.8,
-      title: currView.title,
-      customTitlebarClass: 'bg-sky-900 font-sans'
-      //customTitlebarButtons: [{ value: 'X', callback: () => {} }]
-    });
-  }
-
-  // onMount(() => {
-  // 	window.addEventListener('closeWinbox', (event: any) => {
-  // 		if (currView.id === event.detail.id) {
-  // 			showView = true;
-  // 			activeViewsStore.set([...activeViews, currView]);
-  // 		}
-  // 	});
-  // });
+  function openWinbox() {}
 
   function saveSVG() {
     const event = new Event(`call-save-svg-${currView.id}`);
@@ -70,9 +48,9 @@
       <div class="flex text-xs text-nowrap text-ellipsis overflow-hidden">
         {currView.title}
         {#if currView.id === 'table'}
-          <TableVisibleDimensions height={parentHeight - 10} />
+          <TableVisibleDimensions height={30 - 10} />
         {:else if currView.id === 'parcoord'}
-          <ParcoordVisibleDimensions height={parentHeight - 10} />
+          <ParcoordVisibleDimensions height={30 - 10} />
         {/if}
       </div>
       <div>
