@@ -264,6 +264,7 @@
           () => {
             isInteractableStore.set(true);
           },
+          (axisFilter.percentages.start as number) > 0 || (axisFilter.percentages.end as number) < 1,
           dimensionsMetadata.get(dim)?.showFilter
         )
       );

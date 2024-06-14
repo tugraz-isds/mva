@@ -216,7 +216,7 @@
     // If mouse is not in canvas, return
     if (
       !(
-        event.clientY >= canvasRect.top + margin.top - 10 &&
+        event.clientY >= canvasRect.top + margin.top &&
         event.clientY <= canvasRect.bottom &&
         event.clientX >= canvasRect.left &&
         event.clientX <= canvasRect.right
@@ -247,35 +247,37 @@
   }
 
   function handleMouseUp(event: MouseEvent) {
-    if (!canvasEl || !$isInteractableStore) return;
-    // Calculate normalized mouse coordinates relative to the canvas
-    const canvasRect = canvasEl.getBoundingClientRect();
-    mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
-    mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
-    // If mouse is not in canvas, return
-    if (
-      !(
-        event.clientY >= canvasRect.top + margin.top - 10 &&
-        event.clientY <= canvasRect.bottom &&
-        event.clientX >= canvasRect.left &&
-        event.clientX <= canvasRect.right
+    setTimeout(() => {
+      if (!canvasEl || !$isInteractableStore) return;
+      // Calculate normalized mouse coordinates relative to the canvas
+      const canvasRect = canvasEl.getBoundingClientRect();
+      mouse.x = ((event.clientX - canvasRect.left) / canvasRect.width) * 2 - 1;
+      mouse.y = -((event.clientY - canvasRect.top) / canvasRect.height) * 2 + 1;
+      // If mouse is not in canvas, return
+      if (
+        !(
+          event.clientY >= canvasRect.top + margin.top &&
+          event.clientY <= canvasRect.bottom &&
+          event.clientX >= canvasRect.left &&
+          event.clientX <= canvasRect.right
+        )
       )
-    )
-      return;
+        return;
 
-    clicked = false;
-    isDragging = false;
-    selectionShapeLine = [];
-    drawSelectionShape();
+      clicked = false;
+      isDragging = false;
+      selectionShapeLine = [];
+      drawSelectionShape();
 
-    worker.postMessage({
-      function: 'mouseUp',
-      mouse,
-      event: {
-        ctrlKey: event.ctrlKey,
-        shiftKey: event.shiftKey
-      }
-    });
+      worker.postMessage({
+        function: 'mouseUp',
+        mouse,
+        event: {
+          ctrlKey: event.ctrlKey,
+          shiftKey: event.shiftKey
+        }
+      });
+    }, 0);
   }
 
   export function drawLines() {

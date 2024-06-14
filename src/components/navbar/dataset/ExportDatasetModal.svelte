@@ -61,15 +61,22 @@
     <div class="w-full h-full flex items-center justify-center"><Spinner /></div>
   {/if}
   <form class="flex flex-col space-y-4 px-4 {isLoading ? 'invisible' : 'visible'}">
-    <div class="mb-4 flex flex-row items-center space-x-2">
+    <div class="mb-4">
       <h3 class="text-xl font-medium text-gray-900">Export Dataset</h3>
-      <QuestionCircleOutline color="black" />
-      <Tooltip type="light" class="text-xs"
-        >Exporting the dataset optionally adds three columns: _partition, _partition_color, and _partition_shape. The
-        exported CSV file can be re-imported into the application with defined partitions.</Tooltip
-      >
     </div>
     <div class="flex flex-col space-y-2 mb-6 w-full">
+      <div class="flex items-center space-x-2 w-full ml-2">
+        <Label for="separator-select" class="w-1/3">Dataset Format:</Label>
+        <Select
+          id="dataset-format-select"
+          size="sm"
+          class="w-2/3"
+          bind:value={datasetFormat}
+          on:change={() => (validUpload = true)}
+          items={DATASET_FORMAT_LIST}
+          placeholder=""
+        />
+      </div>
       <div class="flex items-center space-x-2 w-full ml-2">
         <Label for="cell-separator-select" class="w-1/3">Cell Separator:</Label>
         <Select
@@ -99,18 +106,6 @@
           bind:value={decimalSeparator}
           on:change={() => (validUpload = true)}
           items={DECIMAL_SEPARATOR_LIST}
-          placeholder=""
-        />
-      </div>
-      <div class="flex items-center space-x-2 w-full ml-2">
-        <Label for="separator-select" class="w-1/3">Dataset Format:</Label>
-        <Select
-          id="dataset-format-select"
-          size="sm"
-          class="w-2/3"
-          bind:value={datasetFormat}
-          on:change={() => (validUpload = true)}
-          items={DATASET_FORMAT_LIST}
           placeholder=""
         />
       </div>

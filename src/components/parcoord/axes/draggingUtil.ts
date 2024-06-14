@@ -1,7 +1,8 @@
 import type { Writable } from 'svelte/store';
-import { reorderArray } from '../../../util/util';
+import { getAxisDomainValue, setSvgStyle } from './drawingUtil';
+import { arrow_filter_up_down_icon } from '../../../util/icon-definitions';
 import type { AxesFilterType, AxisElementsType, DimensionMetadataType, ParcoordVisibleDimensionsType } from '../types';
-import { getAxisDomainValue } from './drawingUtil';
+import type { Selection } from 'd3-selection';
 
 export function moveDraggedAxis(
   draggingIndex: number,
@@ -126,6 +127,10 @@ export function dragUpperFilter(
     ?.select('text')
     .text(getAxisDomainValue(i, axisFilter.percentages.start as number, yScales, dimensions, numberOfDecimals));
   axisElements.filterRectangles[i].attr('y', `${newY + 8}`).attr('height', `${axisFilter.pixels.end - newY + top - 8}`);
+  setFilterRectangleCursor(
+    axisElements.filterRectangles[i],
+    (axisFilter.percentages.start as number) > 0 || (axisFilter.percentages.end as number) < 1
+  );
 
   axisFilter.pixels.start = newY - top + 8;
   axisFilter.percentages.start = axisFilter.pixels.start / axisHeight;
@@ -152,6 +157,10 @@ export function dragLowerFilter(
     ?.select('text')
     .text(getAxisDomainValue(i, axisFilter.percentages.end as number, yScales, dimensions, numberOfDecimals));
   axisElements.filterRectangles[i].attr('height', `${newY - axisFilter.pixels.start - top - 8}`);
+  setFilterRectangleCursor(
+    axisElements.filterRectangles[i],
+    (axisFilter.percentages.start as number) > 0 || (axisFilter.percentages.end as number) < 1
+  );
 
   axisFilter.pixels.end = newY - top - 8;
   axisFilter.percentages.end = axisFilter.pixels.end / axisHeight;
@@ -171,7 +180,6 @@ export function dragFilterRectangle(
   filtersArray: Writable<Map<string, AxesFilterType>>,
   numberOfDecimals?: number | null
 ) {
-  axisElements.filterRectangles[i].attr('y', `${newY}`);
   const axisFilter = axesFilters.get(dimensions[i]) as AxesFilterType;
   axisFilter.pixels = {
     start: newY - top,
@@ -183,6 +191,12 @@ export function dragFilterRectangle(
   };
   axesFilters.set(dimensions[i], axisFilter);
   filtersArray.set(axesFilters);
+
+  axisElements.filterRectangles[i].attr('y', `${newY}`);
+  setFilterRectangleCursor(
+    axisElements.filterRectangles[i],
+    (axisFilter.percentages.start as number) > 0 || (axisFilter.percentages.end as number) < 1
+  );
 
   axisElements.upperFilters[i].attr('y', axisFilter.pixels.start + top - 16);
   axisElements.upperFilterValues[i]
@@ -198,4 +212,18 @@ export function dragFilterRectangle(
   axisElements.lowerFilterValues[i]
     ?.select('text')
     .text(getAxisDomainValue(i, axisFilter.percentages.end as number, yScales, dimensions, numberOfDecimals));
+}
+
+function setFilterRectangleCursor(
+  rectangle: Selection<SVGRectElement, unknown, HTMLElement, any>,
+  showMoveCursor: boolean
+) {
+  rectangle.style(
+    'cursor',
+    showMoveCursor
+      ? `url("data:image/svg+xml;base64,${btoa(
+          setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
+        )}") 7 5, pointer`
+      : 'default'
+  );
 }
