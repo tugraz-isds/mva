@@ -26,8 +26,6 @@
 
   $: otherViews = views?.filter((view: View) => view.visible && view.title !== currView.title);
 
-  function openWinbox() {}
-
   function saveSVG() {
     const event = new Event(`call-save-svg-${currView.id}`);
     window.dispatchEvent(event);
@@ -96,13 +94,6 @@
               >
             {/each}
           </Dropdown>
-          <Button on:click={openWinbox} class="p-0 m-0 text-black">
-            <ExpandOutline
-              id="{currView.id}-expand"
-              size="sm"
-              class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
-            />
-          </Button>
           <Tooltip style="z-index: 1000;" type="light">Expand View</Tooltip>
           {#if ['parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
             <Button on:click={saveSVG} class="p-0 m-0 text-black">
