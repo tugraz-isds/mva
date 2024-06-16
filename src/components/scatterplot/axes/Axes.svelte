@@ -94,6 +94,7 @@
 </script>
 
 {#if width > 0 && height > 0}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <svg
     id="{viewTitle}-canvas-axes"
     {width}

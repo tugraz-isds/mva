@@ -83,13 +83,6 @@
       isLoading = false;
     }
   }
-
-  function changeColumnType(idx: number | null, newColumnType: DimensionType | null = null) {
-    if (idx === null) return;
-    if (newColumnType !== null) columnType = newColumnType;
-
-    previewHeader[idx].type = columnType;
-  }
 </script>
 
 <Modal bind:open={isOpen} size="xl">

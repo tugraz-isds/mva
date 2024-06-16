@@ -12,7 +12,7 @@
 <div class="w-full scrollable-div">
   <table id="dataset-header" class="w-full">
     <thead style="font-size: 14px;">
-      {#each previewHeader as header, i}
+      {#each previewHeader as header}
         <th class="px-1 text-{header.type === 'numerical' ? 'right' : 'left'}">
           {#if isInternalDimension(header.title)}
             <Select
@@ -35,7 +35,7 @@
         </th>
       {/each}
       <tr class="bg-gray-100 select-none hover:cursor-pointer">
-        {#each previewHeader as header, i}
+        {#each previewHeader as header}
           <th class="px-1 hover:bg-gray-200'} text-{header.type === 'numerical' ? 'right' : 'left'}"
             >{clearStringQuotes(header.title)}</th
           >

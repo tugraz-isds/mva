@@ -52,9 +52,7 @@
   let longestPartition = '';
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
     partitions = value;
-    longestPartition = getLongestString(
-      [...partitions].filter(([key, value]) => value.size > 0).map(([key, value]) => key)
-    );
+    longestPartition = getLongestString([...partitions].filter(([_, value]) => value.size > 0).map(([key, _]) => key));
   });
 
   const unsubscribeDataset = datasetStore.subscribe((value) => {

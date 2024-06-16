@@ -155,11 +155,10 @@ export function getPoint(
   pointSize: number,
   partition?: PartitionType
 ) {
-  let point: PointType;
   const pointGeometry = getPartitionGeometry(pointSize, partition);
   const material = getPartitionMaterial(partition);
   material.needsUpdate = false;
-  point = new THREE.Mesh(pointGeometry, material);
+  const point: PointType = new THREE.Mesh(pointGeometry, material);
   point.position.set(currPoint[0], currPoint[1], pointData ? pointData.position.z : currPoint[2]);
   point.index = index;
 
@@ -167,9 +166,8 @@ export function getPoint(
 }
 
 export function getHoveredPoint(currPoint: number[], index: number, pointSize: number, partition?: PartitionType) {
-  let point: PointType;
   const pointGeometry = getPartitionGeometry(pointSize, partition);
-  point = new THREE.Mesh(pointGeometry, POINT_MATERIAL_HOVERED);
+  const point: PointType = new THREE.Mesh(pointGeometry, POINT_MATERIAL_HOVERED);
   point.position.set(currPoint[0], currPoint[1], 2);
   point.index = index;
 
@@ -183,11 +181,10 @@ export function getStroke(
   pointSize: number,
   partition?: PartitionType
 ) {
-  let stroke: StrokeType;
   const pointGeometry = getPartitionGeometryStroke(pointSize, partition);
   const material = getPartitionMaterialStroke(partition);
   material.needsUpdate = false;
-  stroke = new THREE.LineLoop(pointGeometry, material);
+  const stroke: StrokeType = new THREE.LineLoop(pointGeometry, material);
   stroke.position.set(currPoint[0], currPoint[1], pointData ? pointData.position.z : currPoint[2]);
   stroke.index = index;
 
@@ -216,15 +213,15 @@ export function getPartitionRecordsByName(data: string[], name: string) {
 
 export function isPointInPolygon(point: CoordinateType, polygon: CoordinateType[]) {
   let inside = false;
-  let n = polygon.length;
+  const n = polygon.length;
 
   for (let i = 0, j = n - 1; i < n; j = i++) {
-    let xi = polygon[i].x,
+    const xi = polygon[i].x,
       yi = polygon[i].y;
-    let xj = polygon[j].x,
+    const xj = polygon[j].x,
       yj = polygon[j].y;
 
-    let intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+    const intersect = yi > point.y !== yj > point.y && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }
 

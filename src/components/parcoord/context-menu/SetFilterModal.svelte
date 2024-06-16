@@ -8,7 +8,6 @@
   export let isOpen: boolean;
   export let dimension: string;
   export let yScales: any;
-  export let dimIndex: number;
 
   let filterStart: number, filterEnd: number;
   let originalMin: number, originalMax: number;

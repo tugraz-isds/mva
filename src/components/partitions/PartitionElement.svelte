@@ -134,6 +134,7 @@
   {setColor}
 />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   on:click={selectPartition}
   on:keydown={() => {}}

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Button, Modal, Label, Input, Helper, Select, Spinner, Tooltip, Checkbox } from 'flowbite-svelte';
-  import { QuestionCircleOutline } from 'flowbite-svelte-icons';
+  import { Button, Modal, Label, Input, Helper, Select, Spinner, Checkbox } from 'flowbite-svelte';
   import { isInteractableStore } from '../../../stores/brushing';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import {

@@ -93,11 +93,11 @@ export async function parseDatasetPreview(file: File) {
 }
 
 function arrangePartitions(partitions: Map<string, PartitionType>, partitionsOrderMap: Map<string, number>) {
-  let entries = Array.from(partitions.entries());
+  const entries = Array.from(partitions.entries());
 
   entries.sort((a, b) => {
-    let orderA = partitionsOrderMap.get(a[0]) as number;
-    let orderB = partitionsOrderMap.get(b[0]) as number;
+    const orderA = partitionsOrderMap.get(a[0]) as number;
+    const orderB = partitionsOrderMap.get(b[0]) as number;
     return orderA - orderB;
   });
 
@@ -207,7 +207,7 @@ function parsePartitionsMva(
 }
 
 export function getDatasetExtension(fileName: string): DatasetExtensionType {
-  let datasetExtension = fileName.match(/\.(\w+)$/);
+  const datasetExtension = fileName.match(/\.(\w+)$/);
   if (!datasetExtension || (datasetExtension[0] !== '.mva' && datasetExtension[0] !== '.csv'))
     throw new Error('Invalid dataset format.');
   return datasetExtension[0].replace('.', '') as DatasetExtensionType;

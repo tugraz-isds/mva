@@ -38,6 +38,7 @@
   <ChevronDownOutline size="xs" />
 </div>
 <Tooltip style="z-index: 1000;" type="light">Parallel Coordinates Dimensions</Tooltip>
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div on:mouseenter={() => ($isInteractableStore = false)} on:mouseleave={() => ($isInteractableStore = true)}>
   <Dropdown
     triggeredBy="#parcoord-dims-dropdown"

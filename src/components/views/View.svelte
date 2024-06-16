@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button, Dropdown, DropdownItem, Tooltip } from 'flowbite-svelte';
-  import { ArrowUpDownOutline, ExpandOutline, DownloadOutline, RefreshOutline } from 'flowbite-svelte-icons';
+  import { ArrowUpDownOutline, DownloadOutline, RefreshOutline } from 'flowbite-svelte-icons';
   import { activeViewsStore } from '../../stores/views';
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';

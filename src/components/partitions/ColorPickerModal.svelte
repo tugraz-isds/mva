@@ -36,7 +36,7 @@
   let usedColors: string[];
   partitionsStore.subscribe((value) => {
     usedColors = [];
-    value.forEach((data, name) => {
+    value.forEach((data) => {
       usedColors.push(rgbaToHexString(data.color));
     });
   });
@@ -71,6 +71,7 @@
 >
   <div class="w-full grid grid-cols-6 gap-2 p-2">
     {#each PARTITION_COLORS as color}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         style="width: 20px; height: 20px; background-color: {color};"
         class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
@@ -90,6 +91,7 @@
       <p class="text-sm mt-2">Custom Colors:</p>
       <div class="w-full grid grid-cols-6 gap-2 p-2">
         {#each customColors as color, i}
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             style="width: 20px; height: 20px; background-color: {color};"
             class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
