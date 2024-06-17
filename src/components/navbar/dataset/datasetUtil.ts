@@ -11,24 +11,28 @@ export type DatasetFormatType = 'csv' | 'small-csv' | 'mva';
 
 export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
   {
-    title: 'Iris',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
-  },
-  {
-    title: 'Student Grades',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/student-grades.csv'
+    title: 'Cars 93',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cars-93.csv'
   },
   {
     title: 'Cereals',
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cereals.csv'
   },
   {
-    title: 'Cars 93',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cars-93.csv'
+    title: 'Cities 2018',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cities-2018.csv'
+  },
+  {
+    title: 'Iris',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
   },
   {
     title: 'Premier League',
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/premier-league-player-stats.csv'
+  },
+  {
+    title: 'Student Marks',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/student-marks.csv'
   }
 ];
 

@@ -66,8 +66,10 @@
         };
       }) as DSVParsedArray<any>;
 
-      tableVisibleDimensions?.unshift({ title: '_partition', visible: true });
-      tableVisibleDimensions?.unshift({ title: '_i', visible: true });
+      if (tableVisibleDimensions[0]?.title !== '_i') {
+        tableVisibleDimensions?.unshift({ title: '_partition', visible: true });
+        tableVisibleDimensions?.unshift({ title: '_i', visible: true });
+      }
 
       sorting = { dim: '_i', direction: 'ASC' };
     }
