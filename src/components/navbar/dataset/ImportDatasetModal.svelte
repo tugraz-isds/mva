@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, Modal, Label, Input, Fileupload, Helper, Select, Spinner } from 'flowbite-svelte';
-  import { datasetStore, labelDimension, dimensionDataStore } from '../../../stores/dataset';
+  import { datasetStore, labelDimension, dimensionDataStore, invalidRowsStore } from '../../../stores/dataset';
   import { isInteractableStore } from '../../../stores/brushing';
   import { tableVisibleDimensionsStore } from '../../../stores/table';
   import { isNumber } from '../../../util/util';
@@ -63,7 +63,7 @@
     try {
       const datasetText = await getCsvFromFile(files);
       const datasetExtension = getDatasetExtension(files[0].name);
-      const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
+      const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData, invalidRows } =
         await parseDataset(datasetText, datasetExtension, cellSeparator, decimalSeparator);
 
       tableVisibleDimensionsStore.set(shownDimensions);
@@ -73,6 +73,7 @@
       labelDimension.set(labelDim);
       partitionsStore.set(partitionsMap);
       partitionsDataStore.set(partitionsData);
+      invalidRowsStore.set(invalidRows);
 
       validUpload = true;
       isOpen = false;

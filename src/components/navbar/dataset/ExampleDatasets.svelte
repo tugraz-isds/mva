@@ -2,7 +2,7 @@
   import { ChevronRight, DropdownItem, Dropdown, Spinner } from 'flowbite-svelte';
   import { EXAMPLE_DATASETS, getCsvFromUrl, parseDataset } from './datasetUtil';
   import { tableVisibleDimensionsStore } from '../../../stores/table';
-  import { datasetStore, dimensionDataStore, labelDimension } from '../../../stores/dataset';
+  import { datasetStore, dimensionDataStore, invalidRowsStore, labelDimension } from '../../../stores/dataset';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
 
@@ -16,7 +16,7 @@
       isLoading = true;
       loadingIndex = i;
       const datasetText = await getCsvFromUrl(url);
-      const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData } =
+      const { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData, invalidRows } =
         await parseDataset(datasetText, 'csv', ',', '.');
 
       tableVisibleDimensionsStore.set(shownDimensions);
@@ -26,6 +26,7 @@
       labelDimension.set(labelDim);
       partitionsStore.set(partitionsMap);
       partitionsDataStore.set(partitionsData);
+      invalidRowsStore.set(invalidRows);
     } catch (error: any) {
       throw new Error('Error fetching example dataset');
     } finally {
