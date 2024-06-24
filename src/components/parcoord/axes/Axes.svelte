@@ -264,6 +264,7 @@
           () => {
             isInteractableStore.set(true);
           },
+          (axisFilter.percentages.start as number) > 0 || (axisFilter.percentages.end as number) < 1,
           dimensionsMetadata.get(dim)?.showFilter
         )
       );
@@ -597,7 +598,7 @@
 
   export function resizeFilters() {
     axisHeight = height - margin.top - margin.bottom;
-    dimensions.forEach((dim, i) => {
+    dimensions.forEach((dim) => {
       const axisFilter = axesFilters.get(dim) as AxesFilterType;
       axisFilter.pixels = {
         start: (axisFilter.percentages.start as number) * axisHeight,
@@ -641,6 +642,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <svg
   id="parcoord-canvas-axes"
   {width}

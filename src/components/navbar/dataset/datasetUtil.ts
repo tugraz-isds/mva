@@ -11,16 +11,28 @@ export type DatasetFormatType = 'csv' | 'small-csv' | 'mva';
 
 export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
   {
-    title: 'Iris',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
-  },
-  {
-    title: 'Student Grades',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/student-grades.csv'
+    title: 'Cars 93',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cars-93.csv'
   },
   {
     title: 'Cereals',
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cereals.csv'
+  },
+  {
+    title: 'Cities 2018',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cities-2018.csv'
+  },
+  {
+    title: 'Iris',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
+  },
+  {
+    title: 'Premier League',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/premier-league-player-stats.csv'
+  },
+  {
+    title: 'Student Marks',
+    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/student-marks.csv'
   }
 ];
 
@@ -85,11 +97,11 @@ export async function parseDatasetPreview(file: File) {
 }
 
 function arrangePartitions(partitions: Map<string, PartitionType>, partitionsOrderMap: Map<string, number>) {
-  let entries = Array.from(partitions.entries());
+  const entries = Array.from(partitions.entries());
 
   entries.sort((a, b) => {
-    let orderA = partitionsOrderMap.get(a[0]) as number;
-    let orderB = partitionsOrderMap.get(b[0]) as number;
+    const orderA = partitionsOrderMap.get(a[0]) as number;
+    const orderB = partitionsOrderMap.get(b[0]) as number;
     return orderA - orderB;
   });
 
@@ -199,7 +211,7 @@ function parsePartitionsMva(
 }
 
 export function getDatasetExtension(fileName: string): DatasetExtensionType {
-  let datasetExtension = fileName.match(/\.(\w+)$/);
+  const datasetExtension = fileName.match(/\.(\w+)$/);
   if (!datasetExtension || (datasetExtension[0] !== '.mva' && datasetExtension[0] !== '.csv'))
     throw new Error('Invalid dataset format.');
   return datasetExtension[0].replace('.', '') as DatasetExtensionType;
@@ -271,8 +283,12 @@ export async function parseDataset(
 
   const shownDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));
   const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
+  const invalidRowIndices: Set<number> = new Set();
   dimensions.forEach((dim: string) => {
     const dimData = dataset.map((d) => d[dim]);
+    dimData.forEach((value, i) => {
+      if (value == null || value.length === 0) invalidRowIndices.add(i);
+    });
     const longestString = dimData.reduce((longest, currentStr) => {
       currentStr = currentStr ?? '';
       return currentStr.toString().length > longest.toString().length ? currentStr : longest;
@@ -302,14 +318,18 @@ export async function parseDataset(
       });
   });
 
+  let invalidRows = dataset.filter((_, index) => invalidRowIndices.has(index)) as DSVParsedArray<any>;
+  dataset = dataset.filter((_, index) => !invalidRowIndices.has(index)) as DSVParsedArray<any>;
+
   const labelDim = Object.keys(dataset[0])[0]; // Set first dimension as label
   localStorage.setItem('labelDimension', labelDim);
   localStorage.setItem('tableVisibleDimensions', JSON.stringify(shownDimensions));
   localStorage.setItem('parcoordVisibleDimensions', JSON.stringify(shownDimensions));
   localStorage.setItem('dimensionTypes', JSON.stringify(Array.from(dimensionTypeMap.entries())));
   localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
+  localStorage.setItem('invalidRows', JSON.stringify(invalidRows));
 
-  return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData };
+  return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData, invalidRows };
 }
 
 type PartitionHelperType = {

@@ -9,7 +9,6 @@
   export let isOpen: boolean;
   export let dimension: string;
   export let yScales: any;
-  export let dimIndex: number;
   export let handleResetDimensionRange: () => void;
 
   $: if (!isOpen) $isInteractableStore = true;

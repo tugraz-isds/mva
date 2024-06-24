@@ -328,6 +328,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="parcoord-canvas"
   class="w-full h-full overflow-x-auto overflow-y-hidden scrollable-div"

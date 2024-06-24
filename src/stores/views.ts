@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import type { View } from '../components/view-panel/ViewType';
-import { views as initialViews } from '../components/view-panel/Views';
+import { views as initialViews } from '../components/views/Views';
+import type { View } from '../components/views/ViewType';
 
 export const activeViewsStore = writable<View[]>(initialViews);
 export const isCurrentlyResizing = writable<boolean>(false);

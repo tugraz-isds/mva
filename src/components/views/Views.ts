@@ -10,43 +10,37 @@ export const views: View[] = [
   {
     id: 'splom',
     title: 'Scatterplot Matrix',
-    width: 33,
-    height: 55,
+    visible: true,
     component: SplomComponent
   },
   {
     id: 'scatterplot',
     title: 'Scatterplot',
-    width: 33,
-    height: 55,
+    visible: true,
     component: ScatterplotComponent
   },
   {
     id: 'simmap',
     title: 'Similarity Map',
-    width: 33,
-    height: 55,
+    visible: true,
     component: SimmapComponent
   },
   {
     id: 'partitions',
     title: 'Partitions',
-    width: 20,
-    height: 44.5,
+    visible: true,
     component: PartitionsComponent
   },
   {
     id: 'table',
     title: 'Table',
-    width: 30,
-    height: 44.5,
+    visible: true,
     component: TableComponent
   },
   {
     id: 'parcoord',
     title: 'Parallel Coordinates',
-    width: 49,
-    height: 44.5,
+    visible: true,
     component: ParcoordComponent
   }
 ];

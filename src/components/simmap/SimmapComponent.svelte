@@ -220,6 +220,7 @@
 {:else if numericalDimensions.length < 2}
   <div><span>Not enough numerical dimensions.</span></div>
 {/if}
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="simmap-canvas"
   class="w-full h-full"

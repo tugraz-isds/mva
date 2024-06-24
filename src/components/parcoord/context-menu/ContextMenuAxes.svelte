@@ -134,6 +134,7 @@
 </script>
 
 {#if isContextMenuShown}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="context-menu fixed bg-white border border-gray-300 p-1 w-32 z-10"
     style={menuStyle}
@@ -146,6 +147,7 @@
     <DropdownItem id="parcoord-axis-context-menu" defaultClass="{activeClass} flex items-center justify-between">
       Show<ChevronRight class="w-3 h-3 ms-2" />
     </DropdownItem>
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div on:mouseenter={() => ($isInteractableStore = false)} on:mouseleave={() => ($isInteractableStore = true)}>
       <Dropdown placement="right-start" style="padding: 5px; width: 120px;" triggeredBy="#parcoord-axis-context-menu">
         <DropdownItem
@@ -214,14 +216,8 @@
   </div>
 {/if}
 
-<SetRangeModal
-  isOpen={isSetRangeModalOpen}
-  {dimension}
-  {yScales}
-  {dimIndex}
-  handleResetDimensionRange={resetDimensionRange}
-/>
+<SetRangeModal isOpen={isSetRangeModalOpen} {dimension} {yScales} handleResetDimensionRange={resetDimensionRange} />
 
 <SetBinNoModal isOpen={isSetBinNoModalOpen} {dimension} />
 
-<SetFilterModal isOpen={isSetFilterModalOpen} {dimension} {yScales} {dimIndex} />
+<SetFilterModal isOpen={isSetFilterModalOpen} {dimension} {yScales} />

@@ -52,9 +52,7 @@
   let longestPartition = '';
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
     partitions = value;
-    longestPartition = getLongestString(
-      [...partitions].filter(([key, value]) => value.size > 0).map(([key, value]) => key)
-    );
+    longestPartition = getLongestString([...partitions].filter(([_, value]) => value.size > 0).map(([key, _]) => key));
   });
 
   const unsubscribeDataset = datasetStore.subscribe((value) => {
@@ -68,8 +66,10 @@
         };
       }) as DSVParsedArray<any>;
 
-      tableVisibleDimensions?.unshift({ title: '_partition', visible: true });
-      tableVisibleDimensions?.unshift({ title: '_i', visible: true });
+      if (tableVisibleDimensions[0]?.title !== '_i') {
+        tableVisibleDimensions?.unshift({ title: '_partition', visible: true });
+        tableVisibleDimensions?.unshift({ title: '_i', visible: true });
+      }
 
       sorting = { dim: '_i', direction: 'ASC' };
     }

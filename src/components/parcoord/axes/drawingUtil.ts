@@ -238,12 +238,12 @@ export function drawAxisFilterRectangle(
   height: number,
   handleMouseEnter: () => void,
   handleMouseLeave: () => void,
+  showMoveCursor: boolean,
   showFilter?: boolean
 ) {
   return svg
     .append('rect')
     .attr('class', 'parcoord-axis-filter-rect')
-    .attr('cursor', 'crosshair')
     .attr('width', width)
     .attr('height', height)
     .attr('y', y)
@@ -253,9 +253,11 @@ export function drawAxisFilterRectangle(
     .style('display', showFilter ? 'block' : 'none')
     .style(
       'cursor',
-      `url("data:image/svg+xml;base64,${btoa(
-        setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
-      )}") 7 5, pointer`
+      showMoveCursor
+        ? `url("data:image/svg+xml;base64,${btoa(
+            setSvgStyle(arrow_filter_up_down_icon, 12, 16, '#000', '#f9f9f9')
+          )}") 7 5, pointer`
+        : 'default'
     )
     .on('mouseenter', handleMouseEnter)
     .on('mouseleave', handleMouseLeave);
@@ -273,7 +275,7 @@ export function getAxisDomainValue(
   return (axisDomain[0] + (1 - percentage) * axisRange).toFixed(numberOfDecimals);
 }
 
-function setSvgStyle(svg: string, width: number, height: number, stroke: string, fill: string) {
+export function setSvgStyle(svg: string, width: number, height: number, stroke: string, fill: string) {
   return svg.replace('<svg', `<svg width="${width}" height="${height}" stroke="${stroke}" fill="${fill}"`);
 }
 

@@ -30,7 +30,7 @@ let renderer: THREE.WebGLRenderer;
 let raycaster: THREE.Raycaster;
 let mouse: THREE.Vector2;
 let points: PointType[] = [];
-let hoveredPoints: PointType[] = [];
+const hoveredPoints: PointType[] = [];
 let strokes: (StrokeType | null)[] = [];
 let pointSize: number;
 
@@ -293,7 +293,7 @@ function updatePartitionColor(partitionName: string) {
   });
 }
 
-function updatePartitionShape(partitionName: string, brushed: boolean = false) {
+function updatePartitionShape(partitionName: string, brushed = false) {
   let partitionRecords: number[];
   if (brushed) {
     partitionRecords = Array.from(new Set([...brushedPointsIndices, ...hoveredPointsIndices]));

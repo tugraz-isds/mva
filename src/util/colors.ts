@@ -11,9 +11,9 @@ const rgbaToHexNumber = (color: RgbaColor): number => {
 
 const rgbaToHexString = (color?: RgbaColor): string => {
   if (!color) return '';
-  let rHex = color.r.toString(16).padStart(2, '0');
-  let gHex = color.g.toString(16).padStart(2, '0');
-  let bHex = color.b.toString(16).padStart(2, '0');
+  const rHex = color.r.toString(16).padStart(2, '0');
+  const gHex = color.g.toString(16).padStart(2, '0');
+  const bHex = color.b.toString(16).padStart(2, '0');
 
   return `#${rHex}${gHex}${bHex}`;
 };
@@ -22,8 +22,7 @@ const hexStringToRgba = (hex: string): RgbaColor => {
   hex = hex.replace(/^#/, '');
   let r = 0,
     g = 0,
-    b = 0,
-    a = 255;
+    b = 0;
   if (hex.length === 6) {
     r = parseInt(hex.slice(0, 2), 16);
     g = parseInt(hex.slice(2, 4), 16);

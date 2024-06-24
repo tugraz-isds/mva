@@ -1,4 +1,4 @@
-import { datasetStore, labelDimension, dimensionDataStore } from './stores/dataset';
+import { datasetStore, labelDimension, dimensionDataStore, invalidRowsStore } from './stores/dataset';
 import { parcoordVisibleDimensionsStore } from './stores/parcoord';
 import { partitionsDataStore, partitionsStore } from './stores/partitions';
 import { tableVisibleDimensionsStore } from './stores/table';
@@ -23,3 +23,6 @@ partitions && partitionsStore.set(new Map(JSON.parse(partitions)));
 
 const partitionsData = localStorage.getItem('partitionsData');
 partitionsData && partitionsDataStore.set(JSON.parse(partitionsData));
+
+const invalidRows = localStorage.getItem('invalidRows');
+invalidRows && invalidRowsStore.set(JSON.parse(invalidRows));

@@ -87,6 +87,7 @@
 <AddPartitionModal isOpen={isAddPartitionModalOpen} />
 
 {#if showMenu}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={contextMenuElement}
     class="context-menu fixed bg-white border border-gray-300 p-1 w-44"

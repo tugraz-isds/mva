@@ -49,6 +49,7 @@
   });
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="partitions-component w-full h-full"
   bind:clientWidth={width}

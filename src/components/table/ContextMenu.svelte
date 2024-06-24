@@ -62,6 +62,7 @@
 </script>
 
 {#if showMenu}
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="context-menu fixed bg-white border border-gray-300 p-1 w-28 z-10"
     style={menuStyle}

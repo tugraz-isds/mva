@@ -89,12 +89,11 @@ export function getPartitionRecordsByName(data: string[], name: string) {
 }
 
 function doesIntersect(a: number, b: number, c: number, d: number, p: number, q: number, r: number, s: number) {
-  let det, gamma, lambda;
-  det = (c - a) * (s - q) - (r - p) * (d - b);
+  const det = (c - a) * (s - q) - (r - p) * (d - b);
   if (det === 0) return false;
 
-  lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-  gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+  const lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+  const gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
   return 0 < lambda && lambda < 1 && 0 < gamma && gamma < 1;
 }
 
