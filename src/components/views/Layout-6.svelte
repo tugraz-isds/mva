@@ -11,26 +11,26 @@
 <Splitpanes horizontal dblClickSplitter={false} theme="modern-theme">
   <Pane minSize={20} size={55}>
     <Splitpanes dblClickSplitter={false} theme="modern-theme">
-      <Pane minSize={getViewMinSize(views[0].id)}
+      <Pane class="view-{views[0].id}" minSize={getViewMinSize(views[0].id)}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[0]} /></Pane
       >
-      <Pane minSize={getViewMinSize(views[1].id)}
+      <Pane class="view-{views[1].id}" minSize={getViewMinSize(views[1].id)}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[1]} /></Pane
       >
-      <Pane minSize={getViewMinSize(views[2].id)}
+      <Pane class="view-{views[2].id}" minSize={getViewMinSize(views[2].id)}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[2]} /></Pane
       >
     </Splitpanes>
   </Pane>
   <Pane minSize={20}>
     <Splitpanes dblClickSplitter={false} theme="modern-theme">
-      <Pane minSize={getViewMinSize(views[3].id)} size={20}
+      <Pane class="view-{views[3].id}" minSize={getViewMinSize(views[3].id)} size={20}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[3]} /></Pane
       >
-      <Pane minSize={getViewMinSize(views[4].id)} size={30}
+      <Pane class="view-{views[4].id}" minSize={getViewMinSize(views[4].id)} size={30}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[4]} /></Pane
       >
-      <Pane minSize={getViewMinSize(views[5].id)} size={50}
+      <Pane class="view-{views[5].id}" minSize={getViewMinSize(views[5].id)} size={50}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[5]} /></Pane
       >
     </Splitpanes>

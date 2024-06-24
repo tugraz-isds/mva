@@ -6,6 +6,6 @@
   export let handleSwap: (title: string, e: Event) => void;
 </script>
 
-<div class="lower-row flex flex-row h-full w-full">
+<div class="view-{views[0].id} lower-row flex flex-row h-full w-full">
   <ViewComponent otherViews={views} {handleSwap} currView={views[0]} />
 </div>

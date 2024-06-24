@@ -9,10 +9,10 @@
 </script>
 
 <Splitpanes horizontal dblClickSplitter={false} theme="modern-theme">
-  <Pane minSize={getViewMinSize(views[0].id)} size={55}>
+  <Pane class="view-{views[0].id}" minSize={getViewMinSize(views[0].id)} size={55}>
     <ViewComponent otherViews={views} {handleSwap} currView={views[0]} />
   </Pane>
-  <Pane minSize={getViewMinSize(views[1].id)}>
+  <Pane class="view-{views[1].id}" minSize={getViewMinSize(views[1].id)}>
     <ViewComponent otherViews={views} {handleSwap} currView={views[1]} />
   </Pane>
 </Splitpanes>
