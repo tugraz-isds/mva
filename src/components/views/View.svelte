@@ -6,6 +6,7 @@
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
   import MethodPicker from '../simmap/MethodPicker.svelte';
+  import Directions from '../splom/Directions.svelte';
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import ScatterplotSelectionShape from '../scatterplot/SelectionShapePicker.svelte';
@@ -61,6 +62,8 @@
       <ScatterplotSelectionShape title={currView.id} />
     {:else if currView.id === 'parcoord'}
       <ParcoordSelectionShape />
+    {:else if currView.id === 'splom'}
+      <Directions />
     {/if}
     <div class="flex gap-0 lg:gap-1 items-center">
       <Button on:click={refresh} class="p-0 m-0 text-black">
