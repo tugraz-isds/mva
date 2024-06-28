@@ -35,11 +35,7 @@
   <ChevronDownOutline size="xs" />
 </div>
 <Tooltip style="z-index: 1000;" type="light">Table Dimensions</Tooltip>
-<Dropdown
-  triggeredBy="#table-dims-dropdown"
-  class="overflow-y-auto"
-  style="z-index: 1000; padding: 5px; max-height: {height}%;"
->
+<Dropdown triggeredBy="#table-dims-dropdown" class="overflow-y-auto p-1" style="z-index: 1000; max-height: {height}%;">
   {#each tableVisibleDimensions as dim, i}
     <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">
       <Checkbox checked={dim.visible} on:change={() => updateTableVisibleDimensions(i)} />{dim.title}</DropdownItem

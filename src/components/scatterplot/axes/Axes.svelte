@@ -39,7 +39,7 @@
         .append('text')
         .attr('class', `${viewTitle}-axis-title`)
         .attr('transform', `translate(${width / 2}, ${height - margin.bottom + 35})`)
-        .attr('font-size', '12px')
+        .attr('font-size', '0.75rem')
         .style('text-anchor', 'middle')
         .text(xTitle);
 
@@ -54,7 +54,7 @@
         .append('text')
         .attr('class', `${viewTitle}-axis-title`)
         .attr('transform', `translate(${10}, ${height / 2}) rotate(270)`)
-        .attr('font-size', '12px')
+        .attr('font-size', '0.75rem')
         .style('text-anchor', 'middle')
         .text(yTitle);
   }
@@ -82,8 +82,8 @@
 
   export const saveSVG = () => {
     const svgElement = document.getElementById(`${viewTitle}-canvas-axes`);
-    const serializer = new XMLSerializer();
     if (!svgElement) return;
+    const serializer = new XMLSerializer();
     return serializer.serializeToString(svgElement);
   };
 

@@ -57,7 +57,7 @@
   on:click={handleClick}
   on:keydown={() => {}}
 >
-  <ButtonGroup class="w-full" style="height: 25px;">
+  <ButtonGroup class="w-full h-6">
     <Input
       class="partitions-component"
       size="sm"
@@ -73,7 +73,7 @@
   {:else}
     <div
       class="partitions-component w-full overflow-y-auto scrollable-div pb-2"
-      style="height: {height - 25}px"
+      style="height: {height - 24}px"
       on:keydown={() => {}}
     >
       {#each [...partitions] as [partitionName, partition], index}
@@ -90,6 +90,6 @@
   }
 
   .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+    height: 0.75rem;
   }
 </style>

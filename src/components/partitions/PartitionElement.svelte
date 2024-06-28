@@ -138,10 +138,10 @@
 <div
   on:click={selectPartition}
   on:keydown={() => {}}
-  class={`flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer ${
+  class={`flex flex-row items-center mt-2 rounded-lg bg-gray-100 p-1 cursor-pointer text-xs ${
     selectedPartition === partitionNameOld ? 'border-4' : 'border-b-4'
   }`}
-  style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`}; font-size: 12px;"
+  style="border-color: {`rgba(${partition.color.r}, ${partition.color.g}, ${partition.color.b}, ${partition.color.a})`};"
 >
   <div on:click={editName} on:keydown={() => {}} class="w-1/2">
     <Input

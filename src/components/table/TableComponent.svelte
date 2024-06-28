@@ -215,7 +215,7 @@
   <div class="w-full h-full" bind:clientWidth={width} bind:clientHeight={height}>
     <div class="w-full scrollable-div" style="height: {height - 20}px;">
       <table id="table-canvas" class="w-full table-fixed border-separate border-spacing-0">
-        <thead style="font-size: 14px;">
+        <thead class="text-sm">
           <tr class="bg-gray-100 select-none whitespace-nowrap px-1 hover:bg-gray-200 hover:cursor-pointer">
             {#each tableVisibleDimensions as dim}
               {#if dim.visible}
@@ -225,7 +225,7 @@
                   on:mouseleave={hideTooltip}
                   on:contextmenu={(e) => contextMenu.showContextMenu(e, dim.title)}
                   class={getHeaderClass($dimensionDataStore.get(dim.title))}
-                  style="font-size: 12px; overflow: hidden; width: {getTextWidth(
+                  style="font-size: 0.75rem; overflow: hidden; width: {getTextWidth(
                     getHeaderLength(dim.title, longestPartition),
                     12,
                     'sans-serif'
@@ -269,7 +269,7 @@
                 {#if dim.visible}
                   <td
                     class={getCellClass(dim.title, rowShow[row._i], $dimensionDataStore.get(dim.title))}
-                    style="font-size: 12px; {getPartitionColor(
+                    style="font-size: 0.75rem; {getPartitionColor(
                       dim.title,
                       partitions.get(partitionsData[row._i])?.color
                     )}">{dim.title === '_partition' ? partitionsData[row._i] : formatCell(row[dim.title], i)}</td
@@ -281,7 +281,7 @@
         </tbody>
       </table>
     </div>
-    <div class="flex items-center" style="font-size: 12px;">
+    <div class="flex items-center text-xs">
       {dataset.length} records | {brushedRowsIndices.size} selected |
     </div>
   </div>
@@ -325,6 +325,6 @@
   }
 
   .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+    height: 0.75rem;
   }
 </style>

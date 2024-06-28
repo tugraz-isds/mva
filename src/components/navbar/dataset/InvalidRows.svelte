@@ -30,7 +30,7 @@
   <div class="w-full scrollable-div">
     <h3 class="mb-4 text-xl font-medium text-gray-900">Invalid Rows</h3>
     <table id="invalid-rows" class="w-full">
-      <thead style="font-size: 14px;">
+      <thead class="text-sm">
         <tr class="bg-gray-100 select-none hover:cursor-pointer">
           {#each [...dimensionData] as [dim, dimData]}
             <th class="px-1 hover:bg-gray-200'} text-{dimData.type === 'numerical' ? 'right' : 'left'}"
@@ -41,7 +41,7 @@
       </thead>
       <tbody>
         {#each invalidRows as row}
-          <tr class="text-black" style="font-size: 12px;">
+          <tr class="text-xs text-black">
             {#each dimensions as dim, i}
               <td
                 class="px-1 text-{dimensionData.get(dimensions[i])?.type === 'numerical' ? 'right' : 'left'} {row[
@@ -72,6 +72,6 @@
   }
 
   .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+    height: 0.75rem;
   }
 </style>

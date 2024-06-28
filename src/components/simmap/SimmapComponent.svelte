@@ -187,18 +187,22 @@
   }
 
   export function saveSVG() {
-    let pointsStringSvg = pointsComponent.saveSVG();
-    if (!pointsStringSvg) return;
+    let pointsStringSvg = pointsComponent?.saveSVG();
+    let axesStringSvg = axesComponent?.saveSVG();
+    if (!axesStringSvg || !pointsStringSvg) return;
 
     isSvgExportModalOpen = false;
     isSvgExportModalOpen = true;
 
     pointsStringSvg = pointsStringSvg.replace(/<svg[^>]*>/, '<g>').replace(/<\/svg>/, '</g>');
+    axesStringSvg = axesStringSvg.replace(/<svg([^>]*)>/, '<g>').replace(/<\/svg>/, '</g>');
 
     const svgString =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
       '\n<!-- Points -->\n' +
       pointsStringSvg +
+      '\n<!-- Axes -->\n' +
+      axesStringSvg +
       '\n</svg>';
 
     svgExportModal.setSvgString(svgString, 'simmap');

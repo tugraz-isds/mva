@@ -90,8 +90,8 @@ self.onmessage = function (message) {
       resizeCanvas(canvas, width, height);
       break;
     case 'updatePartitions':
-      if (data.partitionsData !== null) partitionsData = data.partitionsData;
-      if (data.partitions !== null) updatePartitions(data.partitions);
+      if (data.partitionsData && data.partitionsData !== null) partitionsData = data.partitionsData;
+      if (data.partitions && data.partitions !== null) updatePartitions(data.partitions, data.addedIndices);
       break;
     default:
       break;
@@ -123,12 +123,15 @@ function drawPoints(inputPoints: number[][]) {
   strokes = Array(inputPoints.length).fill(null);
   inputPoints.forEach((currPoint: number[], i: number) => {
     const partition = partitions.get(partitionsData[i]);
+    const hasStroke = partition?.shape.includes('hollow');
     const point = getPoint(currPoint, i, points[i], pointSize, partition);
+    if (!pointShow[i] && !hasStroke) point.material = POINT_MATERIAL_FILTERED;
     points[i] = point as PointType;
     scene.add(point);
 
     if (partition?.shape.includes('hollow')) {
       const stroke = getStroke(currPoint, i, points[i], pointSize, partition);
+      if (!pointShow[i]) stroke.material = POINT_MATERIAL_FILTERED;
       strokes[i] = stroke;
       scene.add(stroke);
     }
@@ -253,12 +256,10 @@ function removeBrushedPoints(indices: Set<number>) {
   });
 }
 
-function updatePartitions(partitionsNew: Map<string, PartitionType>) {
+function updatePartitions(partitionsNew: Map<string, PartitionType>, addedIndices?: Set<number>) {
   const partitionsOld = partitions;
   partitions = partitionsNew;
-  if (partitionsOld.size === 0 || partitionsNew.size === 0) {
-    return;
-  }
+  if (partitionsOld.size === 0 || partitionsNew.size === 0) return;
 
   const partitionsOldArray = Array.from(partitionsOld.keys());
   const partitionsNewArray = Array.from(partitions.keys());
@@ -270,7 +271,7 @@ function updatePartitions(partitionsNew: Map<string, PartitionType>) {
       if (updatedProperty === 'color') updatePartitionColor(updatedPartition);
       else if (updatedProperty === 'shape') updatePartitionShape(updatedPartition);
       else if (updatedProperty === 'visible') updatePartitionVisible(updatedPartition);
-      else if (updatedProperty === 'size') updatePartitionShape(updatedPartition, true);
+      else if (updatedProperty === 'size') updatePartitionShape(updatedPartition, true, addedIndices);
     }
   }
   // Partition was deleted
@@ -293,13 +294,12 @@ function updatePartitionColor(partitionName: string) {
   });
 }
 
-function updatePartitionShape(partitionName: string, brushed = false) {
+function updatePartitionShape(partitionName: string, brushed = false, addedIndices?: Set<number>) {
   let partitionRecords: number[];
-  if (brushed) {
-    partitionRecords = Array.from(new Set([...brushedPointsIndices, ...hoveredPointsIndices]));
-  } else {
-    partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
-  }
+  if (addedIndices) partitionRecords = Array.from(addedIndices);
+  else if (brushed) partitionRecords = Array.from(new Set([...brushedPointsIndices, ...hoveredPointsIndices]));
+  else partitionRecords = getPartitionRecordsByName(partitionsData, partitionName);
+
   const partition = partitions.get(partitionName);
   partitionRecords.forEach((i) => {
     scene.remove(strokes[i] as StrokeType);

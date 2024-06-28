@@ -1,0 +1,1 @@
+export const SPLOM_SHOWN_DIMENSIONS_NUM = 5;

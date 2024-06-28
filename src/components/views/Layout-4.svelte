@@ -6,11 +6,13 @@
 
   export let views: View[];
   export let handleSwap: (title: string, e: Event) => void;
+  export let startResize: () => void;
+  export let endResize: () => void;
 </script>
 
-<Splitpanes horizontal dblClickSplitter={false} theme="modern-theme">
+<Splitpanes horizontal dblClickSplitter={false} theme="modern-theme" on:resize={startResize} on:resized={endResize}>
   <Pane minSize={20} size={55}>
-    <Splitpanes dblClickSplitter={false} theme="modern-theme">
+    <Splitpanes dblClickSplitter={false} theme="modern-theme" on:resize={startResize} on:resized={endResize}>
       <Pane class="view-{views[0].id}" minSize={getViewMinSize(views[0].id)}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[0]} /></Pane
       >
@@ -20,7 +22,7 @@
     </Splitpanes>
   </Pane>
   <Pane minSize={20}>
-    <Splitpanes dblClickSplitter={false} theme="modern-theme">
+    <Splitpanes dblClickSplitter={false} theme="modern-theme" on:resize={startResize} on:resized={endResize}>
       <Pane class="view-{views[2].id}" minSize={getViewMinSize(views[2].id)}
         ><ViewComponent otherViews={views} {handleSwap} currView={views[2]} /></Pane
       >

@@ -220,7 +220,8 @@
         event.clientY <= canvasRect.bottom &&
         event.clientX >= canvasRect.left &&
         event.clientX <= canvasRect.right
-      )
+      ) ||
+      (event.target as SVGElement)?.id !== 'parcoord-canvas-axes'
     )
       return;
 
