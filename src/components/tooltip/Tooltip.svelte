@@ -25,7 +25,7 @@
       if (clientY + tooltipElement.offsetHeight + 10 > window.innerHeight) top -= tooltipElement.offsetHeight;
       else top += 10;
 
-      tooltipStyle = `position: fixed; top: ${top}px; left: ${left}px; font-size: 10px; ${
+      tooltipStyle = `position: fixed; top: ${top}px; left: ${left}px; font-size: 0.625rem; ${
         maxWidth ? `max-width: ${maxWidth}px; overflow: hidden; text-overflow: ellipsis;` : ''
       }`;
     }

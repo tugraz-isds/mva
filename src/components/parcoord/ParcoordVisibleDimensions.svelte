@@ -42,8 +42,8 @@
 <div on:mouseenter={() => ($isInteractableStore = false)} on:mouseleave={() => ($isInteractableStore = true)}>
   <Dropdown
     triggeredBy="#parcoord-dims-dropdown"
-    class="overflow-y-auto"
-    style="z-index: 1000; padding: 5px; max-height: {height}%;"
+    class="overflow-y-auto p-1"
+    style="z-index: 1000; max-height: {height}%;"
   >
     {#each parcoordVisibleDimensions as dim, i}
       <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">

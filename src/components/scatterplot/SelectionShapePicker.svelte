@@ -48,8 +48,8 @@
 <Dropdown
   triggeredBy="#{title}-selection-shape"
   bind:open={isShapeDropdownOpen}
-  class="overflow-y-auto"
-  style="z-index: 1000; padding: 5px;"
+  class="overflow-y-auto p-1"
+  style="z-index: 1000;"
 >
   {#each [...SELECTION_SHAPES] as [shape, icon]}
     <DropdownItem

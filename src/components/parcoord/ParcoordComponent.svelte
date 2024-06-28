@@ -402,6 +402,6 @@
   }
 
   .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+    height: 0.75rem;
   }
 </style>

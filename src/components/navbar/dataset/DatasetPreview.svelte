@@ -11,12 +11,12 @@
 
 <div class="w-full scrollable-div">
   <table id="dataset-header" class="w-full">
-    <thead style="font-size: 14px;">
+    <thead class="text-sm">
       {#each previewHeader as header}
         <th class="px-1 text-{header.type === 'numerical' ? 'right' : 'left'}">
           {#if isInternalDimension(header.title)}
             <Select
-              class="w-20 h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+              class="w-20 h-full text-xs rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
               style="padding-right: 1.5rem !important;"
               size="sm"
               disabled
@@ -24,7 +24,7 @@
             />
           {:else}
             <Select
-              class="w-full max-w-28 h-full text-[12px] rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
+              class="w-full max-w-28 h-full text-cs rounded m-0 flex items-center justify-center overflow-hidden leading-4 z-10 text-ellipsis p-0 pl-2"
               style="padding-right: 1.5rem !important;"
               size="sm"
               items={COLUMN_TYPE_LIST}
@@ -44,7 +44,7 @@
     </thead>
     <tbody>
       {#each previewRows as row}
-        <tr class="text-black" style="font-size: 12px;">
+        <tr class="text-xs text-black">
           {#each row as cell, i}
             <td class="px-1 text-{previewHeader[i].type === 'numerical' ? 'right' : 'left'}"
               >{clearStringQuotes(cell)}</td
@@ -70,6 +70,6 @@
   }
 
   .scrollable-div::-webkit-scrollbar {
-    height: 12px;
+    height: 0.75rem;
   }
 </style>

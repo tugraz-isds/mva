@@ -115,7 +115,7 @@
         .attr('class', 'splom-axis-title-top')
         .attr('x', margin.left + i * spacing + spacing / 2)
         .attr('y', margin.top - 5)
-        .attr('font-size', '10px')
+        .attr('font-size', '0.625rem')
         .attr('text-anchor', 'middle')
         .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
     });
@@ -128,7 +128,7 @@
         .attr('transform', `rotate(-90, ${margin.left - 5}, ${margin.top + i * spacing + spacing / 2})`)
         .attr('x', margin.left - 5)
         .attr('y', margin.top + i * spacing + spacing / 2)
-        .attr('font-size', '10px')
+        .attr('font-size', '0.625rem')
         .attr('text-anchor', 'middle')
         .text(dim.substring(0, maxTitleLength) + (dim.length === maxTitleLength ? '' : '...'));
     });
@@ -142,7 +142,7 @@
             .attr('class', 'splom-axis-title-diagonal')
             .attr('x', margin.left + i * spacing + spacing / 2)
             .attr('y', margin.top + j * spacing + spacing / 2 + 5)
-            .attr('font-size', '10px')
+            .attr('font-size', '0.625rem')
             .attr('text-anchor', 'middle')
             .text(dimX.substring(0, maxTitleLength) + (dimX.length === maxTitleLength ? '' : '...'));
         }

@@ -149,11 +149,8 @@
     </DropdownItem>
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div on:mouseenter={() => ($isInteractableStore = false)} on:mouseleave={() => ($isInteractableStore = true)}>
-      <Dropdown placement="right-start" style="padding: 5px; width: 120px;" triggeredBy="#parcoord-axis-context-menu">
-        <DropdownItem
-          defaultClass="{activeClass} flex items-center"
-          style="width: 110px;"
-          on:click={() => handleShow('labels')}
+      <Dropdown placement="right-start" class="p-1 w-32" triggeredBy="#parcoord-axis-context-menu">
+        <DropdownItem defaultClass="{activeClass} flex items-center" class="w-28" on:click={() => handleShow('labels')}
           ><CheckOutline
             size="xs"
             class="ms-2 mr-2"
@@ -162,7 +159,7 @@
         >
         <DropdownItem
           defaultClass="{activeClass} flex items-center"
-          style="width: 110px;"
+          class="w-28"
           on:click={() => handleShow('histograms')}
           ><CheckOutline
             size="xs"
@@ -170,10 +167,7 @@
             style="visibility: {$parcoordDimMetadata.get(dimension)?.showHistograms ? 'visible' : 'hidden'}"
           />Histogram</DropdownItem
         >
-        <DropdownItem
-          defaultClass="{activeClass} flex items-center"
-          style="width: 110px;"
-          on:click={() => handleShow('filter')}
+        <DropdownItem defaultClass="{activeClass} flex items-center" class="w-28" on:click={() => handleShow('filter')}
           ><CheckOutline
             size="xs"
             class="ms-2 mr-2"
@@ -183,7 +177,7 @@
         {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
           <DropdownItem
             defaultClass="{activeClass} flex items-center"
-            style="width: 110px;"
+            class="w-28"
             on:click={() => handleShow('filterValues')}
             ><CheckOutline
               size="xs"

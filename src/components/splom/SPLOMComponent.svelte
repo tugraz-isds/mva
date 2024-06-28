@@ -202,7 +202,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="splom-canvas"
-  class="w-full h-full scrollable-div"
+  class="w-full h-full"
   bind:this={splomDiv}
   bind:clientWidth={width}
   bind:clientHeight={height}
@@ -239,14 +239,12 @@
 
 {#if dataset?.length > 0 && width > 0 && showOverview}
   <div
-    style="position: fixed; left: {splomDiv?.offsetLeft +
-      splomDiv?.clientWidth +
-      20}px; top: {splomDiv?.offsetTop}px; width: 200px; height: 200px; z-index: 11;"
-    class="bg-gray-100 border border-black"
+    style="position: fixed; left: {splomDiv?.offsetLeft + width + 20}px; top: {splomDiv?.offsetTop}px; z-index: 11;"
+    class="w-52 h-52 bg-gray-100 border border-black"
   >
     <AxesOverview
       dimensions={numericalDimensions}
-      size={200}
+      size={208}
       {activeDimName}
       {visibleDimensionsStart}
       {hoveredDim}
@@ -256,13 +254,3 @@
 {/if}
 
 <SvgExportModal bind:this={svgExportModal} isOpen={isSvgExportModalOpen} />
-
-<style>
-  .scrollable-div {
-    scrollbar-width: thin;
-  }
-
-  .scrollable-div::-webkit-scrollbar {
-    height: 12px;
-  }
-</style>

@@ -73,8 +73,9 @@
     {#each PARTITION_COLORS as color}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
-        style="width: 20px; height: 20px; background-color: {color};"
-        class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
+        style="background-color: {color};"
+        class="w-5 h-5 rounded-md border border-black hover:cursor-pointer hover:border-2 {color ===
+        rgbaToHexString(rgb)
           ? 'border-4 hover:border-4'
           : ''}"
         on:click={() => {
@@ -93,8 +94,9 @@
         {#each customColors as color, i}
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
-            style="width: 20px; height: 20px; background-color: {color};"
-            class="rounded-md border border-black hover:cursor-pointer hover:border-2 {color === rgbaToHexString(rgb)
+            style="background-color: {color};"
+            class="w-5 h-5 rounded-md border border-black hover:cursor-pointer hover:border-2 {color ===
+            rgbaToHexString(rgb)
               ? 'border-4 hover:border-4'
               : ''}"
             on:click={() => {
