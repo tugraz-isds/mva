@@ -1,5 +1,4 @@
 import { writable } from 'svelte/store';
+import type { CoordinateType } from '../util/types';
 
-export const splomXDimensionsStore = writable<number>(0);
-export const splomYDimensionsStore = writable<number>(0);
 export const showSplomOverviewStore = writable<boolean>(false);

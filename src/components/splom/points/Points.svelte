@@ -1,13 +1,19 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { afterUpdate, onDestroy, onMount } from 'svelte';
   import OffscreenWorker from '../../scatterplot/points/offscreenWorker?worker';
   import CalculatingWorker from './calculatingWorker?worker';
   import { scaleLinear } from 'd3-scale';
   import { dimensionDataStore } from '../../../stores/dataset';
+  import { brushedArray, hoveredArray } from '../../../stores/brushing';
+  import { linkingArray } from '../../../stores/linking';
+  import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
+  import { isCurrentlyResizing } from '../../../stores/views';
+  import { saveSVGUtil } from '../../scatterplot/points/drawingUtil';
   import { debounce, throttle } from '../../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
   import type { MarginType } from '../../../util/types';
   import type { TaskType } from '../types';
+  import type { PartitionType } from '../../partitions/types';
 
   export let dataset: DSVParsedArray<any>;
   export let dimensionsX: string[] = [];
@@ -19,6 +25,7 @@
   let offscreenCanvasEl: OffscreenCanvas;
   let drawingWorker: Worker;
   let points: number[][] = [];
+  let pointShow: boolean[] = [];
   let throttledDrawPoints: () => void;
   let debouncedDrawPoints: () => void;
 
@@ -29,12 +36,81 @@
   let gridSize = 0;
   $: gridSize = size - margin.left - margin.right;
 
+  let scatterplotNum = 0;
+  $: {
+    scatterplotNum = 0;
+    dimensionsX.forEach((dimX) => {
+      dimensionsY.forEach((dimY) => {
+        if (dimX !== dimY) scatterplotNum++;
+      });
+    });
+
+    drawingWorker?.postMessage({
+      function: 'setLinking',
+      pointShow: Array.from({ length: scatterplotNum }, () => pointShow).flat()
+    });
+
+    drawingWorker?.postMessage({
+      function: 'updatePartitions',
+      partitionsData: Array.from({ length: scatterplotNum }, () => $partitionsDataStore).flat()
+    });
+  }
+
   $: if (size && dimensionsX && dimensionsY && margin && debouncedDrawPoints) {
     drawingWorker.postMessage({ function: 'resizeCanvas', width: size, height: size });
     debouncedDrawPoints();
   }
 
-  function setPointData() {
+  const unsubscribeResizing = isCurrentlyResizing.subscribe((value) => {
+    if (!value && points.length > 0) {
+      drawPoints();
+    }
+  });
+
+  let partitionsData: string[] | null = null;
+  const unsubscribePartitionsData = partitionsDataStore.subscribe((value) => {
+    partitionsData = value;
+    updatePartitions();
+  });
+
+  let partitions: Map<string, PartitionType> | null = null;
+  const unsubscribePartitions = partitionsStore.subscribe((value) => {
+    partitions = value;
+    updatePartitions();
+  });
+
+  function updatePartitions() {
+    setTimeout(() => {
+      if (partitions !== null || partitionsData !== null) {
+        drawingWorker?.postMessage({
+          function: 'updatePartitions',
+          partitions,
+          partitionsData:
+            partitionsData === null ? null : Array.from({ length: scatterplotNum }, () => partitionsData).flat(),
+          addedIndices: new Set([
+            ...Array.from({ length: scatterplotNum }, (_, i) =>
+              Array.from($brushedArray).map((index) => index + i * dataset.length)
+            ).flat(),
+            ...Array.from({ length: scatterplotNum }, (_, i) =>
+              Array.from($hoveredArray).map((index) => index + i * dataset.length)
+            ).flat()
+          ])
+        });
+      }
+      partitions = null;
+      partitionsData = null;
+    }, 0);
+  }
+
+  const unsubscribeLinking = linkingArray.subscribe((value) => {
+    pointShow = value;
+    drawingWorker?.postMessage({
+      function: 'setLinking',
+      pointShow: Array.from({ length: scatterplotNum }, () => pointShow).flat()
+    });
+  });
+
+  function drawPoints() {
     points = [];
 
     availableWorkers = navigator.hardwareConcurrency;
@@ -122,10 +198,6 @@
     }
   }
 
-  function drawPoints() {
-    setPointData();
-  }
-
   function getXScaleParams(dim: string, max: number) {
     return {
       domain: [$dimensionDataStore.get(dim)?.min, $dimensionDataStore.get(dim)?.max] as [number, number],
@@ -152,6 +224,18 @@
       .range([max - 3, 3]);
   }
 
+  export const saveSVG = () => {
+    return saveSVGUtil(
+      size,
+      size,
+      Array.from({ length: scatterplotNum }, () => pointShow).flat(),
+      points,
+      $partitionsStore,
+      Array.from({ length: scatterplotNum }, () => $partitionsDataStore).flat(),
+      new Set()
+    );
+  };
+
   onMount(() => {
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
     drawingWorker = new OffscreenWorker();
@@ -169,6 +253,13 @@
 
     throttledDrawPoints = throttle(drawPoints, 10);
     debouncedDrawPoints = debounce(throttledDrawPoints, 10);
+  });
+
+  onDestroy(() => {
+    unsubscribeResizing();
+    unsubscribePartitions();
+    unsubscribePartitionsData();
+    unsubscribeLinking();
   });
 </script>
 

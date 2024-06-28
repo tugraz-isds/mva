@@ -82,8 +82,8 @@
 
   export const saveSVG = () => {
     const svgElement = document.getElementById(`${viewTitle}-canvas-axes`);
-    const serializer = new XMLSerializer();
     if (!svgElement) return;
+    const serializer = new XMLSerializer();
     return serializer.serializeToString(svgElement);
   };
 

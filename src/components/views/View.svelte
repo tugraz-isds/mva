@@ -6,11 +6,11 @@
   import HistogramSettings from '../parcoord/histograms/HistogramSettings.svelte';
   import DimensionPickers from '../scatterplot/DimensionPickers.svelte';
   import MethodPicker from '../simmap/MethodPicker.svelte';
-  import Directions from '../splom/Directions.svelte';
   import TableVisibleDimensions from '../table/TableVisibleDimensions.svelte';
   import ParcoordVisibleDimensions from '../parcoord/ParcoordVisibleDimensions.svelte';
   import ScatterplotSelectionShape from '../scatterplot/SelectionShapePicker.svelte';
   import ParcoordSelectionShape from '../parcoord/SelectionShapePicker.svelte';
+  import OverviewSettings from '../splom/OverviewSettings.svelte';
   import type { View } from './ViewType';
 
   export let otherViews: View[];
@@ -63,7 +63,7 @@
     {:else if currView.id === 'parcoord'}
       <ParcoordSelectionShape />
     {:else if currView.id === 'splom'}
-      <Directions />
+      <OverviewSettings />
     {/if}
     <div class="flex gap-0 lg:gap-1 items-center">
       <Button on:click={refresh} class="p-0 m-0 text-black">
@@ -91,7 +91,7 @@
           >
         {/each}
       </Dropdown>
-      {#if ['parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
+      {#if ['splom', 'parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
         <Button on:click={saveSVG} class="p-0 m-0 text-black">
           <DownloadOutline
             id="{currView.id}-expand"
@@ -104,8 +104,22 @@
     </div>
   </div>
   {#key unique}
-    <div class="view-content w-full h-full">
+    <div
+      class="view-content w-full h-full {currView.id === 'splom'
+        ? 'overflow-y-auto overflow-x-auto scrollable-div'
+        : ''}"
+    >
       <svelte:component this={currView.component} />
     </div>
   {/key}
 </div>
+
+<style>
+  .scrollable-div {
+    scrollbar-width: thin;
+  }
+
+  .scrollable-div::-webkit-scrollbar {
+    height: 12px;
+  }
+</style>

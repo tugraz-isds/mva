@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte';
   import Navbar from '../components/navbar/Navbar.svelte';
   import { isOffscreenCanvasSupported } from '../util/util';
-  import { activeViewsStore } from '../stores/views';
+  import { activeViewsStore, isCurrentlyResizing } from '../stores/views';
   import Layout_1 from '../components/views/Layout-1.svelte';
   import Layout_2 from '../components/views/Layout-2.svelte';
   import Layout_3 from '../components/views/Layout-3.svelte';
@@ -31,6 +31,14 @@
     }
   };
 
+  function startResize() {
+    if (!$isCurrentlyResizing) isCurrentlyResizing.set(true);
+  }
+
+  function endResize() {
+    if ($isCurrentlyResizing) isCurrentlyResizing.set(false);
+  }
+
   onMount(() => {
     const canvasEl: HTMLCanvasElement = document.createElement('canvas');
     offScreenSupported = isOffscreenCanvasSupported(canvasEl);
@@ -48,15 +56,15 @@
       {#if activeViews.length === 1}
         <Layout_1 views={activeViews} {handleSwap} />
       {:else if activeViews.length === 2}
-        <Layout_2 views={activeViews} {handleSwap} />
+        <Layout_2 views={activeViews} {handleSwap} {startResize} {endResize} />
       {:else if activeViews.length === 3}
-        <Layout_3 views={activeViews} {handleSwap} />
+        <Layout_3 views={activeViews} {handleSwap} {startResize} {endResize} />
       {:else if activeViews.length === 4}
-        <Layout_4 views={activeViews} {handleSwap} />
+        <Layout_4 views={activeViews} {handleSwap} {startResize} {endResize} />
       {:else if activeViews.length === 5}
-        <Layout_5 views={activeViews} {handleSwap} />
+        <Layout_5 views={activeViews} {handleSwap} {startResize} {endResize} />
       {:else if activeViews.length === 6}
-        <Layout_6 views={activeViews} {handleSwap} />
+        <Layout_6 views={activeViews} {handleSwap} {startResize} {endResize} />
       {/if}
     </div>
   </div>

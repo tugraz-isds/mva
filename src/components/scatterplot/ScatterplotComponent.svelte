@@ -127,8 +127,8 @@
   }
 
   export function saveSVG() {
-    let pointsStringSvg = pointsComponent.saveSVG();
-    let axesStringSvg = axesComponent.saveSVG();
+    let pointsStringSvg = pointsComponent?.saveSVG();
+    let axesStringSvg = axesComponent?.saveSVG();
     if (!axesStringSvg || !pointsStringSvg) return;
 
     isSvgExportModalOpen = false;

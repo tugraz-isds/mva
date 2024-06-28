@@ -320,6 +320,7 @@ export async function parseDataset(
 
   let invalidRows = dataset.filter((_, index) => invalidRowIndices.has(index)) as DSVParsedArray<any>;
   dataset = dataset.filter((_, index) => !invalidRowIndices.has(index)) as DSVParsedArray<any>;
+  partitionsData = partitionsData.filter((_, index) => !invalidRowIndices.has(index));
 
   const labelDim = Object.keys(dataset[0])[0]; // Set first dimension as label
   localStorage.setItem('labelDimension', labelDim);

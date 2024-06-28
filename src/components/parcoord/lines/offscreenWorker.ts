@@ -232,9 +232,7 @@ function removeBrushedLines(indices: Set<number>) {
 function updatePartitions(partitionsNew: Map<string, PartitionType>) {
   const partitionsOld = partitions;
   partitions = partitionsNew;
-  if (partitionsOld.size === 0 || partitionsNew.size === 0) {
-    return;
-  }
+  if (partitionsOld.size === 0 || partitionsNew.size === 0) return;
 
   const partitionsOldArray = Array.from(partitionsOld.keys());
   const partitionsNewArray = Array.from(partitions.keys());
