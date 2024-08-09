@@ -113,7 +113,7 @@
         >
       </div>
 
-      <Button type="submit" class="w-full" on:click={saveData}>Save</Button>
+      <Button type="submit" class="w-full focus:ring-transparent" on:click={saveData}>Save</Button>
     </div>
   </form>
 </Modal>

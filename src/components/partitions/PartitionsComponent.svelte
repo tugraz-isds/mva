@@ -65,7 +65,7 @@
       bind:value={partitionName}
       on:keydown={handleKeyDown}
     />
-    <Button color="primary" size="sm" on:click={handleAddPartition}>Add</Button>
+    <Button color="primary" size="sm" on:click={handleAddPartition} class="focus:ring-transparent">Add</Button>
   </ButtonGroup>
 
   {#if partitions.size === 0}

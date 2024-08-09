@@ -52,8 +52,9 @@
       on:click={() => {
         addCustomColor(rgb);
         isOpen = false;
-      }}>Add</Button
+      }}
+      class="focus:ring-transparent">Add</Button
     >
-    <Button size="sm" color="red" on:click={() => (isOpen = false)}>Cancel</Button>
+    <Button size="sm" color="red" on:click={() => (isOpen = false)} class="focus:ring-transparent">Cancel</Button>
   </div>
 </div>

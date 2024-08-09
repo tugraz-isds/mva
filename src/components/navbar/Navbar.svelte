@@ -129,7 +129,9 @@
           <li
             class="font-medium py-2 px-4 text-sm hover:bg-gray-100 w-full text-left flex items-center justify-between"
           >
-            <Checkbox checked={view.visible} on:change={() => toggleViewVisibility(i)}>{view.title}</Checkbox>
+            <Checkbox checked={view.visible} on:change={() => toggleViewVisibility(i)} class="focus:ring-transparent"
+              >{view.title}</Checkbox
+            >
           </li>
         {/each}
       </Dropdown>
@@ -163,6 +165,6 @@
   </svelte:fragment>
   <div class="flex">
     <div>Dataset imported with <b>{invalidRowsCount}</b> invalid rows.</div>
-    <Button size="xs" class="ml-4" on:click={openInvalidRowsModal}>View</Button>
+    <Button size="xs" class="ml-4 focus:ring-transparent" on:click={openInvalidRowsModal}>View</Button>
   </div>
 </Toast>

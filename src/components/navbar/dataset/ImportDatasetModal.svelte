@@ -150,7 +150,7 @@
       <DatasetPreview {previewHeader} {previewRows} />
     {/if}
     <div class="w-full flex justify-center">
-      <Button class="w-1/2" on:click={importDataset}>Import Dataset</Button>
+      <Button class="w-1/2 focus:ring-transparent" on:click={importDataset}>Import Dataset</Button>
     </div>
   </form>
 </Modal>

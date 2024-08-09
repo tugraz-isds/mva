@@ -161,7 +161,10 @@
         isDeleteModalOpen = false;
         isDeleteModalOpen = true;
       }}
-      class="text-grey-900 p-0 m-0 bg-inherit hover:bg-inherit {partitionName === DEFAULT_PARTITION ? 'invisible' : ''}"
+      class="text-grey-900 p-0 m-0 bg-inherit hover:bg-inherit focus:ring-transparent {partitionName ===
+      DEFAULT_PARTITION
+        ? 'invisible'
+        : ''}"
     >
       <TrashBinOutline size="sm" />
     </Button>
@@ -179,7 +182,7 @@
           partitionsStore,
           partitionsDataStore
         )}
-      class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+      class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit focus:ring-transparent"
     >
       <CirclePlusOutline size="sm" />
     </Button>
@@ -213,7 +216,7 @@
     </div>
     <Button
       on:click={showColorPicker}
-      class="p-0 m-0 bg-inherit hover:bg-inherit"
+      class="p-0 m-0 bg-inherit hover:bg-inherit focus:ring-transparent"
       style="color: {rgbaToHexString(partition.color)};"
     >
       <PaletteOutline size="sm" />
@@ -222,7 +225,7 @@
     {#if partition.visible}
       <Button
         on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
-        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit focus:ring-transparent"
       >
         <EyeOutline size="sm" />
       </Button>
@@ -230,7 +233,7 @@
     {:else}
       <Button
         on:click={() => hidePartition(partitionNameOld ?? partitionName, partitions, partitionsStore)}
-        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit"
+        class="p-0 m-0 text-grey-900 bg-inherit hover:bg-inherit focus:ring-transparent"
       >
         <EyeSlashOutline size="sm" />
       </Button>

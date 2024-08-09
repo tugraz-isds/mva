@@ -103,7 +103,7 @@
         />
       </div>
       <div class="flex flex-row items-center">
-        <Button type="submit" class="w-full" on:click={() => setDimensionRange()}>Save</Button>
+        <Button type="submit" class="w-full focus:ring-transparent" on:click={() => setDimensionRange()}>Save</Button>
       </div>
     </div>
     <div>
@@ -135,7 +135,7 @@
           />
         </div>
         <div class="flex flex-row items-center">
-          <Button type="submit" class="w-full" on:click={resetDimensionRange}>Reset</Button>
+          <Button type="submit" class="w-full focus:ring-transparent" on:click={resetDimensionRange}>Reset</Button>
         </div>
       </div>
     </div>

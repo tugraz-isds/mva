@@ -67,7 +67,7 @@
     {/if}
     <div class="flex gap-0 lg:gap-1 items-center">
       {#if ['splom', 'parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
-        <Button on:click={refresh} class="p-0 m-0 text-black">
+        <Button on:click={refresh} class="p-0 m-0 text-black focus:ring-transparent">
           <RefreshOutline
             id="{currView.id}-refresh"
             size="sm"
@@ -94,7 +94,7 @@
         {/each}
       </Dropdown>
       {#if ['splom', 'parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
-        <Button on:click={saveSVG} class="p-0 m-0 text-black">
+        <Button on:click={saveSVG} class="p-0 m-0 text-black focus:ring-transparent">
           <DownloadOutline
             id="{currView.id}-download"
             size="sm"

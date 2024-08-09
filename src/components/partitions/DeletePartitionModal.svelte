@@ -14,11 +14,11 @@
     </h3>
     <Button
       color="red"
-      class="me-2"
+      class="me-2 focus:ring-transparent"
       on:click={() =>
         deletePartition(partitionName, $partitionsStore, $partitionsDataStore, partitionsStore, partitionsDataStore)}
       >Delete</Button
     >
-    <Button color="alternative">Cancel</Button>
+    <Button color="alternative" class="focus:ring-transparent">Cancel</Button>
   </div>
 </Modal>

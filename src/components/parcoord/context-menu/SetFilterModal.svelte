@@ -132,6 +132,6 @@
     {#if !validUpload}
       <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
     {/if}
-    <Button type="submit" class="w-full" on:click={() => setAxisRange()}>Save</Button>
+    <Button type="submit" class="w-full focus:ring-transparent" on:click={() => setAxisRange()}>Save</Button>
   </form>
 </Modal>

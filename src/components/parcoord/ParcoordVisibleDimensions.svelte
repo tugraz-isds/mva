@@ -47,7 +47,11 @@
   >
     {#each parcoordVisibleDimensions as dim, i}
       <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">
-        <Checkbox checked={dim.visible} on:change={() => updateParcoordVisibleDimensions(i)} />{dim.title}</DropdownItem
+        <Checkbox
+          checked={dim.visible}
+          on:change={() => updateParcoordVisibleDimensions(i)}
+          class="focus:ring-transparent"
+        />{dim.title}</DropdownItem
       >
     {/each}
   </Dropdown>

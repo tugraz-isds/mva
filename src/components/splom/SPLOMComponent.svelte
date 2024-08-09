@@ -26,10 +26,12 @@
   let svgExportModal: SvgExportModal;
   let isSvgExportModalOpen = false;
 
-  let margin: MarginType = { top: 40, right: 20, bottom: 50, left: 40 };
+  let margin: MarginType = { top: 20, right: 20, bottom: 20, left: 40 };
 
-  let gridSize = 0;
-  $: gridSize = width - margin.left - margin.right;
+  let gridSizeX = 0,
+    gridSizeY = 0;
+  $: gridSizeX = width - margin.left - margin.right;
+  $: gridSizeY = height - margin.top - margin.bottom;
 
   $: {
     if (visibleDimensionsStart) {
@@ -50,8 +52,8 @@
       visibleDimensionsX.length === numericalDimensions.length &&
       visibleDimensionsY.length === numericalDimensions.length
     )
-      margin = { top: 20, right: 20, bottom: 50, left: 20 };
-    else margin = { top: 40, right: 20, bottom: 50, left: 40 };
+      margin = { top: 20, right: 20, bottom: 10, left: 20 };
+    else margin = { top: 20, right: 30, bottom: 30, left: 20 };
   }
 
   let dataset: DSVParsedArray<any>;
@@ -154,9 +156,10 @@
       return;
     }
 
-    const spacing = gridSize / visibleDimensionsX.length;
-    const xIndex = Math.floor((event.offsetX - margin.left) / spacing);
-    const yIndex = Math.floor((event.offsetY - margin.top) / spacing);
+    const spacingX = gridSizeX / visibleDimensionsX.length;
+    const spacingY = gridSizeY / visibleDimensionsX.length;
+    const xIndex = Math.floor((event.offsetX - margin.left) / spacingX);
+    const yIndex = Math.floor((event.offsetY - margin.top) / spacingY);
 
     hoveredDim = {
       x: xIndex,
@@ -220,7 +223,8 @@
       dimensionsY={visibleDimensionsY}
       {numericalDimensions}
       {visibleDimensionsStart}
-      size={Math.max(width, splomDiv ? height : 0) - 12}
+      {width}
+      {height}
       {margin}
       {activeDim}
       {hoveredDim}
@@ -231,7 +235,8 @@
       {dataset}
       dimensionsX={visibleDimensionsX}
       dimensionsY={visibleDimensionsY}
-      size={Math.max(width, splomDiv ? height : 0) - 12}
+      {width}
+      {height}
       {margin}
     />
   {/if}
@@ -247,7 +252,6 @@
       size={208}
       {activeDimName}
       {visibleDimensionsStart}
-      {hoveredDim}
       {setVisibleDim}
     />
   </div>

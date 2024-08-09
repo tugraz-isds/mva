@@ -18,7 +18,8 @@
   export let dataset: DSVParsedArray<any>;
   export let dimensionsX: string[] = [];
   export let dimensionsY: string[] = [];
-  export let size: number;
+  export let width: number;
+  export let height: number;
   export let margin: MarginType;
 
   let canvasEl: HTMLCanvasElement;
@@ -33,8 +34,10 @@
   let availableWorkers = 0;
   let calculatingWorkers: Worker[] = [];
 
-  let gridSize = 0;
-  $: gridSize = size - margin.left - margin.right;
+  let gridSizeX = 0,
+    gridSizeY = 0;
+  $: gridSizeX = width - margin.left - margin.right;
+  $: gridSizeY = height - margin.top - margin.bottom;
 
   let scatterplotNum = 0;
   $: {
@@ -56,8 +59,8 @@
     });
   }
 
-  $: if (size && dimensionsX && dimensionsY && margin && debouncedDrawPoints) {
-    drawingWorker.postMessage({ function: 'resizeCanvas', width: size, height: size });
+  $: if (width && dimensionsX && dimensionsY && margin && debouncedDrawPoints) {
+    drawingWorker.postMessage({ function: 'resizeCanvas', width, height });
     debouncedDrawPoints();
   }
 
@@ -119,7 +122,8 @@
   }
 
   function calculatePointData() {
-    const spacing = gridSize / dimensionsX.length;
+    const spacingX = gridSizeX / dimensionsX.length;
+    const spacingY = gridSizeY / dimensionsX.length;
 
     dimensionsX.forEach((dimX, i) => {
       const dimDataX = dataset.map((row) => row[dimX]);
@@ -128,12 +132,12 @@
 
         const dimDataY = dataset.map((row) => row[dimY]);
 
-        const xScale = calculateXScale(dimX, spacing);
-        const yScale = calculateYScale(dimY, spacing);
+        const xScale = calculateXScale(dimX, spacingX);
+        const yScale = calculateYScale(dimY, spacingY);
 
         dimDataX.forEach((x: any, idx: number) => {
-          let xPos = margin.left + spacing * i + xScale(x);
-          let yPos = margin.top + spacing * j + yScale(dimDataY[idx]);
+          let xPos = margin.left + spacingX * i + xScale(x);
+          let yPos = margin.top + spacingY * j + yScale(dimDataY[idx]);
           points.push([xPos, yPos, 0]);
         });
       });
@@ -155,15 +159,16 @@
       worker.onmessage = handleCalculatingWorkerResult;
     }
 
-    const spacing = gridSize / dimensionsX.length;
+    const spacingX = gridSizeX / dimensionsX.length;
+    const spacingY = gridSizeY / dimensionsX.length;
     const taskData: TaskType[] = [];
     dimensionsX.forEach((dimX, i) => {
       const dimDataX = dataset.map((row) => row[dimX]);
       dimensionsY.forEach((dimY, j) => {
         if (dimX === dimY) return;
         const dimDataY = dataset.map((row) => row[dimY]);
-        const xScale = getXScaleParams(dimX, spacing);
-        const yScale = getYScaleParams(dimY, spacing);
+        const xScale = getXScaleParams(dimX, spacingX);
+        const yScale = getYScaleParams(dimY, spacingY);
         taskData.push({
           dimDataX,
           dimDataY,
@@ -179,7 +184,7 @@
     const tasksPerWorker = Math.ceil(taskData.length / availableWorkers);
     for (let i = 0; i < availableWorkers; i++) {
       const tasks = taskData.slice(i * tasksPerWorker, (i + 1) * tasksPerWorker);
-      calculatingWorkers[i].postMessage({ tasks, spacing, margin });
+      calculatingWorkers[i].postMessage({ tasks, spacingX, spacingY, margin });
     }
   }
 
@@ -226,8 +231,8 @@
 
   export const saveSVG = () => {
     return saveSVGUtil(
-      size,
-      size,
+      width,
+      height,
       Array.from({ length: scatterplotNum }, () => pointShow).flat(),
       points,
       $partitionsStore,
@@ -244,8 +249,8 @@
       {
         function: 'init',
         canvas: offscreenCanvasEl,
-        width: size,
-        height: size,
+        width,
+        height,
         pointSize: 2
       },
       [offscreenCanvasEl]

@@ -115,13 +115,15 @@
         on:click={() => {
           isCustomColorPickerOpen = false;
           isCustomColorPickerOpen = true;
-        }}>Add Custom Color</Button
+        }}
+        class="focus:ring-transparent">Add Custom Color</Button
       >
       <Button
         size="xs"
         color="red"
         disabled={selectedCustomIndex === null || usedColors.includes(rgbaToHexString(rgb))}
-        on:click={() => deleteCustomColor(selectedCustomIndex)}><TrashBinOutline /></Button
+        on:click={() => deleteCustomColor(selectedCustomIndex)}
+        class="focus:ring-transparent"><TrashBinOutline /></Button
       >
     </div>
   </div>
@@ -131,8 +133,9 @@
       on:click={() => {
         setColor(rgb);
         isOpen = false;
-      }}>Apply</Button
+      }}
+      class="focus:ring-transparent">Apply</Button
     >
-    <Button size="sm" color="red" on:click={() => (isOpen = false)}>Cancel</Button>
+    <Button size="sm" color="red" on:click={() => (isOpen = false)} class="focus:ring-transparent">Cancel</Button>
   </div>
 </div>

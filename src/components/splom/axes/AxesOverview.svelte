@@ -10,7 +10,6 @@
   export let size: number;
   export let activeDimName: { x: string; y: string };
   export let visibleDimensionsStart: CoordinateType;
-  export let hoveredDim: CoordinateType;
   export let setVisibleDim: (x?: number, y?: number) => void;
 
   let gridSize = 0;
@@ -29,18 +28,12 @@
   $: if (size && dimensions) {
     clearSVG();
     renderAxes();
-    renderRectangle(activeDim.x, activeDim.y, 'active');
+    renderRectangle(activeDim.x, activeDim.y);
   }
 
   $: if (size && activeDim) {
-    clearRectangle('active');
-    renderRectangle(activeDim.x, activeDim.y, 'active');
-  }
-
-  $: if (size && hoveredDim) {
-    clearRectangle('hovered');
-    if (hoveredDim.x >= 0 && hoveredDim.x < dimensions.length && hoveredDim.y >= 0 && hoveredDim.y < dimensions.length)
-      renderRectangle(hoveredDim.x + visibleDimensionsStart.x, hoveredDim.y + visibleDimensionsStart.y, 'hovered');
+    clearRectangle();
+    renderRectangle(activeDim.x, activeDim.y);
   }
 
   function clearSVG() {
@@ -48,23 +41,23 @@
     svg.selectChildren().remove();
   }
 
-  function clearRectangle(type: 'active' | 'hovered') {
+  function clearRectangle() {
     const svg = select('#splom-canvas-axes-overview');
-    svg.selectAll(`.splom-axis-overview-${type}-rectangle`).remove();
+    svg.selectAll(`.splom-axis-overview-active-rectangle`).remove();
   }
 
-  function renderRectangle(x: number, y: number, type: 'active' | 'hovered') {
+  function renderRectangle(x: number, y: number) {
     const svg = select('#splom-canvas-axes-overview');
     const spacing = gridSize / dimensions.length;
 
     svg
       .append('rect')
-      .attr('class', `splom-axis-overview-${type}-rectangle`)
+      .attr('class', `splom-axis-overview-active-rectangle`)
       .attr('x', x * spacing)
       .attr('y', y * spacing)
       .attr('width', spacing)
       .attr('height', spacing)
-      .attr('stroke', type === 'active' ? 'red' : 'gray')
+      .attr('stroke', 'red')
       .attr('fill', 'none')
       .attr('stroke-width', '2px');
   }
@@ -162,12 +155,7 @@
     if (size > 0 && dimensions.length > 0) {
       clearSVG();
       renderAxes();
-      if (activeDim) {
-        renderRectangle(activeDim.x, activeDim.y, 'active');
-      }
-      if (hoveredDim) {
-        renderRectangle(hoveredDim.x + visibleDimensionsStart.x, hoveredDim.y + visibleDimensionsStart.y, 'hovered');
-      }
+      if (activeDim) renderRectangle(activeDim.x, activeDim.y);
     }
   });
 </script>

@@ -2,7 +2,7 @@ import { scaleLinear } from 'd3-scale';
 import type { ScaleParamsType, TaskType } from '../types';
 
 self.onmessage = function (message) {
-  const { tasks, spacing, margin } = message.data;
+  const { tasks, spacingX, spacingY, margin } = message.data;
 
   const points: any = [];
 
@@ -11,8 +11,8 @@ self.onmessage = function (message) {
     const yScale = calculateScale(task.yScale);
 
     task.dimDataX.forEach((x, idx) => {
-      let xPos = margin.left + spacing * task.i + xScale(x);
-      let yPos = margin.top + spacing * task.j + yScale(task.dimDataY[idx]);
+      let xPos = margin.left + spacingX * task.i + xScale(x);
+      let yPos = margin.top + spacingY * task.j + yScale(task.dimDataY[idx]);
       points.push([xPos, yPos, 0]);
     });
   });

@@ -77,8 +77,8 @@
     </div>
     <div class="mb-6 flex items-center">
       <Label for="keep-classes-input" class="w-1/3">Keep CSS classes:</Label>
-      <Checkbox class="ml-2" bind:checked={keepClasses} />
+      <Checkbox class="ml-2 focus:ring-transparent" bind:checked={keepClasses} />
     </div>
-    <Button type="submit" class="w-full" on:click={saveSVG}>Save SVG</Button>
+    <Button type="submit" class="w-full focus:ring-transparent" on:click={saveSVG}>Save SVG</Button>
   </form>
 </Modal>

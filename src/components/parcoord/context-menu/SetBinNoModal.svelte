@@ -36,6 +36,6 @@
         <NumberInput bind:value={binNo} id="bin-no" defaultClass="block w-1/2" size="sm" min={0} />
       </div>
     </div>
-    <Button type="submit" class="w-full" on:click={saveData}>Save</Button>
+    <Button type="submit" class="w-full focus:ring-transparent" on:click={saveData}>Save</Button>
   </form>
 </Modal>

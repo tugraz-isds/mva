@@ -110,18 +110,18 @@
       </div>
       <div class="flex flex-row items-center ml-2">
         <Label for="export-inactive-input">Export Inactive Dimensions:</Label>
-        <Checkbox class="ml-2" bind:checked={exportInactive} />
+        <Checkbox class="ml-2 focus:ring-transparent" bind:checked={exportInactive} />
       </div>
       <div class="flex flex-row items-center ml-2">
         <Label for="export-partitions-input">Export Partitions Data:</Label>
-        <Checkbox class="ml-2" bind:checked={exportPartitions} />
+        <Checkbox class="ml-2 focus:ring-transparent" bind:checked={exportPartitions} />
       </div>
     </div>
     {#if !validUpload}
       <Helper color="red"><span class="font-medium">{errorMessage}</span></Helper>
     {/if}
     <div class="w-full flex justify-center">
-      <Button on:click={handleExportDataset} class="w-1/2">Export Dataset</Button>
+      <Button on:click={handleExportDataset} class="w-1/2 focus:ring-transparent">Export Dataset</Button>
     </div>
   </form>
 </Modal>

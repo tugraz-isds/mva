@@ -38,7 +38,11 @@
 <Dropdown triggeredBy="#table-dims-dropdown" class="overflow-y-auto p-1" style="z-index: 1000; max-height: {height}%;">
   {#each tableVisibleDimensions as dim, i}
     <DropdownItem defaultClass="font-medium py-0.5 px-2 text-xs hover:bg-gray-100">
-      <Checkbox checked={dim.visible} on:change={() => updateTableVisibleDimensions(i)} />{dim.title}</DropdownItem
+      <Checkbox
+        checked={dim.visible}
+        on:change={() => updateTableVisibleDimensions(i)}
+        class="focus:ring-transparent"
+      />{dim.title}</DropdownItem
     >
   {/each}
 </Dropdown>
