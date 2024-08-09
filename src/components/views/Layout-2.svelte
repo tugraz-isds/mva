@@ -2,7 +2,7 @@
   import ViewComponent from './View.svelte';
   import { Pane, Splitpanes } from 'svelte-splitpanes';
   import { getViewMinSize } from './util';
-  import type { View } from './ViewType';
+  import type { View } from './types';
 
   export let views: View[];
   export let handleSwap: (title: string, e: Event) => void;

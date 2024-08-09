@@ -13,8 +13,7 @@ Data Expo 1993 - Graphics Exposition
 
 https://community.amstat.org/jointscsg-section/dataexpo/dataexpo1993  
 https://lib.stat.cmu.edu/DASL/Datafiles/Cereals.html
-https://www.kaggle.com/semakulapaul/cereals-dataset
 
 ## Licence
 
-?
+Free Use (Public Domain)

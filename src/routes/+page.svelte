@@ -9,7 +9,7 @@
   import Layout_4 from '../components/views/Layout-4.svelte';
   import Layout_5 from '../components/views/Layout-5.svelte';
   import Layout_6 from '../components/views/Layout-6.svelte';
-  import type { View } from '../components/views/ViewType';
+  import type { View } from '../components/views/types';
 
   let offScreenSupported = true;
 

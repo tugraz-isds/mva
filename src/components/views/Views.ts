@@ -1,4 +1,4 @@
-import type { View } from './ViewType';
+import type { View } from './types';
 import SplomComponent from '../splom/SPLOMComponent.svelte';
 import ScatterplotComponent from '../scatterplot/ScatterplotComponent.svelte';
 import SimmapComponent from '../simmap/SimmapComponent.svelte';

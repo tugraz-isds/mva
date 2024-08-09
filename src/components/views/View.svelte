@@ -11,7 +11,7 @@
   import ScatterplotSelectionShape from '../scatterplot/SelectionShapePicker.svelte';
   import ParcoordSelectionShape from '../parcoord/SelectionShapePicker.svelte';
   import OverviewSettings from '../splom/OverviewSettings.svelte';
-  import type { View } from './ViewType';
+  import type { View } from './types';
 
   export let otherViews: View[];
   export let handleSwap: (title: string, e: Event) => void;
@@ -66,14 +66,16 @@
       <OverviewSettings />
     {/if}
     <div class="flex gap-0 lg:gap-1 items-center">
-      <Button on:click={refresh} class="p-0 m-0 text-black">
-        <RefreshOutline
-          id="{currView.id}-refresh"
-          size="sm"
-          class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
-        />
-      </Button>
-      <Tooltip style="z-index: 1000;" type="light">Refresh View</Tooltip>
+      {#if ['splom', 'parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
+        <Button on:click={refresh} class="p-0 m-0 text-black">
+          <RefreshOutline
+            id="{currView.id}-refresh"
+            size="sm"
+            class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
+          />
+        </Button>
+        <Tooltip style="z-index: 1000;" type="light">Refresh View</Tooltip>
+      {/if}
       <ArrowUpDownOutline
         id="{currView.id}-swap"
         size="sm"
@@ -94,7 +96,7 @@
       {#if ['splom', 'parcoord', 'scatterplot', 'simmap'].includes(currView.id)}
         <Button on:click={saveSVG} class="p-0 m-0 text-black">
           <DownloadOutline
-            id="{currView.id}-expand"
+            id="{currView.id}-download"
             size="sm"
             class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
           />

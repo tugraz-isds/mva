@@ -10,7 +10,7 @@
   import { datasetStore, invalidRowsStore } from '../../stores/dataset';
   import { partitionsStore } from '../../stores/partitions';
   import { activeViewsStore } from '../../stores/views';
-  import type { View } from '../views/ViewType';
+  import type { View } from '../views/types';
 
   let isFileDropdownOpen = false;
   let isSettingsDropdownOpen = false;

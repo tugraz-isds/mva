@@ -16,7 +16,8 @@ Journal of Statistics Education 1(1)
 1993
 
 https://www.kaggle.com/datasets/anand0427/cars93?resource=download
+https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Cars93.html
 
 ## Licence
 
-Copyright © 1993 by Robin H. Lock. All rights reserved.
+GPL-2 and GPL-3
