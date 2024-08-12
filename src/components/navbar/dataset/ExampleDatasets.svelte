@@ -27,6 +27,11 @@
       partitionsStore.set(partitionsMap);
       partitionsDataStore.set(partitionsData);
       invalidRowsStore.set(invalidRows);
+
+      localStorage.setItem(
+        'datasetDescription',
+        `${url.split('/').pop()} (${dataset.length} records with ${dimensionTypeMap.size} dimensions)`
+      );
     } catch (error: any) {
       throw new Error('Error fetching example dataset');
     } finally {

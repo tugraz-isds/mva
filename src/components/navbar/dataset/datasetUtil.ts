@@ -7,6 +7,11 @@ import { hexStringToRgba, rgbaToHexString } from '../../../util/colors';
 
 type DatasetExtensionType = 'csv' | 'mva';
 
+type PartitionHelperType = {
+  order: number;
+  inserted: boolean;
+};
+
 export type DatasetFormatType = 'csv' | 'small-csv' | 'mva';
 
 export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
@@ -318,9 +323,14 @@ export async function parseDataset(
       });
   });
 
-  let invalidRows = dataset.filter((_, index) => invalidRowIndices.has(index)) as DSVParsedArray<any>;
-  dataset = dataset.filter((_, index) => !invalidRowIndices.has(index)) as DSVParsedArray<any>;
-  partitionsData = partitionsData.filter((_, index) => !invalidRowIndices.has(index));
+  const { filteredDataset, filteredPartitionsData, invalidRows } = removeInvalidRows(
+    dataset,
+    partitionsMap,
+    partitionsData,
+    invalidRowIndices
+  );
+  dataset = filteredDataset;
+  partitionsData = filteredPartitionsData;
 
   const labelDim = Object.keys(dataset[0])[0]; // Set first dimension as label
   localStorage.setItem('labelDimension', labelDim);
@@ -333,10 +343,23 @@ export async function parseDataset(
   return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData, invalidRows };
 }
 
-type PartitionHelperType = {
-  order: number;
-  inserted: boolean;
-};
+function removeInvalidRows(
+  dataset: DSVParsedArray<any>,
+  partitionsMap: Map<string, PartitionType>,
+  partitionsData: string[],
+  invalidRowIndices: Set<number>
+) {
+  invalidRowIndices.forEach((index) => {
+    const partition = partitionsMap.get(partitionsData[index]) as PartitionType;
+    partition.size--;
+    partitionsMap.set(partitionsData[index], partition);
+  });
+  let invalidRows = dataset.filter((_, index) => invalidRowIndices.has(index)) as DSVParsedArray<any>;
+  const filteredDataset = dataset.filter((_, index) => !invalidRowIndices.has(index)) as DSVParsedArray<any>;
+  const filteredPartitionsData = partitionsData.filter((_, index) => !invalidRowIndices.has(index));
+
+  return { filteredDataset, filteredPartitionsData, invalidRows };
+}
 
 function getPartitionHelperMap(partitions: Map<string, PartitionType>) {
   const partitionsHelperMap: Map<string, PartitionHelperType> = new Map();

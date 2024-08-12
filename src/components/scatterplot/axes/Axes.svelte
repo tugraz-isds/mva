@@ -13,31 +13,31 @@
   export let xTitle: string | null = null;
   export let yTitle: string | null = null;
   export let isDragging: boolean;
-  export let viewTitle: string;
+  export let panelTitle: string;
 
   function clearSVG() {
-    const svg = select(`#${viewTitle}-canvas-axes`);
+    const svg = select(`#${panelTitle}-canvas-axes`);
     svg.selectChildren().remove();
   }
 
   function renderAxes() {
     if (!xScale || !yScale) return;
 
-    const svg = select(`#${viewTitle}-canvas-axes`);
+    const svg = select(`#${panelTitle}-canvas-axes`);
 
-    const xAxis = viewTitle === 'simmap' ? axisBottom(xScale).tickValues([]) : axisBottom(xScale);
-    const yAxis = viewTitle === 'simmap' ? axisLeft(yScale).tickValues([]) : axisLeft(yScale);
+    const xAxis = panelTitle === 'simmap' ? axisBottom(xScale).tickValues([]) : axisBottom(xScale);
+    const yAxis = panelTitle === 'simmap' ? axisLeft(yScale).tickValues([]) : axisLeft(yScale);
 
     svg
       .append('g')
-      .attr('class', `${viewTitle}-x-axis`)
+      .attr('class', `${panelTitle}-x-axis`)
       .attr('transform', `translate(${margin.left}, ${height - margin.bottom})`)
       .call(xAxis);
 
     if (xTitle)
       svg
         .append('text')
-        .attr('class', `${viewTitle}-axis-title`)
+        .attr('class', `${panelTitle}-axis-title`)
         .attr('transform', `translate(${width / 2}, ${height - margin.bottom + 35})`)
         .attr('font-size', '0.75rem')
         .style('text-anchor', 'middle')
@@ -45,14 +45,14 @@
 
     svg
       .append('g')
-      .attr('class', `${viewTitle}-y-axis`)
+      .attr('class', `${panelTitle}-y-axis`)
       .attr('transform', `translate(${margin.left}, ${margin.top})`)
       .call(yAxis);
 
     if (yTitle)
       svg
         .append('text')
-        .attr('class', `${viewTitle}-axis-title`)
+        .attr('class', `${panelTitle}-axis-title`)
         .attr('transform', `translate(${10}, ${height / 2}) rotate(270)`)
         .attr('font-size', '0.75rem')
         .style('text-anchor', 'middle')
@@ -60,8 +60,8 @@
   }
 
   export const drawSelectionShape = (points?: CoordinateType[]) => {
-    const svg = select(`#${viewTitle}-canvas-axes`);
-    svg.selectAll(`#${viewTitle}-selection-shape`).remove();
+    const svg = select(`#${panelTitle}-canvas-axes`);
+    svg.selectAll(`#${panelTitle}-selection-shape`).remove();
 
     if (!points) return;
 
@@ -72,7 +72,7 @@
     svg
       .append('path')
       .datum(points.map((point) => [point.x, point.y]))
-      .attr('id', `${viewTitle}-selection-shape`)
+      .attr('id', `${panelTitle}-selection-shape`)
       .attr('fill', 'none')
       .attr('stroke', 'black')
       .attr('stroke-width', 0.5)
@@ -81,7 +81,7 @@
   };
 
   export const saveSVG = () => {
-    const svgElement = document.getElementById(`${viewTitle}-canvas-axes`);
+    const svgElement = document.getElementById(`${panelTitle}-canvas-axes`);
     if (!svgElement) return;
     const serializer = new XMLSerializer();
     return serializer.serializeToString(svgElement);
@@ -96,7 +96,7 @@
 {#if width > 0 && height > 0}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <svg
-    id="{viewTitle}-canvas-axes"
+    id="{panelTitle}-canvas-axes"
     {width}
     {height}
     style="background-color: rgba(255, 255, 255, 0); position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; user-select: none; cursor: {isDragging

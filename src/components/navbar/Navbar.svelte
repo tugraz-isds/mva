@@ -9,8 +9,8 @@
   import { isInteractableStore } from '../../stores/brushing';
   import { datasetStore, invalidRowsStore } from '../../stores/dataset';
   import { partitionsStore } from '../../stores/partitions';
-  import { activeViewsStore } from '../../stores/views';
-  import type { View } from '../views/types';
+  import { activePanelsStore } from '../../stores/panels';
+  import type { PanelType } from '../panels/types';
 
   let isFileDropdownOpen = false;
   let isSettingsDropdownOpen = false;
@@ -22,9 +22,9 @@
   let showWarningToast = false;
   let isMounted = false;
 
-  let views: View[];
-  activeViewsStore.subscribe((value) => {
-    views = value;
+  let panels: PanelType[];
+  activePanelsStore.subscribe((value) => {
+    panels = value;
   });
 
   let invalidRowsCount = 0;
@@ -42,9 +42,9 @@
     }
   });
 
-  function toggleViewVisibility(i: number) {
-    views[i].visible = !views[i].visible;
-    activeViewsStore.set(views);
+  function togglePanelVisibility(i: number) {
+    panels[i].visible = !panels[i].visible;
+    activePanelsStore.set(panels);
   }
 
   function openImportModal() {
@@ -83,8 +83,8 @@
   }
 
   function clearDataset() {
-    localStorage.clear();
     datasetStore.set([]);
+    invalidRowsStore.set([]);
     partitionsStore.set(new Map());
     closeSettingsDropdown();
   }
@@ -119,18 +119,18 @@
       <Dropdown bind:open={isFileDropdownOpen} class="w-44 z-20">
         <ExampleDatasets {closeFileDropdown} />
         <DropdownItem on:click={openImportModal}>Import Dataset...</DropdownItem>
-        <DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem>
+        {#if $datasetStore.length !== 0}<DropdownItem on:click={openExportModal}>Export Dataset...</DropdownItem> {/if}
       </Dropdown>
-      <NavLi id="nav-views" class="cursor-pointer">
-        <span class="text-white hover:text-blue-200"><Chevron aligned>Views</Chevron></span>
+      <NavLi id="nav-panels" class="cursor-pointer">
+        <span class="text-white hover:text-blue-200"><Chevron aligned>Panels</Chevron></span>
       </NavLi>
-      <Dropdown triggeredBy="#nav-views" class="w-44 z-20">
-        {#each views as view, i}
+      <Dropdown triggeredBy="#nav-panels" class="w-44 z-20">
+        {#each panels as panel, i}
           <li
             class="font-medium py-2 px-4 text-sm hover:bg-gray-100 w-full text-left flex items-center justify-between"
           >
-            <Checkbox checked={view.visible} on:change={() => toggleViewVisibility(i)} class="focus:ring-transparent"
-              >{view.title}</Checkbox
+            <Checkbox checked={panel.visible} on:change={() => togglePanelVisibility(i)} class="focus:ring-transparent"
+              >{panel.title}</Checkbox
             >
           </li>
         {/each}
@@ -142,12 +142,9 @@
         {#if invalidRowsCount !== 0}
           <DropdownItem on:click={openInvalidRowsModal}>View Invalid Rows...</DropdownItem>
         {/if}
-        <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
+        {#if $datasetStore.length !== 0}<DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>{/if}
         <DropdownItem on:click={refresh}>Refresh Page</DropdownItem>
       </Dropdown>
-      <NavLi>
-        <span class="text-white hover:text-blue-200">Help</span>
-      </NavLi>
     </NavUl>
   </Navbar>
 </div>

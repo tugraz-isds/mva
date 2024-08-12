@@ -1,4 +1,4 @@
-import type { View } from './types';
+import type { PanelType } from './types';
 import SplomComponent from '../splom/SPLOMComponent.svelte';
 import ScatterplotComponent from '../scatterplot/ScatterplotComponent.svelte';
 import SimmapComponent from '../simmap/SimmapComponent.svelte';
@@ -6,7 +6,7 @@ import PartitionsComponent from '../partitions/PartitionsComponent.svelte';
 import TableComponent from '../table/TableComponent.svelte';
 import ParcoordComponent from '../parcoord/ParcoordComponent.svelte';
 
-export const views: View[] = [
+export const panels: PanelType[] = [
   {
     id: 'splom',
     title: 'Scatterplot Matrix',

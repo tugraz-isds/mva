@@ -183,7 +183,7 @@
       xTitle={xDim}
       yTitle={yDim}
       {isDragging}
-      viewTitle="scatterplot"
+      panelTitle="scatterplot"
     />
 
     <Tooltip data={tooltip} maxWidth={120} />

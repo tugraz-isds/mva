@@ -229,7 +229,7 @@
                     getHeaderLength(dim.title, longestPartition),
                     12,
                     'sans-serif'
-                  ) + 8}px;"
+                  ) + 12}px;"
                 >
                   <div
                     class="flex flex-col text-{$dimensionDataStore.get(dim.title)?.type === 'numerical' ||
@@ -281,8 +281,8 @@
         </tbody>
       </table>
     </div>
-    <div class="flex items-center text-xs">
-      {dataset.length} records | {brushedRowsIndices.size} selected |
+    <div class="flex items-center text-[0.6rem] lg:text-xs">
+      | {dataset.length} records | {$dimensionDataStore.size} dimensions | {brushedRowsIndices.size} record(s) selected |
     </div>
   </div>
 {:else}

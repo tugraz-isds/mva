@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { afterUpdate, onDestroy, onMount } from 'svelte';
-  import OffscreenWorker from '../../scatterplot/points/offscreenWorker?worker';
+  import { onDestroy, onMount } from 'svelte';
+  import DrawingWorker from '../../scatterplot/points/drawingWorker?worker';
   import CalculatingWorker from './calculatingWorker?worker';
   import { scaleLinear } from 'd3-scale';
   import { dimensionDataStore } from '../../../stores/dataset';
   import { brushedArray, hoveredArray } from '../../../stores/brushing';
   import { linkingArray } from '../../../stores/linking';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
-  import { isCurrentlyResizing } from '../../../stores/views';
+  import { isCurrentlyResizing } from '../../../stores/panels';
   import { saveSVGUtil } from '../../scatterplot/points/drawingUtil';
   import { debounce, throttle } from '../../../util/util';
   import type { DSVParsedArray } from 'd3-dsv';
@@ -243,7 +243,7 @@
 
   onMount(() => {
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
-    drawingWorker = new OffscreenWorker();
+    drawingWorker = new DrawingWorker();
 
     drawingWorker.postMessage(
       {

@@ -75,6 +75,11 @@
       partitionsDataStore.set(partitionsData);
       invalidRowsStore.set(invalidRows);
 
+      localStorage.setItem(
+        'datasetDescription',
+        `${fileName.replace('C:\\fakepath\\', '')} (${dataset.length} records with ${dimensionTypeMap.size} dimensions)`
+      );
+
       validUpload = true;
       isOpen = false;
     } catch (error: any) {

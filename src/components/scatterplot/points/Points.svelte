@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from 'svelte';
-  import OffscreenWorker from './offscreenWorker?worker';
+  import DrawingWorker from './drawingWorker?worker';
   import { debounce, rectangleToPolygon, throttle } from '../../../util/util';
   import { linkingArray } from '../../../stores/linking';
   import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
@@ -316,7 +316,7 @@
     debouncedAddSelectionShapePoint = debounce(throttledAddSelectionShapePoint, 10);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
-    worker = new OffscreenWorker();
+    worker = new DrawingWorker();
 
     worker.postMessage(
       {

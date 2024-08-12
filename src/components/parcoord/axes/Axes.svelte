@@ -353,7 +353,7 @@
   }
 
   function checkAutoscroll(x: number) {
-    const parcoordDiv = select('.view-parcoord');
+    const parcoordDiv = select('.panel-parcoord');
     const rect = (parcoordDiv.node() as any).getBoundingClientRect();
 
     if (autoscrollInterval !== null) {

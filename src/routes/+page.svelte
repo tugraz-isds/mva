@@ -2,32 +2,35 @@
   import { onDestroy, onMount } from 'svelte';
   import Navbar from '../components/navbar/Navbar.svelte';
   import { isOffscreenCanvasSupported } from '../util/util';
-  import { activeViewsStore, isCurrentlyResizing } from '../stores/views';
-  import Layout_1 from '../components/views/Layout-1.svelte';
-  import Layout_2 from '../components/views/Layout-2.svelte';
-  import Layout_3 from '../components/views/Layout-3.svelte';
-  import Layout_4 from '../components/views/Layout-4.svelte';
-  import Layout_5 from '../components/views/Layout-5.svelte';
-  import Layout_6 from '../components/views/Layout-6.svelte';
-  import type { View } from '../components/views/types';
+  import { activePanelsStore, isCurrentlyResizing } from '../stores/panels';
+  import { datasetStore } from '../stores/dataset';
+  import StartPanel from '../components/panels/StartPanel.svelte';
+  import Layout_1 from '../components/panels/Layout-1.svelte';
+  import Layout_2 from '../components/panels/Layout-2.svelte';
+  import Layout_3 from '../components/panels/Layout-3.svelte';
+  import Layout_4 from '../components/panels/Layout-4.svelte';
+  import Layout_5 from '../components/panels/Layout-5.svelte';
+  import Layout_6 from '../components/panels/Layout-6.svelte';
+  import type { PanelType } from '../components/panels/types';
 
   let offScreenSupported = true;
+  let showImportButtons = false;
 
-  let activeViews: View[];
-  $: activeViews = views.filter((view) => view.visible);
+  let activePanels: PanelType[];
+  $: activePanels = panels.filter((panel) => panel.visible);
 
-  let views: View[];
-  const unsubscribeActive = activeViewsStore.subscribe((value) => {
-    views = value;
+  let panels: PanelType[];
+  const unsubscribeActive = activePanelsStore.subscribe((value) => {
+    panels = value;
   });
 
   const handleSwap = (title: string, e: Event) => {
-    const index1 = views.findIndex((view: View) => view.title === title);
-    const index2 = views.findIndex((view: View) => view.title === (e.target as HTMLElement).textContent);
+    const index1 = panels.findIndex((panel: PanelType) => panel.title === title);
+    const index2 = panels.findIndex((panel: PanelType) => panel.title === (e.target as HTMLElement).textContent);
 
     if (index1 !== -1 && index2 !== -1) {
-      [views[index1], views[index2]] = [views[index2], views[index1]];
-      activeViewsStore.set(views);
+      [panels[index1], panels[index2]] = [panels[index2], panels[index1]];
+      activePanelsStore.set(panels);
     }
   };
 
@@ -42,6 +45,10 @@
   onMount(() => {
     const canvasEl: HTMLCanvasElement = document.createElement('canvas');
     offScreenSupported = isOffscreenCanvasSupported(canvasEl);
+
+    setTimeout(() => {
+      showImportButtons = true;
+    }, 500);
   });
 
   onDestroy(() => {
@@ -52,21 +59,27 @@
 {#if offScreenSupported}
   <div class="w-full h-full">
     <Navbar />
-    <div class="w-full h-[96%]">
-      {#if activeViews.length === 1}
-        <Layout_1 views={activeViews} {handleSwap} />
-      {:else if activeViews.length === 2}
-        <Layout_2 views={activeViews} {handleSwap} {startResize} {endResize} />
-      {:else if activeViews.length === 3}
-        <Layout_3 views={activeViews} {handleSwap} {startResize} {endResize} />
-      {:else if activeViews.length === 4}
-        <Layout_4 views={activeViews} {handleSwap} {startResize} {endResize} />
-      {:else if activeViews.length === 5}
-        <Layout_5 views={activeViews} {handleSwap} {startResize} {endResize} />
-      {:else if activeViews.length === 6}
-        <Layout_6 views={activeViews} {handleSwap} {startResize} {endResize} />
-      {/if}
-    </div>
+    {#if !showImportButtons}
+      <div />
+    {:else if $datasetStore.length === 0}
+      <StartPanel />
+    {:else}
+      <div class="w-full h-[96%]">
+        {#if activePanels.length === 1}
+          <Layout_1 panels={activePanels} {handleSwap} />
+        {:else if activePanels.length === 2}
+          <Layout_2 panels={activePanels} {handleSwap} {startResize} {endResize} />
+        {:else if activePanels.length === 3}
+          <Layout_3 panels={activePanels} {handleSwap} {startResize} {endResize} />
+        {:else if activePanels.length === 4}
+          <Layout_4 panels={activePanels} {handleSwap} {startResize} {endResize} />
+        {:else if activePanels.length === 5}
+          <Layout_5 panels={activePanels} {handleSwap} {startResize} {endResize} />
+        {:else if activePanels.length === 6}
+          <Layout_6 panels={activePanels} {handleSwap} {startResize} {endResize} />
+        {/if}
+      </div>
+    {/if}
   </div>
 {:else}
   <div class="w-full h-full">

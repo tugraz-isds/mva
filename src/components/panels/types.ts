@@ -1,4 +1,4 @@
-export type View = {
+export type PanelType = {
   id: string;
   title: string;
   visible: boolean;

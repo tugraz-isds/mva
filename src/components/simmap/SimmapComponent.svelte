@@ -241,7 +241,7 @@
       xScale={xScaleAxes}
       yScale={yScaleAxes}
       {isDragging}
-      viewTitle="simmap"
+      panelTitle="simmap"
     />
     <Tooltip data={tooltip} maxWidth={120} />
 

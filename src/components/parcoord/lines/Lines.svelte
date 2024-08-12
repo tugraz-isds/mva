@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
-  import OffscreenWorker from './offscreenWorker?worker';
+  import DrawingWorker from './drawingWorker?worker';
   import { dimensionDataStore, labelDimension } from '../../../stores/dataset';
   import {
     filtersArray,
@@ -10,7 +10,7 @@
   } from '../../../stores/parcoord';
   import { brushedArray, hoveredArray, isInteractableStore } from '../../../stores/brushing';
   import { linkingArray } from '../../../stores/linking';
-  import { isCurrentlyResizing } from '../../../stores/views';
+  import { isCurrentlyResizing } from '../../../stores/panels';
   import { partitionsDataStore, partitionsStore } from '../../../stores/partitions';
   import { COLOR_ACTIVE } from '../../../util/colors';
   import { debounce, rectangleToPolygon, throttle } from '../../../util/util';
@@ -396,7 +396,7 @@
     debouncedDrawLines = debounce(throttledDrawLines, 100);
 
     offscreenCanvasEl = canvasEl.transferControlToOffscreen();
-    worker = new OffscreenWorker();
+    worker = new DrawingWorker();
 
     worker.postMessage(
       {
