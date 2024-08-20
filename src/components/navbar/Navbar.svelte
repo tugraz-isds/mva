@@ -8,7 +8,8 @@
   import InvalidRows from './dataset/InvalidRows.svelte';
   import { isInteractableStore } from '../../stores/brushing';
   import { datasetStore, invalidRowsStore } from '../../stores/dataset';
-  import { activePanelsStore } from '../../stores/panels';
+  import { activePanelsStore, panelsSizesStore, rowSizeStore } from '../../stores/panels';
+  import { getDefaultPanelSizes } from '../panels/util';
   import type { PanelType } from '../panels/types';
 
   let isFileDropdownOpen = false;
@@ -48,6 +49,7 @@
       'activePanels',
       JSON.stringify(panels.filter((panel) => panel.visible).map((panel) => panel.id))
     );
+    localStorage.removeItem('panelsSizes');
   }
 
   function openImportModal() {
@@ -89,6 +91,13 @@
     datasetStore.set([]);
     invalidRowsStore.set([]);
     closeSettingsDropdown();
+  }
+
+  function resetPanelSizes() {
+    localStorage.removeItem('panelsSizes');
+    localStorage.removeItem('rowSize');
+    panelsSizesStore.set(getDefaultPanelSizes($activePanelsStore.filter((panel) => panel.visible).length));
+    rowSizeStore.set(55);
   }
 
   onMount(() => {
@@ -142,6 +151,7 @@
             <DropdownItem on:click={openInvalidRowsModal}>View Invalid Rows...</DropdownItem>
           {/if}
           <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
+          <DropdownItem on:click={resetPanelSizes}>Reset Panel Sizes</DropdownItem>
         </Dropdown>
       {/if}
     </NavUl>

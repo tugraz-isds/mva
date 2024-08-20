@@ -80,8 +80,6 @@
     const dimSpacingX = (1 / numericalDimensions.length) * gridSizeX;
     const dimSpacingY = (1 / numericalDimensions.length) * gridSizeY;
 
-    console.log(dimensionsX.length, numericalDimensions.length);
-    console.log(dimWidth);
     if (dimWidth !== 1) {
       drawHorizontalScrollbar(svg, dimWidth, dimSpacingX);
       drawVerticalScrollbar(svg, dimWidth, dimSpacingY);
