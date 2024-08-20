@@ -4,6 +4,7 @@
   import { isOffscreenCanvasSupported } from '../util/util';
   import { activePanelsStore, isCurrentlyResizing } from '../stores/panels';
   import { datasetStore } from '../stores/dataset';
+  import { panels as initialPanels } from '../components/panels/Panels';
   import StartPanel from '../components/panels/StartPanel.svelte';
   import Layout_1 from '../components/panels/Layout-1.svelte';
   import Layout_2 from '../components/panels/Layout-2.svelte';
@@ -45,6 +46,13 @@
   onMount(() => {
     const canvasEl: HTMLCanvasElement = document.createElement('canvas');
     offScreenSupported = isOffscreenCanvasSupported(canvasEl);
+
+    const activePanelsIdsStr = localStorage.getItem('activePanels');
+    if (activePanelsIdsStr) {
+      const activePanelsIds = JSON.parse(activePanelsIdsStr);
+      const activePanels = initialPanels.map((panel) => ({ ...panel, visible: activePanelsIds.includes(panel.id) }));
+      activePanelsStore.set(activePanels);
+    }
 
     setTimeout(() => {
       showImportButtons = true;

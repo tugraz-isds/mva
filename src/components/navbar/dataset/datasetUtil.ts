@@ -24,10 +24,6 @@ export const EXAMPLE_DATASETS: { title: string; url: string }[] = [
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cereals.csv'
   },
   {
-    title: 'Cities 2018',
-    url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/cities-2018.csv'
-  },
-  {
     title: 'Iris',
     url: 'https://raw.githubusercontent.com/tugraz-isds/mva/main/example-datasets/iris.csv'
   },

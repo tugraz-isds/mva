@@ -6,7 +6,8 @@
     parcoordCustomAxisRanges,
     parcoordDimMetadata,
     parcoordVisibleDimensionsStore,
-    parcoordHistogramData
+    parcoordHistogramData,
+    filtersArray
   } from '../../stores/parcoord';
   import { scaleLinear, scaleBand } from 'd3-scale';
   import Axes from './axes/Axes.svelte';
@@ -17,7 +18,7 @@
   import ContextMenuPartitions from '../partitions/ContextMenu.svelte';
   import SvgExportModal from '../svg-exporter/SvgExportModal.svelte';
   import type { DSVParsedArray } from 'd3-dsv';
-  import type { CustomRangeType, ParcoordVisibleDimensionsType } from './types';
+  import type { AxesFilterType, CustomRangeType, ParcoordVisibleDimensionsType } from './types';
   import type { CoordinateType, DimensionDataType, MarginType, TooltipType } from '../../util/types';
 
   let isBrowser = false;
@@ -95,9 +96,18 @@
   const unsubscribeParcoordVisibleDimensions = parcoordVisibleDimensionsStore.subscribe((value) => {
     if (!value) return;
     visibleDimensions = value.filter((dim) => dim.title !== '_i' && dim.title !== '_partition');
-    dimensions = visibleDimensions
+    const newDimensions = visibleDimensions
       .filter((dim) => dim.visible && dimensionData.get(dim.title)?.active)
       .map((dim) => dim.title);
+
+    const removedDims = dimensions.filter((x) => !newDimensions.includes(x));
+    if (removedDims.length === 1) {
+      const filter = $filtersArray.get(removedDims[0]) as AxesFilterType;
+      filter.percentages = { start: 0, end: 1 };
+      $filtersArray.set(removedDims[0], filter);
+    }
+
+    dimensions = newDimensions;
 
     setMarginLeft();
   });

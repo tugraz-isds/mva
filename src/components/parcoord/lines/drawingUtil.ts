@@ -1,7 +1,12 @@
 import * as THREE from 'three';
 import { line as lineD3 } from 'd3-shape';
 import { select } from 'd3-selection';
-import { LINE_MATERIAL_ACTIVE, LINE_MATERIAL_FILTERED, LINE_MATERIAL_HOVERED } from '../../../util/materials';
+import {
+  LINE_MATERIAL_ACTIVE,
+  LINE_MATERIAL_BRUSHED,
+  LINE_MATERIAL_FILTERED,
+  LINE_MATERIAL_HOVERED
+} from '../../../util/materials';
 import { COLOR_BRUSHED, COLOR_FILTERED, rgbaToHexNumber, rgbaToHexString } from '../../../util/colors';
 import type { PartitionType } from '../../partitions/types';
 import type { DSVParsedArray } from 'd3-dsv';
@@ -39,16 +44,28 @@ export function getPartitionMaterial(partition?: PartitionType) {
     : LINE_MATERIAL_ACTIVE;
 }
 
-export function getLine(currLine: number[][], index: number, lineShow: boolean, partition?: PartitionType) {
+export function getLine(
+  currLine: number[][],
+  index: number,
+  lineShow: boolean,
+  isBrushed: boolean,
+  partition?: PartitionType
+) {
   const linePoints: THREE.Vector3[] = [];
   currLine.forEach((point: number[]) => {
     linePoints.push(new THREE.Vector3(...point));
   });
-  const material = lineShow ? getPartitionMaterial(partition) : LINE_MATERIAL_FILTERED;
+  const material = isBrushed
+    ? LINE_MATERIAL_BRUSHED
+    : lineShow
+    ? getPartitionMaterial(partition)
+    : LINE_MATERIAL_FILTERED;
   material.needsUpdate = false;
   const geometry = new THREE.BufferGeometry().setFromPoints(linePoints);
   const line: THREE.Line & { index?: number } = new THREE.Line(geometry, material);
   line.index = index;
+
+  if (isBrushed) changeLinePosition(line, 1);
 
   return line;
 }

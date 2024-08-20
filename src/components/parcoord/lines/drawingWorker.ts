@@ -103,7 +103,7 @@ function drawLines(inputLines: number[][][]) {
   scene.children = [];
   inputLines.forEach((currLine: number[][], i: number) => {
     const partition = partitions.get(partitionsData[i]);
-    const line = getLine(currLine, i, lineShow[i], partition);
+    const line = getLine(currLine, i, lineShow[i], brushedLinesIndices.has(i), partition);
     lines[i] = line;
     scene.add(line);
   });

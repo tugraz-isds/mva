@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { Button, Chevron, Dropdown, DropdownItem, Spinner, Helper } from 'flowbite-svelte';
   import ImportDatasetModal from '../navbar/dataset/ImportDatasetModal.svelte';
   import { EXAMPLE_DATASETS, getCsvFromUrl, parseDataset } from '../../components/navbar/dataset/datasetUtil';

@@ -8,7 +8,6 @@
   import InvalidRows from './dataset/InvalidRows.svelte';
   import { isInteractableStore } from '../../stores/brushing';
   import { datasetStore, invalidRowsStore } from '../../stores/dataset';
-  import { partitionsStore } from '../../stores/partitions';
   import { activePanelsStore } from '../../stores/panels';
   import type { PanelType } from '../panels/types';
 
@@ -31,7 +30,7 @@
   const unsubscribeInvalidRows = invalidRowsStore.subscribe((value) => {
     invalidRowsCount = value.length;
 
-    if (!isMounted) return;
+    if (!isMounted || $datasetStore.length === 0) return;
 
     if (invalidRowsCount === 0) {
       showSuccessToast = true;
@@ -45,6 +44,10 @@
   function togglePanelVisibility(i: number) {
     panels[i].visible = !panels[i].visible;
     activePanelsStore.set(panels);
+    localStorage.setItem(
+      'activePanels',
+      JSON.stringify(panels.filter((panel) => panel.visible).map((panel) => panel.id))
+    );
   }
 
   function openImportModal() {
@@ -85,12 +88,7 @@
   function clearDataset() {
     datasetStore.set([]);
     invalidRowsStore.set([]);
-    partitionsStore.set(new Map());
     closeSettingsDropdown();
-  }
-
-  function refresh() {
-    location.reload();
   }
 
   onMount(() => {
@@ -135,16 +133,17 @@
           </li>
         {/each}
       </Dropdown>
-      <NavLi id="nav-settings" on:click={openSettingsDropdown}>
-        <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
-      </NavLi>
-      <Dropdown bind:open={isSettingsDropdownOpen} class="w-44 z-20">
-        {#if invalidRowsCount !== 0}
-          <DropdownItem on:click={openInvalidRowsModal}>View Invalid Rows...</DropdownItem>
-        {/if}
-        {#if $datasetStore.length !== 0}<DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>{/if}
-        <DropdownItem on:click={refresh}>Refresh Page</DropdownItem>
-      </Dropdown>
+      {#if $datasetStore.length !== 0}
+        <NavLi id="nav-settings" on:click={openSettingsDropdown}>
+          <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
+        </NavLi>
+        <Dropdown bind:open={isSettingsDropdownOpen} class="w-44 z-20">
+          {#if invalidRowsCount !== 0}
+            <DropdownItem on:click={openInvalidRowsModal}>View Invalid Rows...</DropdownItem>
+          {/if}
+          <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
+        </Dropdown>
+      {/if}
     </NavUl>
   </Navbar>
 </div>

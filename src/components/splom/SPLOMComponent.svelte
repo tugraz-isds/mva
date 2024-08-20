@@ -205,7 +205,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   id="splom-canvas"
-  class="w-full h-full"
+  class="w-full h-full overflow-hidden"
   bind:this={splomDiv}
   bind:clientWidth={width}
   bind:clientHeight={height}
