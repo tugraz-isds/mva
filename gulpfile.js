@@ -48,7 +48,13 @@ function copyTauriFiles() {
     'src-tauri/target/release/bundle/nsis/mva_0.1.0_x64-setup.exe'
   ];
 
-  return gulp.src(filesToCopy).pipe(gulp.dest(`./build-tauri/${os.platform}`));
+  return gulp.src(filesToCopy).pipe(gulp.dest(`./build-tauri/${getPlatform(os.platform())}`));
+}
+
+function getPlatform(platform) {
+  if (platform === 'win32') return 'windows';
+  else if (platform === 'darwin') return 'macOS';
+  return platform;
 }
 
 export { cleanBuildFolder as clean, cleanAll, optimizeIcons, copyTauriFiles };
