@@ -150,8 +150,8 @@
           {#if invalidRowsCount !== 0}
             <DropdownItem on:click={openInvalidRowsModal}>View Invalid Rows...</DropdownItem>
           {/if}
-          <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
           <DropdownItem on:click={resetPanelSizes}>Reset Panel Sizes</DropdownItem>
+          <DropdownItem on:click={clearDataset}>Clear Dataset</DropdownItem>
         </Dropdown>
       {/if}
     </NavUl>

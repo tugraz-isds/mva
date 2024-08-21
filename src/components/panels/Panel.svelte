@@ -74,14 +74,14 @@
             class="text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
           />
         </Button>
-        <Tooltip style="z-index: 1000;" type="light">Refresh Panel</Tooltip>
+        <Tooltip style="z-index: 1000;" type="light">Refresh</Tooltip>
       {/if}
       <ArrowUpDownOutline
         id="{currPanel.id}-swap"
         size="sm"
         class="rotate-90 text-grey-900 cursor-pointer rounded bg-gray-50 border-solid border-2 border-gray-300 hover:bg-gray-300"
       />
-      <Tooltip style="z-index: 1000;" type="light">Swap Panel</Tooltip>
+      <Tooltip style="z-index: 1000;" type="light">Swap</Tooltip>
       <Dropdown triggeredBy="#{currPanel.id}-swap" style="z-index: 1000;">
         <div slot="header" class="py-1 px-2">
           <span class="font-medium block text-sm text-gray-900">Swap Panel With</span>
