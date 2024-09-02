@@ -32,6 +32,10 @@
     if (index1 !== -1 && index2 !== -1) {
       [panels[index1], panels[index2]] = [panels[index2], panels[index1]];
       activePanelsStore.set(panels);
+      localStorage.setItem(
+        'activePanels',
+        JSON.stringify(panels.filter((panel) => panel.visible).map((panel) => panel.id))
+      );
     }
   };
 
@@ -50,7 +54,11 @@
     const activePanelsIdsStr = localStorage.getItem('activePanels');
     if (activePanelsIdsStr) {
       const activePanelsIds = JSON.parse(activePanelsIdsStr);
-      const activePanels = initialPanels.map((panel) => ({ ...panel, visible: activePanelsIds.includes(panel.id) }));
+      const activePanels: PanelType[] = [];
+      activePanelsIds.forEach((currPanel: string) => {
+        const panel = initialPanels.find((p) => currPanel === p.id);
+        if (panel) activePanels.push(panel);
+      });
       activePanelsStore.set(activePanels);
     }
 
