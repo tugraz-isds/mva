@@ -11,6 +11,7 @@
 
   export let isOpen: boolean;
   export let partitionColor: RgbaColor;
+  export let partitionColorOld: RgbaColor;
   export let position: CoordinateType;
   export let setColor: (color: RgbaColor) => void;
 
@@ -43,7 +44,9 @@
 
   function addCustomColor(color: RgbaColor) {
     rgb = color;
+    setColor(rgb);
     customColors = [...customColors, rgbaToHexString(color)];
+    selectedCustomIndex = customColors.length;
     localStorage.setItem('partitionsCustomColors', JSON.stringify(customColors));
   }
 
@@ -51,6 +54,11 @@
     if (i === null) return;
     customColors = [...customColors.slice(0, i), ...customColors.slice(i + 1)];
     localStorage.setItem('partitionsCustomColors', JSON.stringify(customColors));
+    const defaultColor = hexStringToRgba(PARTITION_COLORS[0]);
+    setColor(defaultColor);
+    rgb = defaultColor;
+    partitionColorOld = defaultColor;
+    selectedCustomIndex = null;
   }
 
   onMount(() => {
@@ -80,6 +88,7 @@
           : ''}"
         on:click={() => {
           rgb = hexStringToRgba(color);
+          setColor(rgb);
           selectedCustomIndex = null;
         }}
         on:keydown={() => {}}
@@ -101,6 +110,7 @@
               : ''}"
             on:click={() => {
               rgb = hexStringToRgba(color);
+              setColor(rgb);
               selectedCustomIndex = i;
             }}
             on:keydown={() => {}}
@@ -121,7 +131,7 @@
       <Button
         size="xs"
         color="red"
-        disabled={selectedCustomIndex === null || usedColors.includes(rgbaToHexString(rgb))}
+        disabled={selectedCustomIndex === null}
         on:click={() => deleteCustomColor(selectedCustomIndex)}
         class="focus:ring-transparent"><TrashBinOutline /></Button
       >
@@ -131,11 +141,18 @@
     <Button
       size="sm"
       on:click={() => {
-        setColor(rgb);
         isOpen = false;
       }}
-      class="focus:ring-transparent">Apply</Button
+      class="focus:ring-transparent">OK</Button
     >
-    <Button size="sm" color="red" on:click={() => (isOpen = false)} class="focus:ring-transparent">Cancel</Button>
+    <Button
+      size="sm"
+      color="red"
+      on:click={() => {
+        setColor(partitionColorOld);
+        isOpen = false;
+      }}
+      class="focus:ring-transparent">Cancel</Button
+    >
   </div>
 </div>

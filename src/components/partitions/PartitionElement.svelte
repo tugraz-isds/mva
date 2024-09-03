@@ -29,6 +29,7 @@
   let isColorPickerOpen = false;
   let colorPickerPosition = { x: 0, y: 0 };
   let isNameEditable = false;
+  let partitionColorOld: RgbaColor;
   let partitionNameOld: string;
   let shapesDropdownElement: HTMLDivElement;
 
@@ -57,6 +58,7 @@
       x: e.clientX,
       y: e.clientY
     };
+    partitionColorOld = partition.color;
   }
 
   function handleFocus(e: FocusEvent) {
@@ -131,6 +133,7 @@
   isOpen={isColorPickerOpen}
   position={colorPickerPosition}
   partitionColor={partition.color}
+  {partitionColorOld}
   {setColor}
 />
 

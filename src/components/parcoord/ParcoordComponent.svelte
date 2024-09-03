@@ -191,8 +191,8 @@
         ? 100 * dimensions.length + margin.left + margin.right
         : originalWidth;
     setTimeout(() => {
-      axesComponent.clearSVG();
-      axesComponent.renderAxes(width);
+      axesComponent?.clearSVG();
+      axesComponent?.renderAxes(width);
       linesComponent.debounceDrawLines();
     }, 0);
   }
@@ -240,8 +240,8 @@
 
   function setMarginLeft() {
     setTimeout(() => {
-      axesComponent.calculateMarginLeft();
-    }, 0);
+      axesComponent?.calculateMarginLeft();
+    }, 1000);
   }
 
   function setMarginRight(histogramsVisible: boolean) {

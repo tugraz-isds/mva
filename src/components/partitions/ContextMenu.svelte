@@ -7,6 +7,7 @@
   import { addRecordsToPartition } from './util';
   import type { PartitionType } from './types';
   import type { CoordinateType } from '../../util/types';
+  import { DEFAULT_PARTITION } from '../../util/util';
 
   let contextMenuElement: HTMLElement;
   let showMenu = false;
@@ -33,7 +34,7 @@
 
   let partitions: Map<string, PartitionType> = new Map();
   const unsubscribePartitions = partitionsStore.subscribe((value) => {
-    partitions = value;
+    partitions = new Map([...value].filter(([key, value]) => key !== DEFAULT_PARTITION));
   });
 
   let partitionsData: string[] = [];
@@ -95,23 +96,30 @@
     on:mouseenter={handleMouseEnter}
     on:mouseleave={handleMouseLeave}
   >
+    <DropdownItem
+      on:click={() => addRecords(DEFAULT_PARTITION)}
+      defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 flex items-center justify-between"
+      >Move to Default Partition</DropdownItem
+    >
     {#if $selectedPartitionStore !== null}
       <DropdownItem
         on:click={() => addRecords($selectedPartitionStore)}
         defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100">Add to Selected Partition</DropdownItem
       >
     {/if}
-    <DropdownItem defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 flex items-center justify-between"
-      >Add to Partition<ChevronRight class="w-3 h-3 ms-2" /></DropdownItem
-    >
-    <Dropdown class="p-1 w-40 max-h-36 overflow-y-auto overflow-x-hidden" placement={submenuStyle}>
-      {#each [...partitions] as [key, value]}
-        <DropdownItem
-          defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
-          on:click={() => addRecords(key)}>{key}</DropdownItem
-        >
-      {/each}
-    </Dropdown>
+    {#if partitions.size > 0}
+      <DropdownItem defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100 flex items-center justify-between"
+        >Add to Partition<ChevronRight class="w-3 h-3 ms-2" /></DropdownItem
+      >
+      <Dropdown class="p-1 w-40 max-h-36 overflow-y-auto overflow-x-hidden" placement={submenuStyle}>
+        {#each [...partitions] as [key, value]}
+          <DropdownItem
+            defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
+            on:click={() => addRecords(key)}>{key}</DropdownItem
+          >
+        {/each}
+      </Dropdown>
+    {/if}
     <DropdownDivider />
     <DropdownItem
       defaultClass="font-medium py-0.5 px-0.5 text-xs hover:bg-gray-100"
