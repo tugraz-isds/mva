@@ -2,7 +2,7 @@
   import { ChevronRight, Dropdown, DropdownItem, DropdownDivider } from 'flowbite-svelte';
   import { CheckOutline } from 'flowbite-svelte-icons';
   import { dimensionDataStore } from '../../../stores/dataset';
-  import { filtersArray, parcoordDimMetadata } from '../../../stores/parcoord';
+  import { filtersArray, parcoordDimMetadata, parcoordHistogramData } from '../../../stores/parcoord';
   import { parcoordCustomAxisRanges, parcoordVisibleDimensionsStore } from '../../../stores/parcoord';
   import { isInteractableStore } from '../../../stores/brushing';
   import SetRangeModal from './SetRangeModal.svelte';
@@ -203,9 +203,9 @@
     {#if isFilterSet}
       <DropdownItem defaultClass={activeClass} on:click={resetFilter}>Reset Filter</DropdownItem>
     {/if}
-    {#if $dimensionDataStore.get(dimension)?.type === 'numerical'}
+    {#if $dimensionDataStore.get(dimension)?.type === 'numerical' && $parcoordHistogramData.visible}
       <DropdownDivider />
-      <DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}>Set Bin Num...</DropdownItem>
+      <DropdownItem defaultClass={activeClass} on:click={() => openSetBinNoModal()}>Set Bins...</DropdownItem>
     {/if}
   </div>
 {/if}

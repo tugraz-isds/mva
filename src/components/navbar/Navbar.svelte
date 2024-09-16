@@ -6,6 +6,7 @@
   import ImportDatasetModal from './dataset/ImportDatasetModal.svelte';
   import ExportDatasetModal from './dataset/ExportDatasetModal.svelte';
   import InvalidRows from './dataset/InvalidRows.svelte';
+  import AboutModal from './AboutModal.svelte';
   import { isInteractableStore } from '../../stores/brushing';
   import { datasetStore, invalidRowsStore } from '../../stores/dataset';
   import { activePanelsStore, panelsSizesStore, rowSizeStore } from '../../stores/panels';
@@ -17,6 +18,7 @@
   let isImportDatasetModalOpen = false;
   let isExportDatasetModalOpen = false;
   let isInvalidRowsModalOpen = false;
+  let isAboutModalOpen = false;
 
   let showSuccessToast = false;
   let showWarningToast = false;
@@ -71,6 +73,12 @@
     $isInteractableStore = false;
   }
 
+  function openAboutModal() {
+    isAboutModalOpen = false;
+    isAboutModalOpen = true;
+    $isInteractableStore = false;
+  }
+
   function openFileDropdown() {
     isFileDropdownOpen = true;
   }
@@ -112,14 +120,20 @@
 <ImportDatasetModal isOpen={isImportDatasetModalOpen} />
 <ExportDatasetModal isOpen={isExportDatasetModalOpen} />
 <InvalidRows isOpen={isInvalidRowsModalOpen} />
+<AboutModal isOpen={isAboutModalOpen} />
 
 <div class="h-[4%]">
-  <Navbar let:hidden class="bg-sky-900 h-full p-0 flex-row cursor-pointer" navDivClass="h-full">
+  <Navbar fluid class="bg-sky-900 h-full p-0" navDivClass="h-full flex flex-row justify-between">
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div on:click={openAboutModal} class="flex md:order-2 items-center cursor-pointer text-sm font-medium">
+      <span class="text-white hover:text-blue-200">About...</span>
+    </div>
     <NavUl
-      {hidden}
       ulClass="h-full flex flex-row p-0 m-0 md:space-x-8 md:mt-0 md:text-sm md:font-medium items-center"
-      class="h-full"
+      class="h-full order-1"
     >
+      <img src="mva-logo.svg" class="h-full" alt="MVA Logo" />
       <NavLi id="nav-file" on:click={openFileDropdown} class="cursor-pointer">
         <span class="text-white hover:text-blue-200"><Chevron aligned>File</Chevron></span>
       </NavLi>

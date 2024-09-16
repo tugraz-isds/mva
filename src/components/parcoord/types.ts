@@ -54,4 +54,4 @@ export type HistogramsType = {
   };
 };
 
-export type ParcoordSelectionShapeType = 'line' | 'rectangle';
+export type ParcoordSelectionShapeType = 'line' | 'box';

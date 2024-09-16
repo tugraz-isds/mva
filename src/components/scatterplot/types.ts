@@ -1,1 +1,1 @@
-export type ScatterplotSelectionShapeType = 'lasso' | 'rectangle';
+export type ScatterplotSelectionShapeType = 'lasso' | 'box';

@@ -8,7 +8,7 @@
 
   const SELECTION_SHAPES: Map<ParcoordSelectionShapeType, string> = new Map([
     ['line', shape_line_dashed_icon],
-    ['rectangle', shape_rectangle_dashed_icon]
+    ['box', shape_rectangle_dashed_icon]
   ]);
 
   let isShapeDropdownOpen = false;
@@ -39,7 +39,7 @@
   )}
   <ChevronDownOutline size="xs" />
 </div>
-<Tooltip style="z-index: 1000;" type="light">Selection Shape</Tooltip>
+<Tooltip style="z-index: 1000;" type="light">Selection Tool</Tooltip>
 <Dropdown
   triggeredBy="#parcoord-selection-shape"
   bind:open={isShapeDropdownOpen}
@@ -52,7 +52,7 @@
       defaultClass="flex items-center font-medium py-1 px-0.5 text-xs hover:bg-gray-100"
     >
       <CheckOutline size="xs" class="ms-2 mr-2" style="visibility: {shape === selectionShape ? 'visible' : 'hidden'}" />
-      <div class="flex flex-row items-center justify-between w-20">
+      <div class="flex flex-row items-center justify-between w-16">
         {shape[0].toUpperCase() + shape.slice(1)}
         {@html icon.replace('<svg', `<svg width="10" height="10" stroke="black" fill="none"`)}
       </div>

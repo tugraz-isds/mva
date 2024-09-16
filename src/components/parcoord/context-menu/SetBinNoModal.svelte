@@ -29,10 +29,10 @@
 
 <Modal bind:open={isOpen} on:open={loadData} size="xs" class="w-full">
   <form class="flex flex-col space-y-6">
-    <h3 class="mb-4 text-xl font-medium text-gray-900">Set Number of Bins</h3>
+    <h3 class="mb-4 text-xl font-medium text-gray-900">Set Bins</h3>
     <div class="mb-6 flex items-center">
       <div class="flex flex-row items-center">
-        <Label for="bin-no" class="mr-2">Bin no.:</Label>
+        <Label for="bin-no" class="mr-2">Number of bins:</Label>
         <NumberInput bind:value={binNo} id="bin-no" defaultClass="block w-1/2" size="sm" min={0} />
       </div>
     </div>
