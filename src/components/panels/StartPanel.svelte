@@ -97,7 +97,7 @@
         <Helper class="invisible">{localStorage.getItem('datasetDescription')}</Helper>
       </div>
       <div class="flex flex-none items-start p-2">
-        <Button class="focus:ring-transparent" on:click={openImportModal}>Import Custom</Button>
+        <Button class="focus:ring-transparent" on:click={openImportModal}>Import Dataset...</Button>
       </div>
       <div class="flex flex-col flex-grow p-2">
         <div class="flex-shrink-0">
@@ -122,7 +122,7 @@
         </Dropdown>
       </div>
       <div class="p-2">
-        <Button class="focus:ring-transparent" on:click={openImportModal}>Import Custom</Button>
+        <Button class="focus:ring-transparent" on:click={openImportModal}>Import Dataset...</Button>
       </div>
     </div>
   {/if}

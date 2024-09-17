@@ -157,7 +157,7 @@
         {/each}
       </Dropdown>
       {#if $datasetStore.length !== 0}
-        <NavLi id="nav-settings" on:click={openSettingsDropdown}>
+        <NavLi id="nav-settings" on:click={openSettingsDropdown} class="cursor-pointer">
           <span class="text-white hover:text-blue-200"><Chevron aligned>Settings</Chevron></span>
         </NavLi>
         <Dropdown bind:open={isSettingsDropdownOpen} class="w-44 z-20">
