@@ -1,6 +1,6 @@
 # Multidimensional Visual Analyser (MVA)
 
-MVA web application is deployed at https://visualanalyser.app/.
+MVA web application is deployed at https://tugraz-isds.github.io/mva/.
 
 ## Web Application
 
