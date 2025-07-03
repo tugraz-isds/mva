@@ -240,7 +240,6 @@ export async function getCsvFromUrl(url: string) {
     throw new Error('Dataset URL not valid.');
   }
 }
-
 export async function parseDataset(
   text: string,
   extension: 'mva' | 'csv',
@@ -255,6 +254,7 @@ export async function parseDataset(
   let dimensions: string[];
   let partitionsMap: Map<string, PartitionType> = new Map();
   let partitionsData: string[] = [];
+
   if (extension === 'csv') {
     dataset = parser.parse(text, autoType);
     dimensions = Object.keys(dataset[0]);
@@ -283,40 +283,77 @@ export async function parseDataset(
   dimensions = dimensions.filter((dim) => !dim.includes('_partition'));
 
   const shownDimensions = dimensions.map((dim) => ({ title: dim, visible: true }));
-  const dimensionTypeMap = new Map<string, DimensionDataType>(new Map());
+  const dimensionTypeMap = new Map<string, DimensionDataType>();
   const invalidRowIndices: Set<number> = new Set();
+
   dimensions.forEach((dim: string) => {
     const dimData = dataset.map((d) => d[dim]);
+
+    // First pass: handle empty/null values and track invalid rows
     dimData.forEach((value, i) => {
-      if (value == null || value.length === 0) invalidRowIndices.add(i);
+      if (value == null || value === '') {
+        // Replace empty values with appropriate defaults
+        dataset[i][dim] = isNumber(dataset[i][dim]) ? 0 : "None";
+      }
     });
-    const longestString = dimData.reduce((longest, currentStr) => {
-      currentStr = currentStr ?? '';
-      return currentStr.toString().length > longest.toString().length ? currentStr : longest;
+
+    // Second pass: determine data type
+    const cleanedDimData = dataset.map((d) => d[dim]);
+    const longestString = cleanedDimData.reduce((longest, current) => {
+      current = current ?? '';
+      return current.toString().length > longest.toString().length ? current : longest;
     }, '');
-    if (isNumber(dataset[0][dim])) {
-      const dimExtent: any = extent(dataset, (d: any) => +d[dim]);
-      const maxNumberOfDecimals = max(dimData, (number: number) => {
-        const numberOfDecimals = number?.toString().includes('.') ? number.toString().split('.')[1].length : 0;
-        return numberOfDecimals;
+
+    // Try to determine if the dimension is numerical
+    let isNumerical = true;
+    let numericalValues: number[] = [];
+
+    for (const value of cleanedDimData) {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) {
+        isNumerical = false;
+        break;
+      }
+      numericalValues.push(numValue);
+    }
+
+    if (isNumerical && numericalValues.length > 0) {
+      const dimExtent = extent(numericalValues);
+      const maxNumberOfDecimals = max(numericalValues, (number: number) => {
+        const parts = number.toString().split('.');
+        return parts.length > 1 ? parts[1].length : 0;
       });
+
       dimensionTypeMap.set(dim, {
         type: 'numerical',
         min: dimExtent[0],
         max: dimExtent[1],
-        numberOfDecimals: maxNumberOfDecimals ?? null,
-        longestString: longestString ?? '',
+        numberOfDecimals: maxNumberOfDecimals ?? 0,
+        longestString: longestString.toString(),
         active: true
       });
-    } else
+    } else {
+      // Treat as categorical if not numerical
       dimensionTypeMap.set(dim, {
         type: 'categorical',
         min: null,
         max: null,
         numberOfDecimals: null,
-        longestString: longestString ?? '',
+        longestString: longestString.toString(),
         active: true
       });
+    }
+  });
+
+  // Remove completely empty rows (where all values are empty)
+  dataset.forEach((row, index) => {
+    const isEmptyRow = dimensions.every(dim => {
+      const value = row[dim];
+      return value == null || value === '' || value === 'None';
+    });
+    if (isEmptyRow) {
+      invalidRowIndices.add(index);
+    }
   });
 
   const { filteredDataset, filteredPartitionsData, invalidRows } = removeInvalidRows(
@@ -325,10 +362,12 @@ export async function parseDataset(
     partitionsData,
     invalidRowIndices
   );
+
   dataset = filteredDataset;
   partitionsData = filteredPartitionsData;
 
-  const labelDim = Object.keys(dataset[0])[0]; // Set first dimension as label
+  // Set first dimension as label
+  const labelDim = Object.keys(dataset[0])[0];
   localStorage.setItem('labelDimension', labelDim);
   localStorage.setItem('tableVisibleDimensions', JSON.stringify(shownDimensions));
   localStorage.setItem('parcoordVisibleDimensions', JSON.stringify(shownDimensions));
@@ -336,8 +375,17 @@ export async function parseDataset(
   localStorage.setItem('MVA_dataset', JSON.stringify(dataset));
   localStorage.setItem('invalidRows', JSON.stringify(invalidRows));
 
-  return { dataset, shownDimensions, dimensionTypeMap, labelDim, partitionsMap, partitionsData, invalidRows };
+  return {
+    dataset,
+    shownDimensions,
+    dimensionTypeMap,
+    labelDim,
+    partitionsMap,
+    partitionsData,
+    invalidRows
+  };
 }
+
 
 function removeInvalidRows(
   dataset: DSVParsedArray<any>,
